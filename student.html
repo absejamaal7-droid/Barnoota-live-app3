@@ -22,6 +22,15 @@ function joinRoom() {
   messagingSenderId: "...",
   appId: "..."
 };
+  <input id="joinRoom" placeholder="Meeting ID galchi">
+<button onclick="joinRoom()">Join</button>
+
+<script>
+function joinRoom(){
+  const room = document.getElementById("joinRoom").value;
+  window.location.href = "room.html?room=" + room;
+}
+</script>
 </script>
 
 </body>
