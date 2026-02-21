@@ -27,6 +27,15 @@ function createRoom() {
   messagingSenderId: "...",
   appId: "..."
 };
+  <input id="roomName" placeholder="Maqaa room barreessi">
+<button onclick="createRoom()">Live jalqabi</button>
+
+<script>
+function createRoom(){
+  const room = document.getElementById("roomName").value;
+  window.location.href = "room.html?room=" + room;
+}
+</script>
 </script>
 
 </body>
