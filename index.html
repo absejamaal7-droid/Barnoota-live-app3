@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="om">
+<head>
+  <meta charset="UTF-8">
+  <title>Absee App - Login</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #e3f2fd;
+      text-align: center;
+      padding-top: 60px;
+    }
+    .card {
+      background: white;
+      width: 90%;
+      max-width: 350px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px gray;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 20px;
+      background: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Login</h2>
+
+  <input type="text" id="username" placeholder="Maqaa galchi">
+  <input type="password" id="password" placeholder="Password galchi">
+
+  <button onclick="login()">Seeni</button>
+</div>
+
+<script>
+function login() {
+  var u = document.getElementById("username").value;
+  var p = document.getElementById("password").value;
+
+  if(u !== "" && p !== "") {
+    alert("Baga nagaan seentee " + u);
+    window.location.href = "home.html";
+  } else {
+    alert("Maqaa fi password guuti!");
+  }
+}
+</script>
+
+</body>
+</html>

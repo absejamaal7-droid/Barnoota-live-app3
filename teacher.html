@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Meeting</title>
+</head>
+<body>
+
+<h2>Barsiisaa - Create Meeting</h2>
+
+<button onclick="createRoom()">Create Room</button>
+
+<p id="roomLink"></p>
+
+<script>
+function createRoom() {
+  const roomName = "Room_" + Math.floor(Math.random() * 1000000);
+
+  const link = "room.html?room=" + roomName;
+
+  document.getElementById("roomLink").innerHTML =
+    "Room Created: <br><a href='" + link + "'>" + link + "</a>";
+}const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "..."
+};
+</script>
+
+</body>
+</html>

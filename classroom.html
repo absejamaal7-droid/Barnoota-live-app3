@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="om">
+<head>
+  <meta charset="UTF-8">
+  <title>Classroom</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f1f1f1;
+      text-align: center;
+      margin: 0;
+    }
+
+    header {
+      background: #2196f3;
+      color: white;
+      padding: 15px;
+      font-size: 20px;
+    }
+
+    .box {
+      background: white;
+      margin: 15px;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px gray;
+    }
+
+    button {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      background: #4caf50;
+      color: white;
+    }
+
+    video, audio {
+      width: 100%;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  Live Classroom
+</header>
+
+<div class="box">
+  <h3>🎥 Video Barnootaa</h3>
+  <video id="video" controls>
+    <source src="assets/video.mp4" type="video/mp4">
+    Browser kee video hin deeggaru.
+  </video>
+  <br>
+  <button onclick="toggleVideo()">Video ON / OFF</button>
+</div>
+
+<div class="box">
+  <h3>🎧 Audio Barnootaa</h3>
+  <audio controls>
+    <source src="assets/audio.mp3" type="audio/mp3">
+  </audio>
+</div>
+
+<div class="box">
+  <h3>🎤 Mic Qofa</h3>
+  <p>Yoo video hin barbaadne, mic qofaan haasawuu dandeessa.</p>
+  <button onclick="micAlert()">Mic Activate</button>
+</div>
+
+<script>
+let video = document.getElementById("video");
+
+function toggleVideo() {
+  if(video.paused) {
+    video.play();
+  } else {
+    video.pause();
+  }
+}
+
+function micAlert() {
+  alert("Mic qofa mode (fakkeenyaaf). Version guddaa keessatti ni hojjata.");
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Join Meeting</title>
+</head>
+<body>
+
+<h2>Barataa - Join Meeting</h2>
+
+<input type="text" id="roomInput" placeholder="Enter Room ID">
+<button onclick="joinRoom()">Join</button>
+
+<script>
+function joinRoom() {
+  const roomName = document.getElementById("roomInput").value;
+  window.location.href = "room.html?room=" + roomName;
+}const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "..."
+};
+</script>
+
+</body>
+</html>

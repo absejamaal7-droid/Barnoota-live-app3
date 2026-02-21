@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="om">
+<head>
+  <meta charset="UTF-8">
+  <title>Join Classroom</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #e3f2fd;
+      text-align: center;
+      padding-top: 40px;
+    }
+
+    .card {
+      background: white;
+      width: 90%;
+      max-width: 350px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px gray;
+    }
+
+    select, input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    button {
+      background: #2196f3;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Join Classroom</h2>
+
+  <input type="text" id="code" placeholder="Join Code galchi">
+
+  <select id="plan">
+    <option value="">Subscription filadhu</option>
+    <option>Jia 1 - Namoota 100</option>
+    <option>Jia 3 - Namoota 250</option>
+    <option>Jia 6 - Namoota 500</option>
+    <option>Waggaa 1 - Namoota 1000</option>
+  </select>
+
+  <button onclick="join()">Join</button>
+</div>
+
+<script>
+function join() {
+  let code = document.getElementById("code").value;
+  let plan = document.getElementById("plan").value;
+
+  if(code !== "" && plan !== "") {
+    alert("Join sirriitti ta'e!");
+    window.location.href = "classroom.html";
+  } else {
+    alert("Code fi plan guuti!");
+  }
+}
+</script>
+<script>
+function join() {
+  let code = document.getElementById("code").value;
+  let plan = document.getElementById("plan").value;
+
+  if(code !== "" && plan !== "") {
+    // subscription kuusi
+    localStorage.setItem("subscribed", "yes");
+    localStorage.setItem("plan", plan);
+
+    alert("Kaffaltiin sirriitti galmaa'e!");
+    window.location.href = "classroom.html";
+  } else {
+    alert("Code fi plan guuti!");
+  }
+}
+</script>
+</body>
+</html>
