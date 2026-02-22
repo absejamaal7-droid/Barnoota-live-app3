@@ -87,38 +87,14 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
 <script>
-  // 
-  id("com.google.gms.google-services") version "4.4.4" apply false
-   
-  plugins {
-  id("com.android.application")
-
-  // Add the Google services Gradle plugin
-  id("com.google.gms.google-services")
-
-  ...
-}
-
-dependencies {
-  // Import the Firebase BoM
-  implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
-
-
-  // TODO: Add the dependencies for Firebase products you want to use
-  // When using the BoM, don't specify versions in Firebase dependencies
-  implementation("com.google.firebase:firebase-analytics")
-
-
-  // Add the dependencies for any other desired Firebase products
-  // https://firebase.google.com/docs/android/setup#available-libraries
-  }
+  // 🔹 Kana bakka keeti Firebase config galchi
   const firebaseConfig = {
-    apiKey: "PASTE_YOUR_BROWSER_KEY_HERE",
+    apiKey: "PASTE_YOUR_BROWSER_KEY_HERE",   // ✅ Browser key siif hayyamame
     authDomain: "absejamaal-772e3.firebaseapp.com",
     projectId: "absejamaal-772e3",
     storageBucket: "absejamaal-772e3.appspot.com",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abcdef123456"
+    messagingSenderId: "522756860286",
+    appId: "1:522756860286:web:e14f9559c01b0d57e26b2f"
   };
 
   // Initialize Firebase
@@ -133,7 +109,7 @@ dependencies {
 
     auth.signInWithEmailAndPassword(email, password)
       .then(() => {
-        window.location.href = "home.html";
+        window.location.href = "home.html"; // login booda home.html dhaqaa
       })
       .catch((error) => {
         alert("Error: " + error.message);
