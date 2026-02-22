@@ -1,10 +1,117 @@
-<h3>Live Rooms</h3>
 
-<button onclick="enter('BarnootaMath')">Math Class</button>
-<button onclick="enter('EnglishLive')">English Class</button>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Classroom</title>
+
+  <!-- Jitsi -->
+  <script src="https://meet.jit.si/external_api.js"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    #topbar {
+      background: #1f1f1f;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #meet {
+      height: 90vh;
+      width: 100%;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      background: #ff3b3b;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #333;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="topbar">
+  <div>
+    <b id="roomName">Room</b> |
+    <span id="username">Loading...</span>
+  </div>
+
+  <div class="controls">
+    <button class="secondary" onclick="toggleMute()">Mute</button>
+    <button onclick="leaveMeeting()">Leave</button>
+  </div>
+</div>
+
+<div id="meet"></div>
 
 <script>
-function enter(room){
-  window.location.href = "room.html?room=" + room;
-}
+  // 🔥 Firebase config kee asitti galchi
+  const firebaseConfig = {
+    apiKey: "APIKEY_KEE",
+    authDomain: "AUTHDOMAIN_KEE",
+    projectId: "PROJECTID_KEE",
+    storageBucket: "STORAGEBUCKET_KEE",
+    messagingSenderId: "MESSAGINGID_KEE",
+    appId: "APPID_KEE"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  auth.onAuthStateChanged(function(user) {
+    if (user) {
+      document.getElementById("username").innerText = user.email;
+    } else {
+      window.location.href = "index.html";
+    }
+  });
+
+  // Room maqaa URL irraa fudhata
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomName = urlParams.get("room") || "Barnoota-Live";
+  document.getElementById("roomName").innerText = roomName;
+
+  // Jitsi
+  const api = new JitsiMeetExternalAPI("meet.jit.si", {
+    roomName: roomName,
+    width: "100%",
+    height: "100%",
+    parentNode: document.querySelector("#meet")
+  });
+
+  function toggleMute() {
+    api.executeCommand("toggleAudio");
+  }
+
+  function leaveMeeting() {
+    api.executeCommand("hangup");
+    window.location.href = "home.html";
+  }
 </script>
+
+</body>
+</html>
