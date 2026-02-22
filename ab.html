@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Barnoota Live</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background:#0f172a;
+      color:white;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+
+    .card{
+      background:#1e293b;
+      padding:25px;
+      border-radius:12px;
+      width:90%;
+      max-width:350px;
+      box-shadow:0 0 20px rgba(0,0,0,0.4);
+    }
+
+    h2{
+      text-align:center;
+      margin-bottom:20px;
+    }
+
+    input{
+      width:100%;
+      padding:12px;
+      margin:8px 0;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+    }
+
+    button{
+      width:100%;
+      padding:12px;
+      margin-top:10px;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      cursor:pointer;
+    }
+
+    .login{
+      background:#22c55e;
+      color:white;
+    }
+
+    .signup{
+      background:#3b82f6;
+      color:white;
+    }
+
+    .divider{
+      text-align:center;
+      margin:12px 0;
+      opacity:0.6;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Barnoota Live</h2>
+
+  <input type="email" id="email" placeholder="Email kee">
+  <input type="password" id="password" placeholder="Password kee">
+
+  <button class="login" onclick="login()">LOGIN</button>
+
+  <div class="divider">ykn</div>
+
+  <button class="signup" onclick="signup()">SIGN UP</button>
+</div>
+
+<script>
+function login(){
+  // yeroo booda Firebase login itti daballa
+  window.location.href = "home.html";
+}
+
+function signup(){
+  alert("Account haaraa uumaa jirta");
+  // yeroo booda Firebase signup itti daballa
+}
+</script>
+
+</body>
+</html>
