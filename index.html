@@ -83,14 +83,17 @@
 </div>
 
 <script>
-function login(){
-  // yeroo booda Firebase login itti daballa
-  window.location.href = "home.html";
-}
+function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-function signup(){
-  alert("Account haaraa uumaa jirta");
-  // yeroo booda Firebase signup itti daballa
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      window.location.href = "home.html";
+    })
+    .catch((error) => {
+      alert(error.message);   // 👉 asii error si agarsiisa
+    });
 }
 </script>
 
