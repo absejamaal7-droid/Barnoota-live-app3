@@ -1,35 +1,68 @@
 <!DOCTYPE html>
-<html lang="om">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Absee App - Login</title>
+  <title>Barnoota Live</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <style>
-    body {
-      font-family: Arial;
-      background: #e3f2fd;
-      text-align: center;
-      padding-top: 60px;
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background:#0f172a;
+      color:white;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
     }
-    .card {
-      background: white;
-      width: 90%;
-      max-width: 350px;
-      margin: auto;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px gray;
+
+    .card{
+      background:#1e293b;
+      padding:25px;
+      border-radius:12px;
+      width:90%;
+      max-width:350px;
+      box-shadow:0 0 20px rgba(0,0,0,0.4);
     }
-    input {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
+
+    h2{
+      text-align:center;
+      margin-bottom:20px;
     }
-    button {
-      padding: 10px 20px;
-      background: #2196f3;
-      color: white;
-      border: none;
-      border-radius: 5px;
+
+    input{
+      width:100%;
+      padding:12px;
+      margin:8px 0;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+    }
+
+    button{
+      width:100%;
+      padding:12px;
+      margin-top:10px;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      cursor:pointer;
+    }
+
+    .login{
+      background:#22c55e;
+      color:white;
+    }
+
+    .signup{
+      background:#3b82f6;
+      color:white;
+    }
+
+    .divider{
+      text-align:center;
+      margin:12px 0;
+      opacity:0.6;
     }
   </style>
 </head>
@@ -37,25 +70,27 @@
 <body>
 
 <div class="card">
-  <h2>Login</h2>
+  <h2>Barnoota Live</h2>
 
-  <input type="text" id="username" placeholder="Maqaa galchi">
-  <input type="password" id="password" placeholder="Password galchi">
+  <input type="email" id="email" placeholder="Email kee">
+  <input type="password" id="password" placeholder="Password kee">
 
-  <button onclick="login()">Seeni</button>
+  <button class="login" onclick="login()">LOGIN</button>
+
+  <div class="divider">ykn</div>
+
+  <button class="signup" onclick="signup()">SIGN UP</button>
 </div>
 
 <script>
-function login() {
-  var u = document.getElementById("username").value;
-  var p = document.getElementById("password").value;
+function login(){
+  // yeroo booda Firebase login itti daballa
+  window.location.href = "home.html";
+}
 
-  if(u !== "" && p !== "") {
-    alert("Baga nagaan seentee " + u);
-    window.location.href = "home.html";
-  } else {
-    alert("Maqaa fi password guuti!");
-  }
+function signup(){
+  alert("Account haaraa uumaa jirta");
+  // yeroo booda Firebase signup itti daballa
 }
 </script>
 
