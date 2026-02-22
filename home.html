@@ -1,108 +1,137 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Home - Live Class</title>
+  <title>Home - Barnoota Live</title>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #1c1c1c;
-      color: white;
+    body{
+      margin:0;
+      background:#1c1c1c;
+      color:white;
+      font-family:Arial;
     }
 
-    #topbar {
-      background: #2d2d2d;
-      padding: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    #topbar{
+      background:#2d2d2d;
+      padding:12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
     }
 
-    #menu button {
-      margin-right: 8px;
-      background: #444;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
+    #menu{
+      display:flex;
+      gap:10px;
+      padding:20px;
+      flex-wrap:wrap;
     }
 
-    #menu button:hover {
-      background: #666;
+    .card{
+      background:#2d2d2d;
+      padding:20px;
+      border-radius:10px;
+      width:140px;
+      text-align:center;
+      cursor:pointer;
+      transition:0.2s;
     }
 
-    #profile {
-      background: #0084ff;
-      padding: 8px 12px;
-      border-radius: 6px;
+    .card:hover{
+      background:#444;
     }
 
-    #content {
-      padding: 30px;
-      text-align: center;
-    }
-
-    .big-btn {
-      display: block;
-      margin: 10px auto;
-      width: 220px;
-      padding: 14px;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
-      color: white;
-      background: #0084ff;
+    button{
+      background:red;
+      border:none;
+      color:white;
+      padding:6px 10px;
+      border-radius:6px;
+      cursor:pointer;
     }
   </style>
 </head>
 
 <body>
 
+<!-- 🔝 Top Bar -->
 <div id="topbar">
-  <div id="menu">
-    <button onclick="createMeet()">Meet</button>
-    <button onclick="joinMeet()">Join</button>
-    <button onclick="scheduleMeet()">Schedule</button>
-    <button onclick="shareApp()">Share</button>
-    <button onclick="openSettings()">Setting</button>
+  <div>
+    👤 <span id="userEmail">Loading...</span>
   </div>
-
-  <div id="profile">
-    👤 My Profile
-  </div>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<div id="content">
-  <h2>Welcome to Live Classroom</h2>
+<!-- 📌 Menu -->
+<div id="menu">
 
-  <button class="big-btn" onclick="createMeet()">Create Meeting</button>
-  <button class="big-btn" onclick="joinMeet()">Join Meeting</button>
+  <div class="card" onclick="createMeeting()">
+    📹<br>Meet
+  </div>
+
+  <div class="card" onclick="joinMeeting()">
+    🔑<br>Join
+  </div>
+
+  <div class="card">
+    📅<br>Schedule
+  </div>
+
+  <div class="card">
+    🔗<br>Share
+  </div>
+
+  <div class="card">
+    ⚙️<br>Settings
+  </div>
+
 </div>
 
 <script>
-  function createMeet() {
-    const room = "room-" + Math.floor(Math.random() * 100000);
+  // 🔥 Firebase Config (kan ati argatte galchi)
+  const firebaseConfig = {
+    apiKey: "API_KEY_KEE",
+    authDomain: "absejamaal-772e3.firebaseapp.com",
+    projectId: "absejamaal-772e3",
+    storageBucket: "absejamaal-772e3.firebasestorage.app",
+    messagingSenderId: "522756860286",
+    appId: "1:522756860286:web:e14f9559c01b0d57e26b2f"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // 👤 User check
+  auth.onAuthStateChanged(user => {
+    if(user){
+      document.getElementById("userEmail").innerText = user.email;
+    }else{
+      window.location.href = "index.html";
+    }
+  });
+
+  function logout(){
+    auth.signOut().then(()=>{
+      window.location.href = "index.html";
+    });
+  }
+
+  // 📹 Create meeting
+  function createMeeting(){
+    const room = Math.random().toString(36).substring(2,10);
     window.location.href = "live.html?room=" + room;
   }
 
-  function joinMeet() {
+  // 🔑 Join meeting
+  function joinMeeting(){
     const room = prompt("Meeting ID galchi");
-    if (room) {
+    if(room){
       window.location.href = "live.html?room=" + room;
     }
-  }
-
-  function scheduleMeet() {
-    alert("Schedule fuulduratti dabalama");
-  }
-
-  function shareApp() {
-    alert("Link app kee share godhi");
-  }
-
-  function openSettings() {
-    alert("Settings fuulduratti dabalama");
   }
 </script>
 
