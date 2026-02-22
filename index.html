@@ -15,7 +15,6 @@
       align-items:center;
       height:100vh;
     }
-
     .card{
       background:#1e293b;
       padding:25px;
@@ -24,12 +23,7 @@
       max-width:350px;
       box-shadow:0 0 20px rgba(0,0,0,0.4);
     }
-
-    h2{
-      text-align:center;
-      margin-bottom:20px;
-    }
-
+    h2{text-align:center;margin-bottom:20px;}
     input{
       width:100%;
       padding:12px;
@@ -38,7 +32,6 @@
       border-radius:8px;
       font-size:16px;
     }
-
     button{
       width:100%;
       padding:12px;
@@ -48,22 +41,9 @@
       font-size:16px;
       cursor:pointer;
     }
-
-    .login{
-      background:#22c55e;
-      color:white;
-    }
-
-    .signup{
-      background:#3b82f6;
-      color:white;
-    }
-
-    .divider{
-      text-align:center;
-      margin:12px 0;
-      opacity:0.6;
-    }
+    .login{background:#22c55e;color:white;}
+    .signup{background:#3b82f6;color:white;}
+    .divider{text-align:center;margin:12px 0;opacity:0.6;}
   </style>
 </head>
 
@@ -82,7 +62,36 @@
   <button class="signup" onclick="signup()">SIGN UP</button>
 </div>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js"></script>
+
 <script>
+const firebaseConfig = {
+  apiKey: "ASITTI_APIKEY_KEE",
+  authDomain: "absejamaal-772e3.firebaseapp.com",
+  projectId: "absejamaal-772e3",
+  storageBucket: "absejamaal-772e3.firebasestorage.app",
+  messagingSenderId: "522756860286",
+  appId: "ASITTI_APPID_KEE"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+function signup() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(() => {
+      alert("Account created! Amma login godhi.");
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+}
+
 function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
@@ -92,7 +101,7 @@ function login() {
       window.location.href = "home.html";
     })
     .catch((error) => {
-      alert(error.message);   // 👉 asii error si agarsiisa
+      alert(error.message);
     });
 }
 </script>
