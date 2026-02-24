@@ -31,7 +31,6 @@
       width: 100%;
     }
 
-    /* 🔘 Room button gubbaa bitaa */
     .room-btn {
       background: #2563eb;
       border: none;
@@ -41,7 +40,6 @@
       cursor: pointer;
     }
 
-    /* 🔻 Control bar jala */
     #bottombar {
       height: 8vh;
       background: #1f1f1f;
@@ -68,16 +66,16 @@
 
 <body>
 
-<!-- 🔝 TOP BAR -->
+<!-- TOP BAR -->
 <div id="topbar">
   <button class="room-btn" id="roomName">Room</button>
   <div id="username">Loading...</div>
 </div>
 
-<!-- 🎥 MEETING -->
+<!-- MEETING -->
 <div id="meet"></div>
 
-<!-- 🔻 CONTROLS -->
+<!-- CONTROLS -->
 <div id="bottombar">
   <button class="control-btn" onclick="toggleMute()">🎤 Mute</button>
   <button class="control-btn" onclick="toggleVideo()">📷 Video</button>
@@ -85,9 +83,11 @@
   <button class="control-btn" onclick="shareScreen()">🖥 Share</button>
   <button class="control-btn" onclick="openSettings()">⚙️ Settings</button>
   <button class="control-btn" onclick="sendEmoji()">😊 Emoji</button>
+  <button class="control-btn" onclick="startRecording()">⏺ Start Rec</button>
+  <button class="control-btn" onclick="stopRecording()">⏹ Stop Rec</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
 </div>
-  
+
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyATogol0OIMwINVjEanhzJo2-mufYOcU_4",
@@ -113,58 +113,43 @@
   const roomName = urlParams.get("room") || "Barnoota-Live";
   document.getElementById("roomName").innerText = roomName;
 
-  const api = new JitsiMeetExternalAPI("meet.jit.si", {
+  // Jitsi without phone numbers
+  const domain = "meet.jit.si";
+  const options = {
     roomName: roomName,
     width: "100%",
     height: "100%",
-    parentNode: document.querySelector("#meet")
-  });
+    parentNode: document.querySelector("#meet"),
+    interfaceConfigOverwrite: {
+      TOOLBAR_BUTTONS: [
+        'microphone', 'camera', 'chat', 'desktop', 'settings',
+        'raisehand', 'hangup', 'emoji-menu', 'recording'
+      ],
+      SHOW_JITSI_WATERMARK: false,
+      SHOW_WATERMARK_FOR_GUESTS: false,
+      DEFAULT_REMOTE_DISPLAY_NAME: 'Participant',
+      DEFAULT_LOCAL_DISPLAY_NAME: 'Me',
+      SHOW_POWERED_BY: false,
+      SHOW_DEEP_LINKING_LOGO: false,
+      SHOW_PHONE_LABEL: false // <-- Phone numbers hide
+    }
+  };
+  const api = new JitsiMeetExternalAPI(domain, options);
 
-  function toggleMute() {
-    api.executeCommand("toggleAudio");
-  }
-
-  function toggleVideo() {
-    api.executeCommand("toggleVideo");
-  }
-
-  function openChat() {
-    api.executeCommand("toggleChat");
-  }
-
-  function shareScreen() {
-    api.executeCommand("toggleShareScreen");
-  }
-
-  function openSettings() {
-    api.executeCommand("toggleSettings");
-  }
-
-  function sendEmoji() {
-    api.executeCommand("sendTones");
-  }
-
+  function toggleMute() { api.executeCommand("toggleAudio"); }
+  function toggleVideo() { api.executeCommand("toggleVideo"); }
+  function openChat() { api.executeCommand("toggleChat"); }
+  function shareScreen() { api.executeCommand("toggleShareScreen"); }
+  function openSettings() { api.executeCommand("toggleSettings"); }
+  function sendEmoji() { api.executeCommand("sendTones"); }
   function leaveMeeting() {
     api.executeCommand("hangup");
     window.location.href = "home.html";
   }
 
-  let isRecording = false;
-
-function toggleRecording() {
-  if(!isRecording){
-    api.executeCommand('startRecording', { mode: 'file', format: 'mp4' });
-    document.getElementById('recordBtn').innerText = '⏹ Stop';
-    isRecording = true;
-  } else {
-    api.executeCommand('stopRecording', { mode: 'file' });
-    document.getElementById('recordBtn').innerText = '⏺ Record';
-    isRecording = false;
-  }
-}
+  function startRecording() { api.executeCommand("startRecording", { mode: "file" }); }
+  function stopRecording() { api.executeCommand("stopRecording", { mode: "file" }); }
 </script>
-<!-- 🔴 Recording button -->
-<button class="control-btn" id="recordBtn" onclick="toggleRecording()">⏺ Record</button>
-  
+
 </body>
 </html>
