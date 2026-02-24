@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,8 +7,8 @@
   <script src="https://meet.jit.si/external_api.js"></script>
 
   <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
   <style>
     body {
@@ -28,17 +27,32 @@
     }
 
     #meet {
-      height: 90vh;
+      height: 82vh;
       width: 100%;
     }
 
-    .controls {
+    /* 🔘 Room button gubbaa bitaa */
+    .room-btn {
+      background: #2563eb;
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* 🔻 Control bar jala */
+    #bottombar {
+      height: 8vh;
+      background: #1f1f1f;
       display: flex;
+      justify-content: center;
+      align-items: center;
       gap: 10px;
     }
 
-    button {
-      background: #ff3b3b;
+    .control-btn {
+      background: #333;
       color: white;
       border: none;
       padding: 8px 12px;
@@ -46,37 +60,42 @@
       cursor: pointer;
     }
 
-    button.secondary {
-      background: #333;
+    .leave {
+      background: #ff3b3b;
     }
   </style>
 </head>
 
 <body>
 
+<!-- 🔝 TOP BAR -->
 <div id="topbar">
-  <div>
-    <b id="roomName">Room</b> |
-    <span id="username">Loading...</span>
-  </div>
-
-  <div class="controls">
-    <button class="secondary" onclick="toggleMute()">Mute</button>
-    <button onclick="leaveMeeting()">Leave</button>
-  </div>
+  <button class="room-btn" id="roomName">Room</button>
+  <div id="username">Loading...</div>
 </div>
 
+<!-- 🎥 MEETING -->
 <div id="meet"></div>
 
+<!-- 🔻 CONTROLS -->
+<div id="bottombar">
+  <button class="control-btn" onclick="toggleMute()">🎤 Mute</button>
+  <button class="control-btn" onclick="toggleVideo()">📷 Video</button>
+  <button class="control-btn" onclick="openChat()">💬 Chat</button>
+  <button class="control-btn" onclick="shareScreen()">🖥 Share</button>
+  <button class="control-btn" onclick="openSettings()">⚙️ Settings</button>
+  <button class="control-btn" onclick="sendEmoji()">😊 Emoji</button>
+  <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
+</div>
+  
 <script>
-  // 🔥 Firebase config kee asitti galchi
   const firebaseConfig = {
-    apiKey: "APIKEY_KEE",
-    authDomain: "AUTHDOMAIN_KEE",
-    projectId: "PROJECTID_KEE",
-    storageBucket: "STORAGEBUCKET_KEE",
-    messagingSenderId: "MESSAGINGID_KEE",
-    appId: "APPID_KEE"
+    apiKey: "AIzaSyATogol0OIMwINVjEanhzJo2-mufYOcU_4",
+    authDomain: "absejamaal-772e3.firebaseapp.com",
+    projectId: "absejamaal-772e3",
+    storageBucket: "absejamaal-772e3.appspot.com",
+    messagingSenderId: "522756860286",
+    appId: "1:522756860286:web:d78a03faf3861347e26b2f"
   };
 
   firebase.initializeApp(firebaseConfig);
@@ -90,12 +109,10 @@
     }
   });
 
-  // Room maqaa URL irraa fudhata
   const urlParams = new URLSearchParams(window.location.search);
   const roomName = urlParams.get("room") || "Barnoota-Live";
   document.getElementById("roomName").innerText = roomName;
 
-  // Jitsi
   const api = new JitsiMeetExternalAPI("meet.jit.si", {
     roomName: roomName,
     width: "100%",
@@ -107,11 +124,47 @@
     api.executeCommand("toggleAudio");
   }
 
+  function toggleVideo() {
+    api.executeCommand("toggleVideo");
+  }
+
+  function openChat() {
+    api.executeCommand("toggleChat");
+  }
+
+  function shareScreen() {
+    api.executeCommand("toggleShareScreen");
+  }
+
+  function openSettings() {
+    api.executeCommand("toggleSettings");
+  }
+
+  function sendEmoji() {
+    api.executeCommand("sendTones");
+  }
+
   function leaveMeeting() {
     api.executeCommand("hangup");
     window.location.href = "home.html";
   }
-</script>
 
+  let isRecording = false;
+
+function toggleRecording() {
+  if(!isRecording){
+    api.executeCommand('startRecording', { mode: 'file', format: 'mp4' });
+    document.getElementById('recordBtn').innerText = '⏹ Stop';
+    isRecording = true;
+  } else {
+    api.executeCommand('stopRecording', { mode: 'file' });
+    document.getElementById('recordBtn').innerText = '⏺ Record';
+    isRecording = false;
+  }
+}
+</script>
+<!-- 🔴 Recording button -->
+<button class="control-btn" id="recordBtn" onclick="toggleRecording()">⏺ Record</button>
+  
 </body>
 </html>
