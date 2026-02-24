@@ -90,13 +90,13 @@
 
   function createMeeting(){
     const room = Math.random().toString(36).substring(2,10);
-    window.location.href = "live.html?room=" + room;
+    window.location.href = "liveclass.html=" + room;
   }
 
   function joinMeeting(){
     const room = prompt("Meeting ID galchi");
     if(room){
-      window.location.href = "live.html?room=" + room;
+      window.location.href = "liveclass.html=" + room;
     }
   }
 </script>
