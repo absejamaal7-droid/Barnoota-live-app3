@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Live Classroom - Barnoota Live</title>
 
   <!-- Jitsi -->
@@ -18,7 +19,6 @@
       font-family:Arial;
     }
 
-    /* TOP BAR */
     #topbar{
       position:fixed;
       top:0;
@@ -48,7 +48,6 @@
       width:100%;
     }
 
-    /* BOTTOM BAR */
     #bottombar{
       position:fixed;
       bottom:0;
@@ -82,106 +81,95 @@
 
 <body>
 
-<!-- TOP -->
 <div id="topbar">
-  <button class="room-btn" id="roomName">Room</button>
+  <button class="room-btn" id="roomName">Loading room...</button>
   <div id="username">Loading...</div>
 </div>
 
-<!-- MEETING -->
 <div id="meet"></div>
 
-<!-- CONTROLS -->
 <div id="bottombar">
   <button class="control-btn" onclick="toggleMute()">🎤</button>
   <button class="control-btn" onclick="toggleVideo()">📷</button>
   <button class="control-btn" onclick="openChat()">💬</button>
   <button class="control-btn" onclick="shareScreen()">🖥</button>
   <button class="control-btn" onclick="openSettings()">⚙️</button>
-  <button class="control-btn" onclick="sendEmoji()">😊</button>
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
 </div>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyATogol0OIMwINVjEanhzJo2-mufYOcU_4",
-    authDomain: "absejamaal-772e3.firebaseapp.com",
-    projectId: "absejamaal-772e3",
-    storageBucket: "absejamaal-772e3.appspot.com",
-    messagingSenderId: "522756860286",
-    appId: "1:522756860286:web:d78a03faf3861347e26b2f"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyATogol0OIMwINVjEanhzJo2-mufYOcU_4",
+  authDomain: "absejamaal-772e3.firebaseapp.com",
+  projectId: "absejamaal-772e3",
+  storageBucket: "absejamaal-772e3.appspot.com",
+  messagingSenderId: "522756860286",
+  appId: "1:522756860286:web:d78a03faf3861347e26b2f"
+};
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
-  auth.onAuthStateChanged(user=>{
-    if(user){
-      document.getElementById("username").innerText = user.email;
-    }else{
-      window.location.href="index.html";
-    }
-  });
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomName = urlParams.get("room") || "Barnoota-Live";
-  document.getElementById("roomName").innerText = roomName;
-
-  const api = new JitsiMeetExternalAPI("meet.jit.si",{
-    roomName: roomName,
-    width:"100%",
-    height:"100%",
-    parentNode: document.querySelector("#meet"),
-
-    configOverwrite: {
-      prejoinPageEnabled: false,     // join page hin mul'atu
-      disableDeepLinking: true,      // "join in app" hin mul'atu
-      startWithAudioMuted: false,
-      startWithVideoMuted: false
-    },
-
-    interfaceConfigOverwrite: {
-      DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-      HIDE_INVITE_MORE_HEADER: true,
-      MOBILE_APP_PROMO: false,
-      SHOW_JITSI_WATERMARK: false,
-      SHOW_BRAND_WATERMARK: false,
-      TOOLBAR_BUTTONS: [
-        "microphone","camera","chat","desktop","settings",
-        "raisehand","hangup"
-      ]
-    }
-  });
-
-  // Host password
-  api.addEventListener("videoConferenceJoined", () => {
-    const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
-    if(pass){
-      api.executeCommand("password", pass);
-    }
-  });
-
-  function toggleMute(){ api.executeCommand("toggleAudio"); }
-  function toggleVideo(){ api.executeCommand("toggleVideo"); }
-  function openChat(){ api.executeCommand("toggleChat"); }
-  function shareScreen(){ api.executeCommand("toggleShareScreen"); }
-  function openSettings(){ api.executeCommand("toggleSettings"); }
-  function sendEmoji(){ api.executeCommand("sendTones"); }
-
-  function startRecording(){
-    api.executeCommand("startRecording",{mode:"file"});
+auth.onAuthStateChanged(user=>{
+  if(user){
+    document.getElementById("username").innerText = user.email;
+  }else{
+    window.location.href="index.html";
   }
+});
 
-  function stopRecording(){
-    api.executeCommand("stopRecording",{mode:"file"});
-  }
+const urlParams = new URLSearchParams(window.location.search);
+const roomName = urlParams.get("room") || "Barnoota-Live";
+document.getElementById("roomName").innerText = roomName;
 
-  function leaveMeeting(){
-    api.executeCommand("hangup");
-    window.location.href="home.html";
+const api = new JitsiMeetExternalAPI("meet.jit.si",{
+  roomName: roomName,
+  width:"100%",
+  height:"100%",
+  parentNode: document.querySelector("#meet"),
+
+  configOverwrite: {
+    prejoinPageEnabled: false,
+    disableDeepLinking: true,
+    startWithAudioMuted: false,
+    startWithVideoMuted: false
+  },
+
+  interfaceConfigOverwrite: {
+    DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+    MOBILE_APP_PROMO: false,
+    SHOW_JITSI_WATERMARK: false,
+    SHOW_BRAND_WATERMARK: false
   }
+});
+
+api.addEventListener("videoConferenceJoined", () => {
+  const pass = prompt("Meeting password galchi (host)");
+  if(pass){
+    api.executeCommand("password", pass);
+  }
+});
+
+function toggleMute(){ api.executeCommand("toggleAudio"); }
+function toggleVideo(){ api.executeCommand("toggleVideo"); }
+function openChat(){ api.executeCommand("toggleChat"); }
+function shareScreen(){ api.executeCommand("toggleShareScreen"); }
+function openSettings(){ api.executeCommand("toggleSettings"); }
+
+function startRecording(){
+  api.executeCommand("startRecording",{mode:"file"});
+}
+
+function stopRecording(){
+  api.executeCommand("stopRecording",{mode:"file"});
+}
+
+function leaveMeeting(){
+  api.executeCommand("hangup");
+  window.location.href="home.html";
+}
 </script>
 
 </body>
