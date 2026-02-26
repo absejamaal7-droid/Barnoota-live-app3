@@ -135,7 +135,13 @@
     height:"100%",
     parentNode: document.querySelector("#meet")
   });
-
+// Host password kaa'a
+api.addEventListener("videoConferenceJoined", () => {
+  const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
+  if(pass){
+    api.executeCommand("password", pass);
+  }
+});
   function toggleMute(){ api.executeCommand("toggleAudio"); }
   function toggleVideo(){ api.executeCommand("toggleVideo"); }
   function openChat(){ api.executeCommand("toggleChat"); }
