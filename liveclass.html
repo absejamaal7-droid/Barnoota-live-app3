@@ -55,7 +55,9 @@
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
-  <button class="control-btn" onclick="toggleParticipants()">👥 Participants</button>
+  <button class="control-btn" onclick="toggleParticipants()">👥 Participants
+  <button class="control-btn" onclick="downloadRecording()">⬇ Download</button>
+  </button>
 </div>
 
 <div id="participantsPanel">
@@ -111,7 +113,41 @@ function sendEmoji(){if(api) api.executeCommand("sendTones");}
 function startRecording(){if(api) api.executeCommand("startRecording",{mode:"file"});}
 function stopRecording(){if(api) api.executeCommand("stopRecording",{mode:"file"});}
 function leaveMeeting(){if(api) api.executeCommand("hangup"); window.location.href="home.html";}
+let recordingLink = null;
 
+// start recording
+function startRecording(){
+  if(api){
+    api.executeCommand("startRecording", { mode:"file" });
+    alert("Recording started");
+  }
+}
+
+// stop recording + auto save
+function stopRecording(){
+  if(api){
+    api.executeCommand("stopRecording", { mode:"file" });
+    alert("Recording saved. Waiting for download link...");
+  }
+}
+
+// Jitsi recording link argachuu
+api.addEventListener("recordingStatusChanged", (status)=>{
+  if(status && status.mode === "file" && status.status === "off"){
+    // yeroo recording xumurame
+    recordingLink = "https://meet.jit.si/"+api.getRoomName();
+    alert("Recording ready. Click Download button.");
+  }
+});
+
+// download recording
+function downloadRecording(){
+  if(recordingLink){
+    window.open(recordingLink, "_blank");
+  }else{
+    alert("Recording hin jiruu yookaan hin xumuramne.");
+  }
+                     }
 // Participants panel
 const participantsPanel=document.getElementById("participantsPanel");
 const participantsList=document.getElementById("participantsList");
