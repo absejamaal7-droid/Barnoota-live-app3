@@ -112,6 +112,19 @@
     }else{
       window.location.href = "index.html";
     }
+    
+  <script>
+function addPost(){
+  const text = prompt("Barreeffama galchi");
+  if(!text) return;
+
+  const post = document.createElement("div");
+  post.className = "post";
+  post.innerHTML = "<p>"+text+"</p>";
+
+  document.getElementById("feed").prepend(post);
+}
+</script>
   });
 
   function logout(){
@@ -129,19 +142,6 @@
       window.location.href = "liveclass.html?room=" + room;
     }
   }
-  <script>
-function addPost(){
-  const text = prompt("Barreeffama galchi");
-  if(!text) return;
-
-  const post = document.createElement("div");
-  post.className = "post";
-  post.innerHTML = "<p>"+text+"</p>";
-
-  document.getElementById("feed").prepend(post);
-}
 </script>
-</script>
-
 </body>
 </html>
