@@ -40,6 +40,11 @@
       padding:6px 10px;
       border-radius:6px;
       cursor:pointer;
+      transition: 0.3s;
+    }
+    .room-btn:hover{
+      background:#3b82f6;
+      transform: scale(1.05);
     }
 
     #meet{
@@ -72,20 +77,98 @@
       border-radius:6px;
       cursor:pointer;
       font-size:12px;
+      transition:0.3s;
+    }
+    .control-btn:hover{
+      background:#555;
+      transform: scale(1.1);
     }
 
     .record{ background:#f59e0b; }
+    .record:hover{ background:#fbbf24; }
     .stop{ background:#10b981; }
+    .stop:hover{ background:#34d399; }
     .leave{ background:#ef4444; }
+    .leave:hover{ background:#f87171; }
     .breakroom{ background:#6366f1; }
+    .breakroom:hover{ background:#818cf8; }
+
+    /* Overlay */
+    #overlay{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      background:rgba(0,0,0,0.95);
+      color:white;
+      z-index:100;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      padding:20px;
+      font-size:16px;
+      opacity:0;
+      animation: fadeIn 1s forwards;
+    }
+
+    #overlay h1{
+      margin-bottom:20px;
+      font-size:28px;
+      color:#2563eb;
+      animation: pulse 2s infinite;
+    }
+
+    #overlay button{
+      background:#2563eb;
+      color:white;
+      border:none;
+      padding:10px 20px;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:16px;
+      margin-top:20px;
+      transition:0.3s;
+    }
+    #overlay button:hover{
+      background:#3b82f6;
+      transform: scale(1.1);
+    }
+
+    /* Animations */
+    @keyframes fadeIn{
+      to{opacity:1;}
+    }
+    @keyframes pulse{
+      0%,100%{transform:scale(1);}
+      50%{transform:scale(1.1);}
+    }
+    @keyframes fadeOut{
+      to{opacity:0; visibility:hidden;}
+    }
+
   </style>
 </head>
 
 <body>
 
+<!-- Overlay Instruction -->
+<div id="overlay">
+  <h1>Welcome to Barnoota Live</h1>
+  <p>
+    1️⃣ Room filachuuf "Room" button cuqaasi.<br>
+    2️⃣ Breakroom: Gara room filannoo deebi’uuf<br>
+    3️⃣ Leave: Meeting guutumatti ba’uuf<br>
+    4️⃣ Controls: 🎤 Mute, 📷 Video, 💬 Chat, 🖥 Share, ⚙️ Settings, 😊 Emoji, ⏺ Start/⏹ Stop recording
+  </p>
+  <button onclick="closeOverlay()">Start</button>
+</div>
+
 <!-- TOP -->
 <div id="topbar">
-  <button class="room-btn" id="roomBtn">Room</button>
+  <button class="room-btn" id="roomBtn" title="Click to select room 1…1000+">Room</button>
   <div id="username">Loading...</div>
 </div>
 
@@ -94,16 +177,16 @@
 
 <!-- CONTROLS -->
 <div id="bottombar">
-  <button class="control-btn" onclick="toggleMute()">🎤</button>
-  <button class="control-btn" onclick="toggleVideo()">📷</button>
-  <button class="control-btn" onclick="openChat()">💬</button>
-  <button class="control-btn" onclick="shareScreen()">🖥</button>
-  <button class="control-btn" onclick="openSettings()">⚙️</button>
-  <button class="control-btn" onclick="sendEmoji()">😊</button>
-  <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
-  <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
-  <button class="control-btn breakroom" onclick="goBreakroom()">🛋 Breakroom</button>
-  <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
+  <button class="control-btn" onclick="toggleMute()" title="Mute/unmute your microphone">🎤</button>
+  <button class="control-btn" onclick="toggleVideo()" title="Turn camera on/off">📷</button>
+  <button class="control-btn" onclick="openChat()" title="Open/close chat">💬</button>
+  <button class="control-btn" onclick="shareScreen()" title="Share your screen">🖥</button>
+  <button class="control-btn" onclick="openSettings()" title="Open settings">⚙️</button>
+  <button class="control-btn" onclick="sendEmoji()" title="Send emoji sounds">😊</button>
+  <button class="control-btn record" onclick="startRecording()" title="Start recording this meeting">⏺ Start</button>
+  <button class="control-btn stop" onclick="stopRecording()" title="Stop recording this meeting">⏹ Stop</button>
+  <button class="control-btn breakroom" onclick="goBreakroom()" title="Go back to room selection without leaving the meeting">🛋 Breakroom</button>
+  <button class="control-btn leave" onclick="leaveMeeting()" title="Leave meeting completely">Leave</button>
 </div>
 
 <script>
@@ -127,6 +210,13 @@
     }
   });
 
+  // Overlay close
+  function closeOverlay(){
+    const overlay = document.getElementById("overlay");
+    overlay.style.animation="fadeOut 0.7s forwards";
+    setTimeout(()=>{overlay.style.display="none";},700);
+  }
+
   // Room selection button
   const roomBtn = document.getElementById("roomBtn");
   roomBtn.addEventListener("click",()=>{
@@ -139,8 +229,8 @@
 
   // Get room from URL
   const urlParams = new URLSearchParams(window.location.search);
-  const roomName = urlParams.get("room") || null;
-  if(roomName) joinRoom(roomName);
+  const roomNameFromURL = urlParams.get("room") || null;
+  if(roomNameFromURL) joinRoom(roomNameFromURL);
 
   let api = null;
 
@@ -189,7 +279,7 @@
 
   // Breakroom → room selection without leaving meeting
   function goBreakroom(){
-    alert("Breakroom: Gara room filannoo deebi'ameera.");
+    alert("Breakroom: Gara room filannoo deebi’ameera.");
     document.getElementById("meet").innerHTML="";
     roomBtn.innerText="Room";
     api = null;
