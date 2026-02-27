@@ -21,18 +21,20 @@
     #topbar{
       position:fixed;
       top:0; left:0; right:0;
-      height:50px;
+      height:60px;
       background:#1f1f1f;
       display:flex;
       justify-content:space-between;
       align-items:center;
       padding:0 10px;
       z-index:10;
+      gap:10px;
     }
 
     .room-container{
       position:relative;
       display:inline-block;
+      flex-grow:1;
     }
 
     .room-btn{
@@ -42,6 +44,17 @@
       padding:6px 10px;
       border-radius:6px;
       cursor:pointer;
+      width:100%;
+      text-align:left;
+    }
+
+    .room-search{
+      width:100%;
+      padding:6px 10px;
+      margin-bottom:4px;
+      border:none;
+      border-radius:4px;
+      outline:none;
     }
 
     .room-dropdown{
@@ -49,6 +62,7 @@
       position:absolute;
       top:100%;
       left:0;
+      right:0;
       background:#1f1f1f;
       min-width:150px;
       max-height:300px;
@@ -67,13 +81,11 @@
       cursor:pointer;
     }
 
-    .room-dropdown button:hover{
-      background:#333;
-    }
+    .room-dropdown button:hover{ background:#333; }
 
     #username{ margin-left:10px; }
 
-    #meet{ margin-top:50px; height:calc(100vh - 110px); width:100%; }
+    #meet{ margin-top:60px; height:calc(100vh - 110px); width:100%; }
 
     #bottombar{
       position:fixed; bottom:0; left:0; right:0;
@@ -98,7 +110,8 @@
 
 <div id="topbar">
   <div class="room-container">
-    <button class="room-btn" onclick="toggleDropdown()">Room ▼</button>
+    <input type="text" id="roomSearch" class="room-search" placeholder="Search or type room..." oninput="filterRooms()">
+    <button class="room-btn" onclick="toggleDropdown()">Select Room ▼</button>
     <div class="room-dropdown" id="roomDropdown"></div>
   </div>
   <div id="username">Loading...</div>
@@ -140,16 +153,18 @@
   });
 
   const dropdown = document.getElementById("roomDropdown");
+  const searchInput = document.getElementById("roomSearch");
   let api;
-  let roomIndex = 1; // start room number
-  const batch = 50; // how many rooms generate at once
+  let roomIndex = 1; 
+  const batch = 50; 
 
   function loadRooms(){
-    for(let i=0; i<batch; i++){
+    for(let i=0;i<batch;i++){
       const roomNumber = roomIndex++;
       const btn = document.createElement("button");
       btn.innerText = "Room " + roomNumber;
-      btn.onclick = ()=>{ startMeeting("Room-" + roomNumber); toggleDropdown(false); };
+      btn.dataset.room = "Room-" + roomNumber;
+      btn.onclick = ()=>{ startMeeting(btn.dataset.room); toggleDropdown(false); };
       dropdown.appendChild(btn);
     }
   }
@@ -159,6 +174,13 @@
       loadRooms();
     }
   });
+
+  function filterRooms(){
+    const filter = searchInput.value.toLowerCase();
+    Array.from(dropdown.children).forEach(btn=>{
+      btn.style.display = btn.innerText.toLowerCase().includes(filter)? "block":"none";
+    });
+  }
 
   function toggleDropdown(forceClose){
     if(forceClose===false){ dropdown.style.display="none"; return; }
@@ -194,7 +216,7 @@
 
   // start default
   startMeeting(roomName);
-  loadRooms(); // initial rooms
+  loadRooms(); 
 
   // Controls
   function toggleMute(){ api.executeCommand("toggleAudio"); }
