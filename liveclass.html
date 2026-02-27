@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Live Classroom - Barnoota Live</title>
+  <title>Secure Live Classroom - Barnoota Live</title>
 
   <!-- Jitsi -->
   <script src="https://meet.jit.si/external_api.js"></script>
@@ -11,286 +11,108 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
   <style>
-    body{
-      margin:0;
-      background:#121212;
-      color:white;
-      font-family:Arial;
-    }
-
-    /* TOP BAR */
-    #topbar{
-      position:fixed;
-      top:0;
-      left:0;
-      right:0;
-      height:50px;
-      background:#1f1f1f;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:0 10px;
-      z-index:10;
-    }
-
-    .room-btn{
-      background:#2563eb;
-      border:none;
-      color:white;
-      padding:6px 10px;
-      border-radius:6px;
-      cursor:pointer;
-      transition: 0.3s;
-    }
-    .room-btn:hover{
-      background:#3b82f6;
-      transform: scale(1.05);
-    }
-
-    #meet{
-      margin-top:50px;
-      height:calc(100vh - 110px);
-      width:100%;
-    }
-
-    /* BOTTOM BAR */
-    #bottombar{
-      position:fixed;
-      bottom:0;
-      left:0;
-      right:0;
-      height:60px;
-      background:#1f1f1f;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:8px;
-      z-index:10;
-      flex-wrap:wrap;
-    }
-
-    .control-btn{
-      background:#333;
-      border:none;
-      color:white;
-      padding:6px 10px;
-      border-radius:6px;
-      cursor:pointer;
-      font-size:12px;
-      transition:0.3s;
-    }
-    .control-btn:hover{
-      background:#555;
-      transform: scale(1.1);
-    }
-
-    .record{ background:#f59e0b; }
-    .record:hover{ background:#fbbf24; }
-    .stop{ background:#10b981; }
-    .stop:hover{ background:#34d399; }
-    .leave{ background:#ef4444; }
-    .leave:hover{ background:#f87171; }
-    .breakroom{ background:#6366f1; }
-    .breakroom:hover{ background:#818cf8; }
-
-    /* Overlay */
-    #overlay{
-      position:fixed;
-      top:0;
-      left:0;
-      right:0;
-      bottom:0;
-      background:rgba(0,0,0,0.95);
-      color:white;
-      z-index:100;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      text-align:center;
-      padding:20px;
-      font-size:16px;
-      opacity:0;
-      animation: fadeIn 1s forwards;
-    }
-
-    #overlay h1{
-      margin-bottom:20px;
-      font-size:28px;
-      color:#2563eb;
-      animation: pulse 2s infinite;
-    }
-
-    #overlay button{
-      background:#2563eb;
-      color:white;
-      border:none;
-      padding:10px 20px;
-      border-radius:6px;
-      cursor:pointer;
-      font-size:16px;
-      margin-top:20px;
-      transition:0.3s;
-    }
-    #overlay button:hover{
-      background:#3b82f6;
-      transform: scale(1.1);
-    }
-
-    /* Animations */
-    @keyframes fadeIn{
-      to{opacity:1;}
-    }
-    @keyframes pulse{
-      0%,100%{transform:scale(1);}
-      50%{transform:scale(1.1);}
-    }
-    @keyframes fadeOut{
-      to{opacity:0; visibility:hidden;}
-    }
-
+    body{ margin:0; background:#121212; color:white; font-family:Arial; }
+    #topbar{ position:fixed; top:0; left:0; right:0; height:50px; background:#1f1f1f; display:flex; justify-content:space-between; align-items:center; padding:0 10px; z-index:20;}
+    .room-btn{ background:#2563eb; border:none; color:white; padding:6px 10px; border-radius:6px; cursor:pointer; }
+    .room-btn:hover{ background:#3b82f6; }
+    #meet{ margin-top:50px; height:calc(100vh - 110px); width:100%; }
+    #bottombar{ position:fixed; bottom:0; left:0; right:0; height:60px; background:#1f1f1f; display:flex; justify-content:center; align-items:center; gap:8px; z-index:10; flex-wrap:wrap; }
+    .control-btn{ background:#333; border:none; color:white; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:12px; }
+    .control-btn:hover{ background:#555; transform:scale(1.05);}
+    .record{ background:#f59e0b; } .stop{ background:#10b981; } .leave{ background:#ef4444; } .breakroom{ background:#6366f1; }
   </style>
 </head>
 
 <body>
-
-<!-- Overlay Instruction -->
-<div id="overlay">
-  <h1>Welcome to Barnoota Live</h1>
-  <p>
-    1️⃣ Room filachuuf "Room" button cuqaasi.<br>
-    2️⃣ Breakroom: Gara room filannoo deebi’uuf<br>
-    3️⃣ Leave: Meeting guutumatti ba’uuf<br>
-    4️⃣ Controls: 🎤 Mute, 📷 Video, 💬 Chat, 🖥 Share, ⚙️ Settings, 😊 Emoji, ⏺ Start/⏹ Stop recording
-  </p>
-  <button onclick="closeOverlay()">Start</button>
-</div>
-
-<!-- TOP -->
 <div id="topbar">
-  <button class="room-btn" id="roomBtn" title="Click to select room 1…1000+">Room</button>
+  <button class="room-btn" id="roomBtn">Room</button>
   <div id="username">Loading...</div>
 </div>
 
-<!-- MEETING -->
 <div id="meet"></div>
 
-<!-- CONTROLS -->
 <div id="bottombar">
-  <button class="control-btn" onclick="toggleMute()" title="Mute/unmute your microphone">🎤</button>
-  <button class="control-btn" onclick="toggleVideo()" title="Turn camera on/off">📷</button>
-  <button class="control-btn" onclick="openChat()" title="Open/close chat">💬</button>
-  <button class="control-btn" onclick="shareScreen()" title="Share your screen">🖥</button>
-  <button class="control-btn" onclick="openSettings()" title="Open settings">⚙️</button>
-  <button class="control-btn" onclick="sendEmoji()" title="Send emoji sounds">😊</button>
-  <button class="control-btn record" onclick="startRecording()" title="Start recording this meeting">⏺ Start</button>
-  <button class="control-btn stop" onclick="stopRecording()" title="Stop recording this meeting">⏹ Stop</button>
-  <button class="control-btn breakroom" onclick="goBreakroom()" title="Go back to room selection without leaving the meeting">🛋 Breakroom</button>
-  <button class="control-btn leave" onclick="leaveMeeting()" title="Leave meeting completely">Leave</button>
+  <button class="control-btn" onclick="toggleMute()">🎤</button>
+  <button class="control-btn" onclick="toggleVideo()">📷</button>
+  <button class="control-btn" onclick="openChat()">💬</button>
+  <button class="control-btn" onclick="shareScreen()">🖥</button>
+  <button class="control-btn" onclick="openSettings()">⚙️</button>
+  <button class="control-btn" onclick="sendEmoji()">😊</button>
+  <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
+  <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
+  <button class="control-btn breakroom" onclick="goBreakroom()">🛋 Breakroom</button>
+  <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
 </div>
 
 <script>
-  // Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyATogol0OIMwINVjEanhzJo2-mufYOcU_4",
-    authDomain: "absejamaal-772e3.firebaseapp.com",
-    projectId: "absejamaal-772e3",
-    storageBucket: "absejamaal-772e3.appspot.com",
-    messagingSenderId: "522756860286",
-    appId: "1:522756860286:web:d78a03faf3861347e26b2f"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+const firebaseConfig = {
+  apiKey:"AIzaSyATogol0OIMwINVjEanhzJo2-mufYOcU_4",
+  authDomain:"absejamaal-772e3.firebaseapp.com",
+  projectId:"absejamaal-772e3",
+  storageBucket:"absejamaal-772e3.appspot.com",
+  messagingSenderId:"522756860286",
+  appId:"1:522756860286:web:d78a03faf3861347e26b2f"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+auth.onAuthStateChanged(user=>{
+  if(user){ document.getElementById("username").innerText=user.email; }
+  else{ window.location.href="index.html"; }
+});
 
-  auth.onAuthStateChanged(user=>{
-    if(user){
-      document.getElementById("username").innerText = user.email;
-    }else{
-      window.location.href="index.html";
+const roomBtn = document.getElementById("roomBtn");
+let api=null;
+
+// Prompt for room code
+roomBtn.addEventListener("click",()=>{
+  const code = prompt("Meeting code galchi (host qofa uumuu danda'a)");
+  if(code) joinRoom(code);
+});
+
+function joinRoom(code){
+  if(api) api.dispose();
+
+  api = new JitsiMeetExternalAPI("meet.jit.si",{
+    roomName:code,
+    width:"100%",
+    height:"100%",
+    parentNode: document.querySelector("#meet"),
+    configOverwrite:{
+      prejoinPageEnabled:false,
+      disableDeepLinking:true,
+      startWithAudioMuted:false,
+      startWithVideoMuted:false
+    },
+    interfaceConfigOverwrite:{
+      DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
+      HIDE_INVITE_MORE_HEADER:true,
+      MOBILE_APP_PROMO:false,
+      SHOW_JITSI_WATERMARK:false,
+      SHOW_BRAND_WATERMARK:false,
+      TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]
     }
   });
 
-  // Overlay close
-  function closeOverlay(){
-    const overlay = document.getElementById("overlay");
-    overlay.style.animation="fadeOut 0.7s forwards";
-    setTimeout(()=>{overlay.style.display="none";},700);
-  }
-
-  // Room selection button
-  const roomBtn = document.getElementById("roomBtn");
-  roomBtn.addEventListener("click",()=>{
-    const roomNumber = prompt("Room filadhu (1…1000+):");
-    if(roomNumber){
-      const roomName = "Room-" + roomNumber;
-      joinRoom(roomName);
+  // Ask host password
+  api.addEventListener("videoConferenceJoined",()=>{
+    if(confirm("Ati host dha? Yoo eeyyee password kaa'i:")){
+      const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
+      if(pass) api.executeCommand("password",pass);
     }
   });
+}
 
-  // Get room from URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomNameFromURL = urlParams.get("room") || null;
-  if(roomNameFromURL) joinRoom(roomNameFromURL);
-
-  let api = null;
-
-  function joinRoom(name){
-    document.getElementById("roomBtn").innerText = name;
-
-    api = new JitsiMeetExternalAPI("meet.jit.si",{
-      roomName: name,
-      width:"100%",
-      height:"100%",
-      parentNode: document.querySelector("#meet"),
-      configOverwrite: {
-        prejoinPageEnabled: false,
-        disableDeepLinking: true,
-        startWithAudioMuted: false,
-        startWithVideoMuted: false
-      },
-      interfaceConfigOverwrite: {
-        DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-        HIDE_INVITE_MORE_HEADER: true,
-        MOBILE_APP_PROMO: false,
-        SHOW_JITSI_WATERMARK: false,
-        SHOW_BRAND_WATERMARK: false,
-        TOOLBAR_BUTTONS: ["microphone","camera","chat","desktop","settings","raisehand","hangup"]
-      }
-    });
-
-    // Host password
-    api.addEventListener("videoConferenceJoined", () => {
-      if(confirm("Ati host dha? Yoo eeyyee password kaa'i:")){
-        const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
-        if(pass) api.executeCommand("password", pass);
-      }
-    });
-  }
-
-  // Controls
-  function toggleMute(){ api.executeCommand("toggleAudio"); }
-  function toggleVideo(){ api.executeCommand("toggleVideo"); }
-  function openChat(){ api.executeCommand("toggleChat"); }
-  function shareScreen(){ api.executeCommand("toggleShareScreen"); }
-  function openSettings(){ api.executeCommand("toggleSettings"); }
-  function sendEmoji(){ api.executeCommand("sendTones"); }
-  function startRecording(){ api.executeCommand("startRecording",{mode:"file"}); }
-  function stopRecording(){ api.executeCommand("stopRecording",{mode:"file"}); }
-
-  // Breakroom → room selection without leaving meeting
-  function goBreakroom(){
-    alert("Breakroom: Gara room filannoo deebi’ameera.");
-    document.getElementById("meet").innerHTML="";
-    roomBtn.innerText="Room";
-    api = null;
-  }
-
-  // Leave meeting
-  function leaveMeeting(){
-    api.executeCommand("hangup");
-    window.location.href="home.html";
-  }
+// Controls
+function toggleMute(){ api.executeCommand("toggleAudio"); }
+function toggleVideo(){ api.executeCommand("toggleVideo"); }
+function openChat(){ api.executeCommand("toggleChat"); }
+function shareScreen(){ api.executeCommand("toggleShareScreen"); }
+function openSettings(){ api.executeCommand("toggleSettings"); }
+function sendEmoji(){ api.executeCommand("sendTones"); }
+function startRecording(){ api.executeCommand("startRecording",{mode:"file"}); }
+function stopRecording(){ api.executeCommand("stopRecording",{mode:"file"}); }
+function goBreakroom(){ document.getElementById("meet").innerHTML=""; api=null; }
+function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="home.html"; }
 </script>
-
 </body>
 </html>
