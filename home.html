@@ -45,6 +45,16 @@
       border-radius:6px;
       cursor:pointer;
     }
+    #feed{
+  padding:15px;
+}
+
+.post{
+  background:#1f1f1f;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
   </style>
 </head>
 
@@ -53,6 +63,26 @@
 <div id="topbar">
   <div>👤 <span id="userEmail">Loading...</span></div>
   <button onclick="logout()">Logout</button>
+  <!-- FEED AREA -->
+<div id="feed">
+
+  <!-- POST 1 -->
+  <div class="post">
+    <h3>Barnoota Haaraa</h3>
+    <video controls width="100%">
+      <source src="video1.mp4" type="video/mp4">
+    </video>
+    <p>Barnoota Afaan Oromoo live class irratti baradhaa.</p>
+    <button onclick="addPost()">➕ Post</button>
+  </div>
+
+  <!-- POST 2 -->
+  <div class="post">
+    <h3>Beeksisa</h3>
+    <p>Live class haaraa bor sa'aatii 3:00 irratti ni jalqaba.</p>
+  </div>
+
+</div>
 </div>
 
 <div id="menu">
@@ -99,6 +129,18 @@
       window.location.href = "liveclass.html?room=" + room;
     }
   }
+  <script>
+function addPost(){
+  const text = prompt("Barreeffama galchi");
+  if(!text) return;
+
+  const post = document.createElement("div");
+  post.className = "post";
+  post.innerHTML = "<p>"+text+"</p>";
+
+  document.getElementById("feed").prepend(post);
+}
+</script>
 </script>
 
 </body>
