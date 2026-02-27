@@ -95,7 +95,16 @@ function startJitsi(roomName){
   const domain="meet.jit.si";
   api=new JitsiMeetExternalAPI(domain,{
     roomName:roomName,width:"100%",height:"100%",parentNode:document.querySelector("#meet"),
-    configOverwrite:{prejoinPageEnabled:false,disableDeepLinking:true,startWithAudioMuted:false,startWithVideoMuted:false},
+    configOverwrite:{prejoinPageEnabled:false,
+                     disableDeepLinking:true,
+                     startWithAudioMuted:false,
+                     startWithVideoMuted:false},
+    interfaceConfigOverwrite: {
+  TOOLBAR_BUTTONS: [
+    "microphone","camera","chat","desktop","settings",
+    "raisehand","hangup","recording"
+  ]
+    }
     interfaceConfigOverwrite:{DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,MOBILE_APP_PROMO:false,SHOW_JITSI_WATERMARK:false,SHOW_BRAND_WATERMARK:false,TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]}
   });
 
@@ -176,6 +185,13 @@ function updateParticipants(){
 // Host buttons
 function muteAll(){if(!api) return; api.getParticipantsInfo().then(list=>list.forEach(p=>api.executeCommand("muteParticipant",p.id)));}
 function removeAll(){if(!api) return; api.getParticipantsInfo().then(list=>list.forEach(p=>api.executeCommand("kickParticipant",p.id)));}
+  function startRecording(){
+  api.executeCommand("startRecording",{mode:"file"});
+}
+
+function stopRecording(){
+  api.executeCommand("stopRecording",{mode:"file"});
+}
 </script>
 </body>
 </html>
