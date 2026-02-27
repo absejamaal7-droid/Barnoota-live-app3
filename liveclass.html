@@ -25,6 +25,8 @@
     .participant-item{padding:5px; margin-bottom:4px; background:#333; border-radius:4px; display:flex; justify-content:space-between; align-items:center;}
     .participant-btn{background:#555; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:10px; margin-left:2px;}
     .raise{background:#f59e0b;}
+    #participantsPanel input{width:100%; padding:5px; margin-bottom:8px; border-radius:4px; border:none;}
+    .host-controls{margin-bottom:6px; display:flex; justify-content:space-between;}
   </style>
 </head>
 
@@ -58,6 +60,11 @@
 
 <div id="participantsPanel">
   <h3>Participants</h3>
+  <input type="text" id="searchParticipant" placeholder="Search participant...">
+  <div class="host-controls">
+    <button class="participant-btn" onclick="muteAll()">Mute All</button>
+    <button class="participant-btn" onclick="removeAll()">Remove All</button>
+  </div>
   <div id="participantsList"></div>
 </div>
 
@@ -91,12 +98,10 @@ function startJitsi(roomName){
   });
 
   api.addEventListener("videoConferenceJoined",()=>{console.log("Joined "+roomName); updateParticipants();});
-
-  // Update participants periodically
   setInterval(updateParticipants,3000);
 }
 
-// CONTROLS
+// Controls
 function toggleMute(){if(api) api.executeCommand("toggleAudio");}
 function toggleVideo(){if(api) api.executeCommand("toggleVideo");}
 function openChat(){if(api) api.executeCommand("toggleChat");}
@@ -107,19 +112,22 @@ function startRecording(){if(api) api.executeCommand("startRecording",{mode:"fil
 function stopRecording(){if(api) api.executeCommand("stopRecording",{mode:"file"});}
 function leaveMeeting(){if(api) api.executeCommand("hangup"); window.location.href="home.html";}
 
-// Participants panel with host controls
+// Participants panel
 const participantsPanel=document.getElementById("participantsPanel");
 const participantsList=document.getElementById("participantsList");
+const searchParticipant=document.getElementById("searchParticipant");
 function toggleParticipants(){participantsPanel.style.display=participantsPanel.style.display==="none"?"block":"none";}
+searchParticipant.addEventListener("input",updateParticipants);
+
 function updateParticipants(){
   if(!api) return;
   api.getParticipantsInfo().then(list=>{
+    const query=searchParticipant.value.toLowerCase();
     participantsList.innerHTML="";
-    list.forEach(p=>{
+    list.filter(p=>(p.displayName||p.formattedID).toLowerCase().includes(query)).forEach(p=>{
       const div=document.createElement("div");
       div.className="participant-item";
       div.textContent=p.displayName||p.formattedID;
-      // Host controls
       if(p.role==="moderator"){div.textContent+=" (Host)";}
       const muteBtn=document.createElement("button"); muteBtn.className="participant-btn"; muteBtn.textContent="Mute"; muteBtn.onclick=()=>api.executeCommand("muteParticipant",p.id); div.appendChild(muteBtn);
       const removeBtn=document.createElement("button"); removeBtn.className="participant-btn"; removeBtn.textContent="Remove"; removeBtn.onclick=()=>api.executeCommand("kickParticipant",p.id); div.appendChild(removeBtn);
@@ -128,6 +136,10 @@ function updateParticipants(){
     });
   });
 }
+
+// Host buttons
+function muteAll(){if(!api) return; api.getParticipantsInfo().then(list=>list.forEach(p=>api.executeCommand("muteParticipant",p.id)));}
+function removeAll(){if(!api) return; api.getParticipantsInfo().then(list=>list.forEach(p=>api.executeCommand("kickParticipant",p.id)));}
 </script>
 </body>
 </html>
