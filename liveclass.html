@@ -77,80 +77,31 @@
     .record{ background:#f59e0b; }
     .stop{ background:#10b981; }
     .leave{ background:#ef4444; }
+    .intro{ background:#8b5cf6; }
+    .breakroom{ background:#f97316; }
 
-    /* PARTICIPANTS PANEL */
-    #participantsPanel{
+    /* Participants Modal */
+    #participantsModal{
+      display:none;
       position:fixed;
-      right:0;
       top:50px;
+      right:0;
       width:250px;
-      height:calc(100vh - 110px);
+      max-height:400px;
       background:#1f1f1f;
       overflow-y:auto;
       padding:10px;
-      border-left:1px solid #333;
-      z-index:11;
-    }
-
-    #participantsPanel h3{
-      margin-top:0;
-      font-size:16px;
-      text-align:center;
-    }
-
-    .participant{
-      background:#2d2d2d;
-      margin:5px 0;
-      padding:5px 8px;
-      border-radius:4px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      font-size:14px;
-    }
-
-    .host-btn{
-      background:#ef4444;
-      color:white;
-      border:none;
-      border-radius:4px;
-      padding:2px 5px;
-      cursor:pointer;
-      font-size:12px;
-    }
-
-    /* INTRO MODAL */
-    #introModal{
-      position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      background:rgba(0,0,0,0.9);
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      flex-direction:column;
-      color:white;
-      font-size:16px;
+      border-radius:6px;
       z-index:20;
     }
-
-    #introModal input{
-      padding:8px;
-      margin:10px;
-      width:250px;
-      border-radius:5px;
-      border:none;
+    #participantsModal h4{
+      margin:0 0 6px 0;
     }
-
-    #introModal button{
-      padding:8px 12px;
-      border:none;
-      border-radius:5px;
-      background:#2563eb;
-      color:white;
-      cursor:pointer;
+    .participant{
+      display:flex;
+      justify-content:space-between;
+      padding:4px;
+      border-bottom:1px solid #333;
     }
   </style>
 </head>
@@ -163,20 +114,14 @@
   <div id="username">Loading...</div>
 </div>
 
-<!-- PARTICIPANTS -->
-<div id="participantsPanel">
-  <h3>Participants</h3>
-  <div id="participantsList"></div>
-</div>
-
 <!-- MEETING -->
 <div id="meet"></div>
 
-<!-- INTRO MODAL -->
-<div id="introModal">
-  <div>Welcome! Enter your display name:</div>
-  <input type="text" id="displayNameInput" placeholder="Your name">
-  <button onclick="joinRoom()">Join Room</button>
+<!-- PARTICIPANTS MODAL -->
+<div id="participantsModal">
+  <h4>Participants</h4>
+  <div id="participantsList"></div>
+  <button style="margin-top:8px; padding:6px 12px;" onclick="closeParticipants()">Close</button>
 </div>
 
 <!-- CONTROLS -->
@@ -189,6 +134,9 @@
   <button class="control-btn" onclick="sendEmoji()">😊</button>
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
+  <button class="control-btn intro" onclick="showIntroduction()">📢 Introduction</button>
+  <button class="control-btn breakroom" onclick="openBreakroom()">🔀 Breakroom</button>
+  <button class="control-btn" onclick="toggleParticipants()">👥 Participants</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
 </div>
 
@@ -213,70 +161,40 @@
     }
   });
 
-  let api, displayName;
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomName = urlParams.get("room") || "Barnoota-Live";
+  document.getElementById("roomName").innerText = roomName;
 
-  function joinRoom(){
-    displayName = document.getElementById("displayNameInput").value || "Anonymous";
-    document.getElementById("introModal").style.display="none";
+  const api = new JitsiMeetExternalAPI("meet.jit.si",{
+    roomName: roomName,
+    width:"100%",
+    height:"100%",
+    parentNode: document.querySelector("#meet"),
+    configOverwrite: {
+      prejoinPageEnabled: false,
+      disableDeepLinking: true,
+      startWithAudioMuted: false,
+      startWithVideoMuted: false
+    },
+    interfaceConfigOverwrite: {
+      DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+      HIDE_INVITE_MORE_HEADER: true,
+      MOBILE_APP_PROMO: false,
+      SHOW_JITSI_WATERMARK: false,
+      SHOW_BRAND_WATERMARK: false,
+      TOOLBAR_BUTTONS: ["microphone","camera","chat","desktop","settings","raisehand","hangup"]
+    }
+  });
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomName = urlParams.get("room") || "Barnoota-Live";
-    document.getElementById("roomName").innerText = roomName;
+  // Host password
+  api.addEventListener("videoConferenceJoined", () => {
+    const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
+    if(pass){
+      api.executeCommand("password", pass);
+    }
+  });
 
-    api = new JitsiMeetExternalAPI("meet.jit.si",{
-      roomName: roomName,
-      width:"100%",
-      height:"100%",
-      parentNode: document.querySelector("#meet"),
-      configOverwrite: {
-        prejoinPageEnabled:false,
-        disableDeepLinking:true,
-        startWithAudioMuted:false,
-        startWithVideoMuted:false
-      },
-      interfaceConfigOverwrite:{
-        DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
-        HIDE_INVITE_MORE_HEADER:true,
-        MOBILE_APP_PROMO:false,
-        SHOW_JITSI_WATERMARK:false,
-        SHOW_BRAND_WATERMARK:false,
-        TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]
-      },
-      userInfo:{displayName: displayName}
-    });
-
-    // Host password
-    api.addEventListener("videoConferenceJoined",()=>{
-      const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
-      if(pass){ api.executeCommand("password", pass); }
-      updateParticipantsList();
-    });
-
-    api.addEventListener("participantJoined",()=>{ updateParticipantsList(); });
-    api.addEventListener("participantLeft",()=>{ updateParticipantsList(); });
-  }
-
-  function updateParticipantsList(){
-    const participants = api.getParticipantsInfo();
-    const container = document.getElementById("participantsList");
-    container.innerHTML="";
-    participants.forEach(p=>{
-      const div = document.createElement("div");
-      div.className="participant";
-      div.innerText=p.displayName;
-      // host control button only for host
-      if(api.isOwner && p.id!==api.getMyUserId()){
-        const btn = document.createElement("button");
-        btn.className="host-btn";
-        btn.innerText="Remove";
-        btn.onclick = ()=>api.executeCommand("kickParticipant", p.id);
-        div.appendChild(btn);
-      }
-      container.appendChild(div);
-    });
-  }
-
-  // CONTROLS
+  // Controls functions
   function toggleMute(){ api.executeCommand("toggleAudio"); }
   function toggleVideo(){ api.executeCommand("toggleVideo"); }
   function openChat(){ api.executeCommand("toggleChat"); }
@@ -287,6 +205,47 @@
   function stopRecording(){ api.executeCommand("stopRecording",{mode:"file"}); }
   function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="home.html"; }
 
+  // Participants panel
+  function toggleParticipants(){
+    const modal=document.getElementById("participantsModal");
+    modal.style.display=(modal.style.display==="none" || modal.style.display==="")?"block":"none";
+  }
+  function closeParticipants(){document.getElementById("participantsModal").style.display="none";}
+
+  api.addEventListener("participantJoined", e=>{
+    const container=document.getElementById("participantsList");
+    const div=document.createElement("div");
+    div.id=e.id; div.className="participant";
+    div.innerHTML=`<span style="color:white;">${e.displayName||'Unknown'}</span>
+      <button onclick="muteParticipant('${e.id}')">Mute</button>
+      <button onclick="removeParticipant('${e.id}')">Remove</button>`;
+    container.appendChild(div);
+  });
+
+  api.addEventListener("participantLeft", e=>{
+    const div=document.getElementById(e.id);
+    if(div) div.remove();
+  });
+
+  function muteParticipant(id){ api.executeCommand("muteParticipant", id); }
+  function removeParticipant(id){ api.executeCommand("kickParticipant", id); }
+
+  // 🔹 Breakroom
+  function openBreakroom(){
+    const confirmLeave = confirm("Breakroom: gara breakroom deebi'u barbaadda? OK=breakroom, Cancel=Leave Meeting");
+    if(confirmLeave){
+      window.location.href="liveclass.html"; // breakroom gara ol deebisuuf
+    }else{
+      leaveMeeting(); // guutumaan bahu
+    }
+  }
+
+  // 🔹 Introduction
+  function showIntroduction(){
+    alert("📢 Introduction: Host jalqaba gabaasa kennu danda'a!");
+  }
+
 </script>
+
 </body>
 </html>
