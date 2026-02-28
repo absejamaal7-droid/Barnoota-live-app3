@@ -122,9 +122,6 @@ function addPost(){
     const name = localStorage.getItem("profileName") || "User";
     const img = localStorage.getItem("profileImg") || "https://via.placeholder.com/40";
 
-    const post = document.createElement("div");
-    post.className = "post";
-
     let media = "";
     if(file){
       const url = URL.createObjectURL(file);
@@ -137,19 +134,64 @@ function addPost(){
       }
     }
 
+    const id = Date.now();
+
+    const post = document.createElement("div");
+    post.className = "post";
+    post.id = "post-"+id;
+
     post.innerHTML = `
       <div style="display:flex;align-items:center;gap:10px;">
         <img src="${img}" style="width:40px;height:40px;border-radius:50%;">
         <b>${name}</b>
       </div>
+
       <p>${text || ""}</p>
       ${media}
+
+      <div style="margin-top:10px;">
+        ❤️ <span id="likeCount-${id}">0</span>
+        <button onclick="likePost(${id})">Like</button>
+        <button onclick="commentPost(${id})">Comment</button>
+        <button onclick="sharePost(${id})">Share</button>
+      </div>
+
+      <div id="comments-${id}" style="margin-top:10px;"></div>
     `;
 
     document.getElementById("feed").prepend(post);
+    savePosts();
   };
 
   fileInput.click();
+    }function likePost(id){
+  const el = document.getElementById("likeCount-"+id);
+  el.innerText = parseInt(el.innerText) + 1;
+  savePosts();
+      }function commentPost(id){
+  const text = prompt("Comment barreessi");
+  if(!text) return;
+
+  const div = document.getElementById("comments-"+id);
+  const p = document.createElement("p");
+  p.innerText = "💬 " + text;
+  div.appendChild(p);
+
+  savePosts();
+        }function sharePost(id){
+  const link = window.location.href + "#post-"+id;
+  navigator.clipboard.writeText(link);
+  alert("Link copied!");
+}function savePosts(){
+  localStorage.setItem("feedData", document.getElementById("feed").innerHTML);
+}
+
+window.onload = () => {
+  const data = localStorage.getItem("feedData");
+  if(data){
+    document.getElementById("feed").innerHTML = data;
+  }
+};
 }
 
 function createMeeting(){
