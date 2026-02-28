@@ -49,7 +49,8 @@
 <input type="file" id="imgInput">
 <br>
 <button onclick="saveProfile()">Save Profile</button>
-
+<button onclick="followUser()">Follow</button>
+<div>Followers: <span id="followerCount">0</span></div>
 <script>
   const userEmail = localStorage.getItem("userEmail");
   document.getElementById("email").innerText = userEmail;
@@ -74,6 +75,25 @@
     const name = document.getElementById("nameInput").value;
     localStorage.setItem("profileName", name);
     alert("Profile saved!");
+  }const profileName = localStorage.getItem("profileName") || "User";
+
+// follower count jalqabaa
+let followers = parseInt(localStorage.getItem("followers_"+profileName)) || 0;
+document.getElementById("followerCount").innerText = followers;
+
+function followUser(){
+  followers++;
+  localStorage.setItem("followers_"+profileName, followers);
+  document.getElementById("followerCount").innerText = followers;
+
+  // follow list keessatti galcha
+  let following = JSON.parse(localStorage.getItem("followingList")) || [];
+  if(!following.includes(profileName)){
+    following.push(profileName);
+    localStorage.setItem("followingList", JSON.stringify(following));
+  }
+
+  alert("Follow godhe ✔");
   }
 </script>
 
