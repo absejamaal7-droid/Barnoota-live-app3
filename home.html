@@ -10,7 +10,6 @@
 
   <style>
     body{ margin:0; background:#1c1c1c; color:white; font-family:Arial; }
-
     #topbar{
       background:#2d2d2d;
       padding:12px;
@@ -18,23 +17,13 @@
       justify-content:space-between;
       align-items:center;
     }
-
-    #menu{
-      display:flex;
-      gap:10px;
-      padding:20px;
-      flex-wrap:wrap;
-    }
-
-    .card{
-      background:#2d2d2d;
-      padding:20px;
+    #feed{ padding:15px; }
+    .post{
+      background:#1f1f1f;
+      padding:12px;
       border-radius:10px;
-      width:140px;
-      text-align:center;
-      cursor:pointer;
+      margin-bottom:15px;
     }
-
     button{
       background:red;
       border:none;
@@ -42,17 +31,9 @@
       padding:6px 10px;
       border-radius:6px;
       cursor:pointer;
+      margin-right:5px;
     }
-
-    #feed{ padding:15px; }
-
-    .post{
-      background:#1f1f1f;
-      padding:12px;
-      border-radius:10px;
-      margin-bottom:15px;
-      box-shadow:0 0 5px rgba(0,0,0,0.4);
-    }
+    .card{ background:#2d2d2d; padding:20px; border-radius:10px; width:140px; text-align:center; cursor:pointer; display:inline-block; margin:5px; }
   </style>
 </head>
 
@@ -65,15 +46,6 @@
 
 <div id="feed">
   <button onclick="openProfile()">Profile</button>
-
-  <div class="post">
-    <h3>Barnoota Haaraa</h3>
-    <video controls width="100%">
-      <source src="video1.mp4" type="video/mp4">
-    </video>
-    <p>Barnoota Afaan Oromoo live class irratti baradhaa.</p>
-    <button onclick="addPost()">➕ Post</button>
-  </div>
 </div>
 
 <div id="menu">
@@ -85,7 +57,7 @@
 </div>
 
 <script>
-/* FIREBASE HAARAWA */
+// 🔥 Firebase config haaraya
 const firebaseConfig = {
   apiKey: "AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
   authDomain: "abseapp-b3706.firebaseapp.com",
@@ -100,23 +72,22 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* AUTH */
+// AUTH
 auth.onAuthStateChanged(user => {
   if(user){
     document.getElementById("userEmail").innerText = user.email;
-    localStorage.setItem("userEmail", user.email);
+    loadPosts();
   }else{
     window.location.href = "index.html";
   }
 });
 
-function logout(){
-  auth.signOut().then(()=> window.location.href="index.html");
-}
+function logout(){ auth.signOut().then(()=> window.location.href="index.html"); }
 
-/* POST SYSTEM */
+// POST SYSTEM
 function addPost(){
   const text = prompt("Barreeffama galchi");
+  if(!text) return;
 
   const fileInput = document.createElement("input");
   fileInput.type = "file";
@@ -124,120 +95,82 @@ function addPost(){
 
   fileInput.onchange = () => {
     const file = fileInput.files[0];
-
-    const name = localStorage.getItem("profileName") || "User";
-    const img = localStorage.getItem("profileImg") || "https://via.placeholder.com/40";
-
-    let media = "";
+    let mediaURL = "";
     if(file){
-      const url = URL.createObjectURL(file);
-
-      if(file.type.startsWith("image")){
-        media = `<img src="${url}" style="width:100%;border-radius:8px;margin-top:10px;">`;
-      }
-      else if(file.type.startsWith("video")){
-        media = `<video controls style="width:100%;border-radius:8px;margin-top:10px;"><source src="${url}"></video>`;
-      }
+      mediaURL = URL.createObjectURL(file); // offline simple demo
     }
 
-    const id = Date.now();
+    const post = {
+      user: auth.currentUser.email,
+      text: text,
+      media: mediaURL,
+      likes: 0,
+      comments: [],
+      createdAt: Date.now()
+    };
 
-    const post = document.createElement("div");
-    post.className = "post";
-    post.id = "post-"+id;
-
-    post.innerHTML = `
-      <div style="display:flex;align-items:center;gap:10px;">
-        <img src="${img}" style="width:40px;height:40px;border-radius:50%;">
-        <b>${name}</b>
-      </div>
-
-      <p>${text || ""}</p>
-      ${media}
-
-      <div style="margin-top:10px;">
-        ❤️ <span id="likeCount-${id}">0</span>
-        <button onclick="likePost(${id})">Like</button>
-        <button onclick="commentPost(${id})">Comment</button>
-        <button onclick="sharePost(${id})">Share</button>
-      </div>
-
-      <div id="comments-${id}" style="margin-top:10px;"></div>
-    `;
-
-    document.getElementById("feed").prepend(post);
-    savePosts();
+    db.collection("posts").add(post).then(()=> loadPosts());
   };
 
   fileInput.click();
 }
 
+function loadPosts(){
+  db.collection("posts").orderBy("createdAt","desc").get().then(snapshot=>{
+    const feed = document.getElementById("feed");
+    feed.innerHTML = `<button onclick="openProfile()">Profile</button>`;
+    snapshot.forEach(doc=>{
+      const p = doc.data();
+      const id = doc.id;
+
+      const postDiv = document.createElement("div");
+      postDiv.className = "post";
+      postDiv.id = "post-"+id;
+
+      postDiv.innerHTML = `
+        <b>${p.user}</b>
+        <p>${p.text}</p>
+        ${p.media ? (p.media.endsWith(".mp4")? `<video controls width="100%"><source src="${p.media}"></video>`:`<img src="${p.media}" width="100%">`) : ""}
+        <div>
+          ❤️ <span id="likeCount-${id}">${p.likes}</span>
+          <button onclick="likePost('${id}')">Like</button>
+          <button onclick="commentPost('${id}')">Comment</button>
+        </div>
+        <div id="comments-${id}">
+          ${p.comments.map(c=>`<p>💬 ${c}</p>`).join("")}
+        </div>
+      `;
+
+      feed.appendChild(postDiv);
+    });
+  });
+}
+
 function likePost(id){
-  const el = document.getElementById("likeCount-"+id);
-  el.innerText = parseInt(el.innerText) + 1;
-  savePosts();
+  const ref = db.collection("posts").doc(id);
+  ref.get().then(doc=>{
+    ref.update({likes: doc.data().likes + 1}).then(()=> loadPosts());
+  });
 }
 
 function commentPost(id){
   const text = prompt("Comment barreessi");
   if(!text) return;
-
-  const div = document.getElementById("comments-"+id);
-  const p = document.createElement("p");
-  p.innerText = "💬 " + text;
-  div.appendChild(p);
-
-  savePosts();
+  const ref = db.collection("posts").doc(id);
+  ref.get().then(doc=>{
+    const comments = doc.data().comments || [];
+    comments.push(text);
+    ref.update({comments}).then(()=> loadPosts());
+  });
 }
 
-function sharePost(id){
-  const link = window.location.href + "#post-"+id;
-  navigator.clipboard.writeText(link);
-  alert("Link copied!");
-}
+// PROFILE
+function openProfile(){ window.location.href="profile.html"; }
 
-function savePosts(){
-  localStorage.setItem("feedData", document.getElementById("feed").innerHTML);
-}
+// MEETING
+function createMeeting(){ const room = Math.random().toString(36).substring(2,10); window.location.href="liveclass.html?room=" + room; }
+function joinMeeting(){ const room = prompt("Meeting link ykn ID galchi"); if(room) window.location.href="liveclass.html?room=" + room; }
 
-/* LOAD DATA */
-window.onload = () => {
-  const data = localStorage.getItem("feedData");
-  if(data){
-    document.getElementById("feed").innerHTML = data;
-  }
-  showFollowingList();
-};
-
-/* FOLLOW LIST */
-function showFollowingList(){
-  const list = JSON.parse(localStorage.getItem("followingList")) || [];
-  if(list.length === 0) return;
-
-  const box = document.createElement("div");
-  box.className = "post";
-  box.innerHTML = "<b>Following:</b><br>" + list.join("<br>");
-  document.getElementById("feed").prepend(box);
-}
-
-/* MEETING */
-function createMeeting(){
-  const room = Math.random().toString(36).substring(2,10);
-  window.location.href = "liveclass.html?room=" + room;
-}
-
-function joinMeeting(){
-  const room = prompt("Meeting link ykn ID galchi");
-  if(room){
-    window.location.href = "liveclass.html?room=" + room;
-  }
-}
-
-/* PROFILE */
-function openProfile(){
-  window.location.href = "profile.html";
-}
 </script>
-
 </body>
 </html>
