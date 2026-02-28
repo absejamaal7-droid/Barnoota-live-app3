@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Live Classroom - Barnoota Live</title>
+
   <script src="https://meet.jit.si/external_api.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -14,33 +15,15 @@
     #bottombar{position:fixed; bottom:0; left:0; right:0; height:60px; background:#1f1f1f; display:flex; justify-content:center; align-items:center; gap:8px; z-index:10; flex-wrap:wrap;}
     .control-btn{background:#333; border:none; color:white; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:12px;}
     .record{background:#f59e0b;} .stop{background:#10b981;} .leave{background:#ef4444;}
-    #roomModal{display:none; position:fixed; top:50px; left:50%; transform:translateX(-50%); width:300px; max-height:400px; background:#1f1f1f; border-radius:8px; overflow:auto; z-index:20; padding:10px;}
-    #roomModal input{width:100%; padding:6px; margin-bottom:8px; border-radius:4px; border:none;}
-    .room-item{padding:6px; cursor:pointer; border-radius:4px; margin-bottom:4px; background:#333;}
-    .room-item:hover{background:#555;}
-    .breakroom-btn{background:#2563eb; color:white; padding:6px; border:none; border-radius:4px; margin-top:5px; cursor:pointer;}
-    .leave-btn{background:#ef4444; color:white; padding:6px; border:none; border-radius:4px; margin-top:5px; cursor:pointer;}
     #participantsPanel{display:none; position:fixed; right:0; top:50px; width:250px; height:calc(100vh - 50px); background:#222; overflow:auto; z-index:30; padding:10px;}
-    #participantsPanel h3{margin-top:0; font-size:16px; text-align:center;}
-    .participant-item{padding:5px; margin-bottom:4px; background:#333; border-radius:4px; display:flex; justify-content:space-between; align-items:center;}
-    .participant-btn{background:#555; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:10px; margin-left:2px;}
-    .raise{background:#f59e0b;}
-    #participantsPanel input{width:100%; padding:5px; margin-bottom:8px; border-radius:4px; border:none;}
-    .host-controls{margin-bottom:6px; display:flex; justify-content:space-between;}
   </style>
 </head>
 
 <body>
-<div id="topbar">
-  <button class="room-btn" id="roomBtn">Room</button>
-  <div id="username">Loading...</div>
-</div>
 
-<div id="roomModal">
-  <input type="text" id="searchRoom" placeholder="Search room...">
-  <div id="roomList"></div>
-  <button class="breakroom-btn" onclick="goBreakroom()">Breakroom</button>
-  <button class="leave-btn" onclick="leaveClass()">Leave</button>
+<div id="topbar">
+  <button class="room-btn">Room</button>
+  <div id="username">Loading...</div>
 </div>
 
 <div id="meet"></div>
@@ -50,148 +33,94 @@
   <button class="control-btn" onclick="toggleVideo()">📷</button>
   <button class="control-btn" onclick="openChat()">💬</button>
   <button class="control-btn" onclick="shareScreen()">🖥</button>
-  <button class="control-btn" onclick="openSettings()">⚙️</button>
-  <button class="control-btn" onclick="sendEmoji()">😊</button>
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
-  <button class="control-btn" onclick="toggleParticipants()">👥 Participants
-  <button class="control-btn" onclick="downloadRecording()">⬇ Download</button>
-  </button>
+  <button class="control-btn" onclick="toggleParticipants()">👥 Participants</button>
 </div>
 
 <div id="participantsPanel">
   <h3>Participants</h3>
-  <input type="text" id="searchParticipant" placeholder="Search participant...">
-  <div class="host-controls">
-    <button class="participant-btn" onclick="muteAll()">Mute All</button>
-    <button class="participant-btn" onclick="removeAll()">Remove All</button>
-  </div>
   <div id="participantsList"></div>
 </div>
 
 <script>
-const firebaseConfig={apiKey:"AIzaSyATogol0OIMwINVjEanhzJo2-mufYOcU_4",authDomain:"absejamaal-772e3.firebaseapp.com",projectId:"absejamaal-772e3",storageBucket:"absejamaal-772e3.appspot.com",messagingSenderId:"522756860286",appId:"1:522756860286:web:d78a03faf3861347e26b2f"};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-auth.onAuthStateChanged(user=>{if(user){document.getElementById("username").innerText=user.email;}else{window.location.href="index.html";}});
+// 🔥 Firebase haaraya kee
+const firebaseConfig = {
+  apiKey: "AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
+  authDomain: "abseapp-b3706.firebaseapp.com",
+  projectId: "abseapp-b3706",
+  storageBucket: "abseapp-b3706.firebasestorage.app",
+  messagingSenderId: "986026055368",
+  appId: "1:986026055368:web:8ad2557f64c24d3c28b7fd",
+  measurementId: "G-M57552RVD2"
+};
 
-const roomBtn=document.getElementById("roomBtn");
-const roomModal=document.getElementById("roomModal");
-const roomList=document.getElementById("roomList");
-const searchRoom=document.getElementById("searchRoom");
-let rooms=[]; for(let i=1;i<=1000;i++){rooms.push("Room "+i);}
-function showRooms(){roomModal.style.display="block"; renderRooms();}
-function hideRooms(){roomModal.style.display="none";}
-roomBtn.addEventListener("click",showRooms);
-searchRoom.addEventListener("input",renderRooms);
-function renderRooms(){const query=searchRoom.value.toLowerCase(); roomList.innerHTML=""; rooms.filter(r=>r.toLowerCase().includes(query)).forEach(r=>{ const div=document.createElement("div"); div.className="room-item"; div.textContent=r; div.onclick=()=>joinRoom(r); roomList.appendChild(div);});}
-function joinRoom(roomName){hideRooms(); startJitsi(roomName);}
-function goBreakroom(){window.location.href="liveclass.html";}
-function leaveClass(){window.location.href="home.html";}
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    document.getElementById("username").innerText=user.email;
+  }else{
+    window.location.href="index.html";
+  }
+});
 
 let api=null;
+
 function startJitsi(roomName){
   const domain="meet.jit.si";
   api=new JitsiMeetExternalAPI(domain,{
-    roomName:roomName,width:"100%",height:"100%",parentNode:document.querySelector("#meet"),
-    configOverwrite:{prejoinPageEnabled:false,
-                     disableDeepLinking:true,
-                     startWithAudioMuted:false,
-                     startWithVideoMuted:false},
-    interfaceConfigOverwrite: {
-  TOOLBAR_BUTTONS: [
-    "microphone","camera","chat","desktop","settings",
-    "raisehand","hangup","recording"
-  ]
+    roomName:roomName,
+    width:"100%",
+    height:"100%",
+    parentNode:document.querySelector("#meet"),
+    configOverwrite:{prejoinPageEnabled:false},
+    interfaceConfigOverwrite:{
+      DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
+      SHOW_JITSI_WATERMARK:false,
+      TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","hangup"]
     }
-    interfaceConfigOverwrite:{DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,MOBILE_APP_PROMO:false,SHOW_JITSI_WATERMARK:false,SHOW_BRAND_WATERMARK:false,TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]}
   });
 
-  api.addEventListener("videoConferenceJoined",()=>{console.log("Joined "+roomName); updateParticipants();});
-  setInterval(updateParticipants,3000);
+  api.addEventListener("videoConferenceJoined",()=>{
+    updateParticipants();
+  });
 }
+
+startJitsi("BarnootaLiveRoom");
 
 // Controls
 function toggleMute(){if(api) api.executeCommand("toggleAudio");}
 function toggleVideo(){if(api) api.executeCommand("toggleVideo");}
 function openChat(){if(api) api.executeCommand("toggleChat");}
 function shareScreen(){if(api) api.executeCommand("toggleShareScreen");}
-function openSettings(){if(api) api.executeCommand("toggleSettings");}
-function sendEmoji(){if(api) api.executeCommand("sendTones");}
 function startRecording(){if(api) api.executeCommand("startRecording",{mode:"file"});}
 function stopRecording(){if(api) api.executeCommand("stopRecording",{mode:"file"});}
-function leaveMeeting(){if(api) api.executeCommand("hangup"); window.location.href="home.html";}
-let recordingLink = null;
+function leaveMeeting(){if(api) api.executeCommand("hangup");}
 
-// start recording
-function startRecording(){
-  if(api){
-    api.executeCommand("startRecording", { mode:"file" });
-    alert("Recording started");
-  }
-}
-
-// stop recording + auto save
-function stopRecording(){
-  if(api){
-    api.executeCommand("stopRecording", { mode:"file" });
-    alert("Recording saved. Waiting for download link...");
-  }
-}
-
-// Jitsi recording link argachuu
-api.addEventListener("recordingStatusChanged", (status)=>{
-  if(status && status.mode === "file" && status.status === "off"){
-    // yeroo recording xumurame
-    recordingLink = "https://meet.jit.si/"+api.getRoomName();
-    alert("Recording ready. Click Download button.");
-  }
-});
-
-// download recording
-function downloadRecording(){
-  if(recordingLink){
-    window.open(recordingLink, "_blank");
-  }else{
-    alert("Recording hin jiruu yookaan hin xumuramne.");
-  }
-                     }
-// Participants panel
+// Participants
 const participantsPanel=document.getElementById("participantsPanel");
 const participantsList=document.getElementById("participantsList");
-const searchParticipant=document.getElementById("searchParticipant");
-function toggleParticipants(){participantsPanel.style.display=participantsPanel.style.display==="none"?"block":"none";}
-searchParticipant.addEventListener("input",updateParticipants);
+
+function toggleParticipants(){
+  participantsPanel.style.display=
+  participantsPanel.style.display==="none"?"block":"none";
+}
 
 function updateParticipants(){
   if(!api) return;
   api.getParticipantsInfo().then(list=>{
-    const query=searchParticipant.value.toLowerCase();
     participantsList.innerHTML="";
-    list.filter(p=>(p.displayName||p.formattedID).toLowerCase().includes(query)).forEach(p=>{
+    list.forEach(p=>{
       const div=document.createElement("div");
-      div.className="participant-item";
       div.textContent=p.displayName||p.formattedID;
-      if(p.role==="moderator"){div.textContent+=" (Host)";}
-      const muteBtn=document.createElement("button"); muteBtn.className="participant-btn"; muteBtn.textContent="Mute"; muteBtn.onclick=()=>api.executeCommand("muteParticipant",p.id); div.appendChild(muteBtn);
-      const removeBtn=document.createElement("button"); removeBtn.className="participant-btn"; removeBtn.textContent="Remove"; removeBtn.onclick=()=>api.executeCommand("kickParticipant",p.id); div.appendChild(removeBtn);
-      const raiseBtn=document.createElement("button"); raiseBtn.className="participant-btn raise"; raiseBtn.textContent="Raise"; raiseBtn.onclick=()=>alert(p.displayName+" raised hand!"); div.appendChild(raiseBtn);
       participantsList.appendChild(div);
     });
   });
 }
-
-// Host buttons
-function muteAll(){if(!api) return; api.getParticipantsInfo().then(list=>list.forEach(p=>api.executeCommand("muteParticipant",p.id)));}
-function removeAll(){if(!api) return; api.getParticipantsInfo().then(list=>list.forEach(p=>api.executeCommand("kickParticipant",p.id)));}
-  function startRecording(){
-  api.executeCommand("startRecording",{mode:"file"});
-}
-
-function stopRecording(){
-  api.executeCommand("stopRecording",{mode:"file"});
-}
 </script>
+
 </body>
 </html>
