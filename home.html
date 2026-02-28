@@ -191,6 +191,9 @@ window.onload = () => {
   if(data){
     document.getElementById("feed").innerHTML = data;
   }
+
+  showFollowingList();
+};
 };
 }
 
@@ -208,6 +211,16 @@ function joinMeeting(){
 
 function openProfile(){
   window.location.href = "profile.html";
+}function showFollowingList(){
+  const list = JSON.parse(localStorage.getItem("followingList")) || [];
+
+  if(list.length === 0) return;
+
+  const box = document.createElement("div");
+  box.className = "post";
+  box.innerHTML = "<b>Following:</b><br>" + list.join("<br>");
+
+  document.getElementById("feed").prepend(box);
 }
 </script>
 
