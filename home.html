@@ -96,6 +96,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+/* AUTH */
 auth.onAuthStateChanged(user => {
   if(user){
     document.getElementById("userEmail").innerText = user.email;
@@ -109,6 +110,7 @@ function logout(){
   auth.signOut().then(()=> window.location.href="index.html");
 }
 
+/* POST SYSTEM */
 function addPost(){
   const text = prompt("Barreeffama galchi");
 
@@ -164,11 +166,15 @@ function addPost(){
   };
 
   fileInput.click();
-    }function likePost(id){
+}
+
+function likePost(id){
   const el = document.getElementById("likeCount-"+id);
   el.innerText = parseInt(el.innerText) + 1;
   savePosts();
-      }function commentPost(id){
+}
+
+function commentPost(id){
   const text = prompt("Comment barreessi");
   if(!text) return;
 
@@ -178,25 +184,39 @@ function addPost(){
   div.appendChild(p);
 
   savePosts();
-        }function sharePost(id){
+}
+
+function sharePost(id){
   const link = window.location.href + "#post-"+id;
   navigator.clipboard.writeText(link);
   alert("Link copied!");
-}function savePosts(){
+}
+
+function savePosts(){
   localStorage.setItem("feedData", document.getElementById("feed").innerHTML);
 }
 
+/* LOAD DATA */
 window.onload = () => {
   const data = localStorage.getItem("feedData");
   if(data){
     document.getElementById("feed").innerHTML = data;
   }
-
   showFollowingList();
 };
-};
+
+/* FOLLOW LIST */
+function showFollowingList(){
+  const list = JSON.parse(localStorage.getItem("followingList")) || [];
+  if(list.length === 0) return;
+
+  const box = document.createElement("div");
+  box.className = "post";
+  box.innerHTML = "<b>Following:</b><br>" + list.join("<br>");
+  document.getElementById("feed").prepend(box);
 }
 
+/* MEETING */
 function createMeeting(){
   const room = Math.random().toString(36).substring(2,10);
   window.location.href = "liveclass.html?room=" + room;
@@ -209,18 +229,9 @@ function joinMeeting(){
   }
 }
 
+/* PROFILE */
 function openProfile(){
   window.location.href = "profile.html";
-}function showFollowingList(){
-  const list = JSON.parse(localStorage.getItem("followingList")) || [];
-
-  if(list.length === 0) return;
-
-  const box = document.createElement("div");
-  box.className = "post";
-  box.innerHTML = "<b>Following:</b><br>" + list.join("<br>");
-
-  document.getElementById("feed").prepend(box);
 }
 </script>
 
