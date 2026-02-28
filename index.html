@@ -63,12 +63,11 @@
   <button class="signup" onclick="signup()">SIGN UP</button>
 </div>
 
-<!-- Firebase (compat version akka home.html wajjin wal fakkaatu) -->
+<!-- Firebase (compat version) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
 <script>
-// 🔥 Firebase haaraya
 const firebaseConfig = {
   apiKey: "AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
   authDomain: "abseapp-b3706.firebaseapp.com",
@@ -79,26 +78,48 @@ const firebaseConfig = {
   measurementId: "G-M57552RVD2"
 };
 
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+// LOGIN function
 function login(){
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
   auth.signInWithEmailAndPassword(email, password)
-    .then(()=> window.location.href="home.html")
-    .catch(e => alert(e.message));
+    .then((userCredential) => {
+      console.log("Login successful:", userCredential.user.email);
+      window.location.href = "home.html"; // gara home.html deemsa
+    })
+    .catch((error) => {
+      console.log(error.code, error.message);
+      alert("Login failed: " + error.message);
+    });
 }
 
+// SIGNUP function
 function signup(){
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
   auth.createUserWithEmailAndPassword(email, password)
-    .then(()=> alert("Account tolchee jira! Amma login godhi."))
-    .catch(e => alert(e.message));
+    .then((userCredential) => {
+      console.log("Signup successful:", userCredential.user.email);
+      alert("Account tolchee jira! Amma login godhi.");
+    })
+    .catch((error) => {
+      console.log(error.code, error.message);
+      alert("Signup failed: " + error.message);
+    });
 }
+
+// Optional: auto redirect yoo user login ta'e
+auth.onAuthStateChanged(user => {
+  if(user){
+    window.location.href = "home.html";
+  }
+});
 </script>
 
 </body>
