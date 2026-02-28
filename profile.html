@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile - Barnoota Live</title>
+
+  <style>
+    body{
+      margin:0;
+      background:#1c1c1c;
+      color:white;
+      font-family:Arial;
+      text-align:center;
+      padding:20px;
+    }
+    img{
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      object-fit:cover;
+      margin-top:20px;
+    }
+    input{
+      margin:10px;
+      padding:8px;
+      border-radius:6px;
+      border:none;
+    }
+    button{
+      padding:10px 15px;
+      border:none;
+      border-radius:6px;
+      background:red;
+      color:white;
+      cursor:pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>👤 Profile</h2>
+
+<img id="profilePic" src="https://via.placeholder.com/120">
+
+<p id="email"></p>
+
+<input type="text" id="nameInput" placeholder="Maqaa kee">
+<br>
+<input type="file" id="imgInput">
+<br>
+<button onclick="saveProfile()">Save Profile</button>
+
+<script>
+  const userEmail = localStorage.getItem("userEmail");
+  document.getElementById("email").innerText = userEmail;
+
+  const savedName = localStorage.getItem("profileName");
+  const savedImg = localStorage.getItem("profileImg");
+
+  if(savedName) document.getElementById("nameInput").value = savedName;
+  if(savedImg) document.getElementById("profilePic").src = savedImg;
+
+  document.getElementById("imgInput").addEventListener("change", function(){
+    const file = this.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e){
+      document.getElementById("profilePic").src = e.target.result;
+      localStorage.setItem("profileImg", e.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function saveProfile(){
+    const name = document.getElementById("nameInput").value;
+    localStorage.setItem("profileName", name);
+    alert("Profile saved!");
+  }
+</script>
+
+</body>
+</html>
