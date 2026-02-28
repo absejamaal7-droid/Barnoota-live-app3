@@ -144,14 +144,51 @@
   }
 
   function addPost(){
-    const text = prompt("Barreeffama galchi");
-    if(!text) return;
+  const text = prompt("Barreeffama galchi");
+  
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*,video/*";
+
+  fileInput.onchange = () => {
+    const file = fileInput.files[0];
+
+    const name = localStorage.getItem("profileName") || "User";
+    const img = localStorage.getItem("profileImg") || "https://via.placeholder.com/40";
 
     const post = document.createElement("div");
     post.className = "post";
-    post.innerHTML = "<p>"+text+"</p>";
+
+    let media = "";
+    if(file){
+      const url = URL.createObjectURL(file);
+
+      if(file.type.startsWith("image")){
+        media = `<img src="${url}" style="width:100%;border-radius:8px;margin-top:10px;">`;
+      }
+      else if(file.type.startsWith("video")){
+        media = `
+          <video controls style="width:100%;border-radius:8px;margin-top:10px;">
+            <source src="${url}">
+          </video>
+        `;
+      }
+    }
+
+    post.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="${img}" style="width:40px;height:40px;border-radius:50%;">
+        <b>${name}</b>
+      </div>
+      <p>${text || ""}</p>
+      ${media}
+    `;
 
     document.getElementById("feed").prepend(post);
+  };
+
+  fileInput.click();
+  }
   }
 
   function createMeeting(){
