@@ -186,7 +186,15 @@ height:"100%"
 
 function joinMeet(){
 startMeet();
+}<button onclick="logout()">Logout</button>
+
+<script>
+function logout(){
+  auth.signOut().then(()=>{
+    window.location.href="index.html";
+  });
 }
+</script>
 </script>
 
 </body>
