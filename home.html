@@ -170,6 +170,47 @@ function openProfile(){ window.location.href="profile.html"; }
 // MEETING
 function createMeeting(){ const room = Math.random().toString(36).substring(2,10); window.location.href="liveclass.html?room=" + room; }
 function joinMeeting(){ const room = prompt("Meeting link ykn ID galchi"); if(room) window.location.href="liveclass.html?room=" + room; }
+type User @table {
+  username: String!
+  email: String!
+  createdAt: Timestamp!
+  displayName: String
+  bio: String
+  profilePictureUrl: String
+}
+
+type Post @table {
+  content: String!
+  createdAt: Timestamp!
+  imageUrl: String
+  videoUrl: String
+  author: User
+}
+
+type Comment @table {
+  content: String!
+  createdAt: Timestamp!
+  author: User
+  post: Post
+}
+
+type Like @table(key: ["user", "post"]) {
+  createdAt: Timestamp!
+  user: User!
+  post: Post!
+}
+
+type Follow @table(key: ["follower", "following"]) {
+  createdAt: Timestamp!
+  follower: User!
+  following: User!
+}
+
+type Block @table(key: ["blocker", "blocked"]) {
+  createdAt: Timestamp!
+  blocker: User!
+  blocked: User!
+}
 
 </script>
 </body>
