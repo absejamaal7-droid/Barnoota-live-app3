@@ -15,53 +15,74 @@
 
 <style>
 body{
-margin:0;
-font-family:Arial;
-background:#0f172a;
-color:white;
+  margin:0;
+  font-family:Arial;
+  background:#0f172a;
+  color:white;
 }
 
 #topbar{
-background:#1e293b;
-padding:12px;
-display:flex;
-justify-content:space-between;
-align-items:center;
+  background:#1e293b;
+  padding:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
 #menu{
-display:flex;
-gap:8px;
-flex-wrap:wrap;
-padding:10px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  padding:10px;
 }
 
 button{
-background:#2563eb;
-border:none;
-color:white;
-padding:8px 12px;
-border-radius:6px;
-cursor:pointer;
+  background:#2563eb;
+  border:none;
+  color:white;
+  padding:8px 12px;
+  border-radius:6px;
+  cursor:pointer;
 }
 
 #content{
-padding:15px;
+  padding:15px;
+  padding-bottom:80px;
 }
 
 .post{
-background:#1e293b;
-padding:12px;
-margin-top:10px;
-border-radius:8px;
+  background:#1e293b;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
 }
 
 textarea{
-width:100%;
-padding:10px;
-border-radius:8px;
-border:none;
-margin-top:8px;
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  margin-top:8px;
+}
+
+/* Bottom Navigation */
+#bottomNav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:60px;
+  background:#111827;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  border-top:1px solid #333;
+}
+#bottomNav button{
+  background:none;
+  border:none;
+  color:white;
+  font-size:14px;
 }
 </style>
 </head>
@@ -69,27 +90,33 @@ margin-top:8px;
 <body>
 
 <div id="topbar">
-<div>Barnoota Live</div>
-<div id="userEmail">Loading...</div>
+  <div>Barnoota Live</div>
+  <div id="userEmail">Loading...</div>
 </div>
 
 <div id="menu">
-<button onclick="showProfile()">Profile</button>
-<button onclick="startMeet()">Meet</button>
-<button onclick="joinMeet()">Join</button>
-<button onclick="sharePost()">Share</button>
-<button onclick="scheduleClass()">Schedule</button>
-<button onclick="logout()">Logout</button>
+  <button onclick="showProfile()">Profile</button>
+  <button onclick="startMeet()">Meet</button>
+  <button onclick="joinMeet()">Join</button>
+  <button onclick="sharePost()">Share</button>
+  <button onclick="scheduleClass()">Schedule</button>
+  <button onclick="logout()">Logout</button>
 </div>
 
 <div id="content">
+  <h3>Post haaraa</h3>
+  <textarea id="postText" placeholder="Waan yaadde barreessi..."></textarea>
+  <button onclick="addPost()">Post godhi</button>
+  <div id="posts"></div>
+</div>
 
-<h3>Post haaraa</h3>
-<textarea id="postText" placeholder="Waan yaadde barreessi..."></textarea>
-<button onclick="addPost()">Post godhi</button>
-
-<div id="posts"></div>
-
+<!-- Bottom Navigation -->
+<div id="bottomNav">
+  <button onclick="goHome()">🏠 Home</button>
+  <button onclick="goProfile()">👤 Profile</button>
+  <button onclick="goMeet()">🎥 Meet</button>
+  <button onclick="goSchedule()">📅 Schedule</button>
+  <button onclick="logout()">🚪 Logout</button>
 </div>
 
 <script>
@@ -99,8 +126,7 @@ const firebaseConfig={
   projectId:"abseapp-b3706",
   storageBucket:"abseapp-b3706.firebasestorage.app",
   messagingSenderId:"986026055368",
-  appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd",
-  measurementId:"G-M57552RVD2"
+  appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -108,99 +134,87 @@ const auth=firebase.auth();
 const db=firebase.firestore();
 
 auth.onAuthStateChanged(user=>{
-if(user){
-document.getElementById("userEmail").innerText=user.email;
-loadPosts();
-}else{
-window.location.href="index.html";
-}
+  if(user){
+    document.getElementById("userEmail").innerText=user.email;
+    loadPosts();
+  }else{
+    window.location.href="index.html";
+  }
 });
 
-function logout(){
-auth.signOut();
-}
-
-function showProfile(){
-alert("Profile kee asitti ijaaruu dandeenya");
-}
-
-function addPost(){
-const text=document.getElementById("postText").value;
-if(!text) return;
-
-db.collection("posts").add({
-text:text,
-date:new Date()
-});
-
-document.getElementById("postText").value="";
-loadPosts();
-}
-
-function loadPosts(){
-db.collection("posts").orderBy("date","desc")
-.onSnapshot(snapshot=>{
-const container=document.getElementById("posts");
-container.innerHTML="";
-snapshot.forEach(doc=>{
-const post=document.createElement("div");
-post.className="post";
-post.innerHTML=`
-<p>${doc.data().text}</p>
-<button onclick="likePost('${doc.id}')">Like</button>
-<button onclick="commentPost('${doc.id}')">Comment</button>
-`;
-container.appendChild(post);
-});
-});
-}
-
-function likePost(id){
-alert("Like system itti fufna");
-}
-
-function commentPost(id){
-alert("Comment system itti fufna");
-}
-
-function sharePost(){
-alert("Share system itti fufna");
-}
-
-function scheduleClass(){
-alert("Schedule system itti fufna");
-}
-
-let api=null;
-
-function startMeet(){
-document.getElementById("content").innerHTML='<div id="meet" style="height:80vh;"></div>';
-
-api=new JitsiMeetExternalAPI("meet.jit.si",{
-roomName:"BarnootaLiveRoom",
-parentNode:document.querySelector("#meet"),
-width:"100%",
-height:"100%"
-});
-}
-
-function joinMeet(){
-startMeet();
-}<button onclick="logout()">Logout</button>
-// History keessatti page galchi (GitHub Pages irratti barbaachisa)
-history.pushState(null, null, location.href);
-
-// Yoo back cuqaase → app keessaa qofa deebi'a
-window.onpopstate = function(){
-  window.location.href = "home.html";
-};
-<script>
 function logout(){
   auth.signOut().then(()=>{
     window.location.href="index.html";
   });
 }
-</script>
+
+function showProfile(){
+  window.location.href="profile.html";
+}
+
+/* POST SYSTEM */
+function addPost(){
+  const text=document.getElementById("postText").value;
+  if(!text) return;
+
+  db.collection("posts").add({
+    text:text,
+    date:new Date()
+  });
+
+  document.getElementById("postText").value="";
+}
+
+function loadPosts(){
+  db.collection("posts").orderBy("date","desc")
+  .onSnapshot(snapshot=>{
+    const container=document.getElementById("posts");
+    container.innerHTML="";
+    snapshot.forEach(doc=>{
+      const post=document.createElement("div");
+      post.className="post";
+      post.innerHTML=`
+        <p>${doc.data().text}</p>
+        <button onclick="likePost('${doc.id}')">Like</button>
+        <button onclick="commentPost('${doc.id}')">Comment</button>
+      `;
+      container.appendChild(post);
+    });
+  });
+}
+
+function likePost(id){ alert("Like system itti fufna"); }
+function commentPost(id){ alert("Comment system itti fufna"); }
+function sharePost(){ alert("Share system itti fufna"); }
+function scheduleClass(){ alert("Schedule system itti fufna"); }
+
+/* MEET */
+let api=null;
+
+function startMeet(){
+  document.getElementById("content").innerHTML='<div id="meet" style="height:80vh;"></div>';
+
+  api=new JitsiMeetExternalAPI("meet.jit.si",{
+    roomName:"BarnootaLiveRoom",
+    parentNode:document.querySelector("#meet"),
+    width:"100%",
+    height:"100%"
+  });
+}
+
+function joinMeet(){ startMeet(); }
+
+/* NAVIGATION */
+function goHome(){ window.location.href="home.html"; }
+function goProfile(){ window.location.href="profile.html"; }
+function goMeet(){ window.location.href="liveclass.html"; }
+function goSchedule(){ alert("Schedule system itti aansuun siif ijaara"); }
+
+/* BACK BUTTON CONTROL */
+history.pushState(null, null, location.href);
+window.onpopstate = function(){
+  window.location.href="home.html";
+};
 </script>
 
 </body>
