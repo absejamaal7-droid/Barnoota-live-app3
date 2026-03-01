@@ -67,7 +67,14 @@ auth.onAuthStateChanged(user=>{
     window.location.href="index.html";
   }
 });
+let firstLoad = true;
 
+auth.onAuthStateChanged(user=>{
+  if(!user && !firstLoad){
+    window.location.href="index.html";
+  }
+  firstLoad = false;
+});
 let api=null;
 
 function startJitsi(roomName){
