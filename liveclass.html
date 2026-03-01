@@ -98,7 +98,7 @@ function startJitsi(roomName){
 }
 
 startJitsi("BarnootaLiveRoom");
-
+history.pushState(null, null, location.href);
 // Controls
 function toggleMute(){if(api) api.executeCommand("toggleAudio");}
 function toggleVideo(){if(api) api.executeCommand("toggleVideo");}
