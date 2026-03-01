@@ -1,217 +1,193 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Home - Barnoota Live</title>
+<title>Barnoota Live - Home</title>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body{ margin:0; background:#1c1c1c; color:white; font-family:Arial; }
-    #topbar{
-      background:#2d2d2d;
-      padding:12px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    #feed{ padding:15px; }
-    .post{
-      background:#1f1f1f;
-      padding:12px;
-      border-radius:10px;
-      margin-bottom:15px;
-    }
-    button{
-      background:red;
-      border:none;
-      color:white;
-      padding:6px 10px;
-      border-radius:6px;
-      cursor:pointer;
-      margin-right:5px;
-    }
-    .card{ background:#2d2d2d; padding:20px; border-radius:10px; width:140px; text-align:center; cursor:pointer; display:inline-block; margin:5px; }
-  </style>
+<script src="https://meet.jit.si/external_api.js"></script>
+
+<!-- Firebase compat -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#0f172a;
+color:white;
+}
+
+#topbar{
+background:#1e293b;
+padding:12px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+#menu{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+padding:10px;
+}
+
+button{
+background:#2563eb;
+border:none;
+color:white;
+padding:8px 12px;
+border-radius:6px;
+cursor:pointer;
+}
+
+#content{
+padding:15px;
+}
+
+.post{
+background:#1e293b;
+padding:12px;
+margin-top:10px;
+border-radius:8px;
+}
+
+textarea{
+width:100%;
+padding:10px;
+border-radius:8px;
+border:none;
+margin-top:8px;
+}
+</style>
 </head>
 
 <body>
 
 <div id="topbar">
-  <div>👤 <span id="userEmail">Loading...</span></div>
-  <button onclick="logout()">Logout</button>
-</div>
-
-<div id="feed">
-  <button onclick="openProfile()">Profile</button>
+<div>Barnoota Live</div>
+<div id="userEmail">Loading...</div>
 </div>
 
 <div id="menu">
-  <div class="card" onclick="createMeeting()">📹<br>Meet</div>
-  <div class="card" onclick="joinMeeting()">🔑<br>Join</div>
-  <div class="card">📅<br>Schedule</div>
-  <div class="card">🔗<br>Share</div>
-  <div class="card">⚙️<br>Settings</div>
+<button onclick="showProfile()">Profile</button>
+<button onclick="startMeet()">Meet</button>
+<button onclick="joinMeet()">Join</button>
+<button onclick="sharePost()">Share</button>
+<button onclick="scheduleClass()">Schedule</button>
+<button onclick="logout()">Logout</button>
+</div>
+
+<div id="content">
+
+<h3>Post haaraa</h3>
+<textarea id="postText" placeholder="Waan yaadde barreessi..."></textarea>
+<button onclick="addPost()">Post godhi</button>
+
+<div id="posts"></div>
+
 </div>
 
 <script>
-// 🔥 Firebase config haaraya
-const firebaseConfig = {
-  apiKey: "AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
-  authDomain: "abseapp-b3706.firebaseapp.com",
-  projectId: "abseapp-b3706",
-  storageBucket: "abseapp-b3706.firebasestorage.app",
-  messagingSenderId: "986026055368",
-  appId: "1:986026055368:web:8ad2557f64c24d3c28b7fd",
-  measurementId: "G-M57552RVD2"
+const firebaseConfig={
+  apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
+  authDomain:"abseapp-b3706.firebaseapp.com",
+  projectId:"abseapp-b3706",
+  storageBucket:"abseapp-b3706.firebasestorage.app",
+  messagingSenderId:"986026055368",
+  appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd",
+  measurementId:"G-M57552RVD2"
 };
 
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
 
-// AUTH
-auth.onAuthStateChanged(user => {
-  if(user){
-    document.getElementById("userEmail").innerText = user.email;
-    loadPosts();
-  }else{
-    window.location.href = "index.html";
-  }
+auth.onAuthStateChanged(user=>{
+if(user){
+document.getElementById("userEmail").innerText=user.email;
+loadPosts();
+}else{
+window.location.href="index.html";
+}
 });
 
-function logout(){ auth.signOut().then(()=> window.location.href="index.html"); }
+function logout(){
+auth.signOut();
+}
 
-// POST SYSTEM
+function showProfile(){
+alert("Profile kee asitti ijaaruu dandeenya");
+}
+
 function addPost(){
-  const text = prompt("Barreeffama galchi");
-  if(!text) return;
+const text=document.getElementById("postText").value;
+if(!text) return;
 
-  const fileInput = document.createElement("input");
-  fileInput.type = "file";
-  fileInput.accept = "image/*,video/*";
+db.collection("posts").add({
+text:text,
+date:new Date()
+});
 
-  fileInput.onchange = () => {
-    const file = fileInput.files[0];
-    let mediaURL = "";
-    if(file){
-      mediaURL = URL.createObjectURL(file); // offline simple demo
-    }
-
-    const post = {
-      user: auth.currentUser.email,
-      text: text,
-      media: mediaURL,
-      likes: 0,
-      comments: [],
-      createdAt: Date.now()
-    };
-
-    db.collection("posts").add(post).then(()=> loadPosts());
-  };
-
-  fileInput.click();
+document.getElementById("postText").value="";
+loadPosts();
 }
 
 function loadPosts(){
-  db.collection("posts").orderBy("createdAt","desc").get().then(snapshot=>{
-    const feed = document.getElementById("feed");
-    feed.innerHTML = `<button onclick="openProfile()">Profile</button>`;
-    snapshot.forEach(doc=>{
-      const p = doc.data();
-      const id = doc.id;
-
-      const postDiv = document.createElement("div");
-      postDiv.className = "post";
-      postDiv.id = "post-"+id;
-
-      postDiv.innerHTML = `
-        <b>${p.user}</b>
-        <p>${p.text}</p>
-        ${p.media ? (p.media.endsWith(".mp4")? `<video controls width="100%"><source src="${p.media}"></video>`:`<img src="${p.media}" width="100%">`) : ""}
-        <div>
-          ❤️ <span id="likeCount-${id}">${p.likes}</span>
-          <button onclick="likePost('${id}')">Like</button>
-          <button onclick="commentPost('${id}')">Comment</button>
-        </div>
-        <div id="comments-${id}">
-          ${p.comments.map(c=>`<p>💬 ${c}</p>`).join("")}
-        </div>
-      `;
-
-      feed.appendChild(postDiv);
-    });
-  });
+db.collection("posts").orderBy("date","desc")
+.onSnapshot(snapshot=>{
+const container=document.getElementById("posts");
+container.innerHTML="";
+snapshot.forEach(doc=>{
+const post=document.createElement("div");
+post.className="post";
+post.innerHTML=`
+<p>${doc.data().text}</p>
+<button onclick="likePost('${doc.id}')">Like</button>
+<button onclick="commentPost('${doc.id}')">Comment</button>
+`;
+container.appendChild(post);
+});
+});
 }
 
 function likePost(id){
-  const ref = db.collection("posts").doc(id);
-  ref.get().then(doc=>{
-    ref.update({likes: doc.data().likes + 1}).then(()=> loadPosts());
-  });
+alert("Like system itti fufna");
 }
 
 function commentPost(id){
-  const text = prompt("Comment barreessi");
-  if(!text) return;
-  const ref = db.collection("posts").doc(id);
-  ref.get().then(doc=>{
-    const comments = doc.data().comments || [];
-    comments.push(text);
-    ref.update({comments}).then(()=> loadPosts());
-  });
+alert("Comment system itti fufna");
 }
 
-// PROFILE
-function openProfile(){ window.location.href="profile.html"; }
-
-// MEETING
-function createMeeting(){ const room = Math.random().toString(36).substring(2,10); window.location.href="liveclass.html?room=" + room; }
-function joinMeeting(){ const room = prompt("Meeting link ykn ID galchi"); if(room) window.location.href="liveclass.html?room=" + room; }
-type User @table {
-  username: String!
-  email: String!
-  createdAt: Timestamp!
-  displayName: String
-  bio: String
-  profilePictureUrl: String
+function sharePost(){
+alert("Share system itti fufna");
 }
 
-type Post @table {
-  content: String!
-  createdAt: Timestamp!
-  imageUrl: String
-  videoUrl: String
-  author: User
+function scheduleClass(){
+alert("Schedule system itti fufna");
 }
 
-type Comment @table {
-  content: String!
-  createdAt: Timestamp!
-  author: User
-  post: Post
+let api=null;
+
+function startMeet(){
+document.getElementById("content").innerHTML='<div id="meet" style="height:80vh;"></div>';
+
+api=new JitsiMeetExternalAPI("meet.jit.si",{
+roomName:"BarnootaLiveRoom",
+parentNode:document.querySelector("#meet"),
+width:"100%",
+height:"100%"
+});
 }
 
-type Like @table(key: ["user", "post"]) {
-  createdAt: Timestamp!
-  user: User!
-  post: Post!
+function joinMeet(){
+startMeet();
 }
-
-type Follow @table(key: ["follower", "following"]) {
-  createdAt: Timestamp!
-  follower: User!
-  following: User!
-}
-
-type Block @table(key: ["blocker", "blocked"]) {
-  createdAt: Timestamp!
-  blocker: User!
-  blocked: User!
-}
-
 </script>
+
 </body>
 </html>
