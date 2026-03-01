@@ -187,7 +187,13 @@ height:"100%"
 function joinMeet(){
 startMeet();
 }<button onclick="logout()">Logout</button>
+// History keessatti page galchi (GitHub Pages irratti barbaachisa)
+history.pushState(null, null, location.href);
 
+// Yoo back cuqaase → app keessaa qofa deebi'a
+window.onpopstate = function(){
+  window.location.href = "home.html";
+};
 <script>
 function logout(){
   auth.signOut().then(()=>{
