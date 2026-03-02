@@ -42,6 +42,19 @@ button{
   cursor:pointer;
   margin:5px;
 }
+.post{
+  background:#2a2a2a;
+  margin:10px auto;
+  padding:10px;
+  border-radius:8px;
+  max-width:500px;
+  text-align:left;
+}
+.post video{
+  width:100%;
+  border-radius:6px;
+  margin-top:5px;
+}
 </style>
 </head>
 <body>
@@ -49,7 +62,6 @@ button{
 <h2>👤 Profile</h2>
 <img id="profilePic" src="https://via.placeholder.com/120">
 <p id="profileEmail">Loading...</p>
-
 <input type="text" id="nameInput" placeholder="Maqaa kee">
 <br>
 <input type="file" id="imgInput">
@@ -58,6 +70,9 @@ button{
 
 <h3>Followers: <span id="followersCount">0</span> | Following: <span id="followingCount">0</span></h3>
 <button id="followBtn" onclick="toggleFollow()">Follow</button>
+
+<h3>Your Posts</h3>
+<div id="postsContainer"></div>
 
 <script>
 const firebaseConfig={
@@ -87,7 +102,7 @@ auth.onAuthStateChanged(user=>{
 
   document.getElementById("profileEmail").innerText = user.email;
 
-  // Load profile data
+  // Load profile info
   db.collection("users").doc(profileUid).get().then(doc=>{
     if(doc.exists){
       document.getElementById("nameInput").value = doc.data().name || "";
@@ -97,6 +112,7 @@ auth.onAuthStateChanged(user=>{
 
   loadFollowCounts();
   checkFollowStatus();
+  loadPosts(); // <-- profile feed
 });
 
 // Image upload
@@ -126,12 +142,10 @@ function toggleFollow(){
   const ref = db.collection("follows").doc(currentUser.uid).collection("following").doc(profileUid);
   ref.get().then(doc=>{
     if(doc.exists){
-      // Unfollow
       ref.delete();
       db.collection("follows").doc(profileUid).collection("followers").doc(currentUser.uid).delete();
       document.getElementById("followBtn").innerText="Follow";
     }else{
-      // Follow
       ref.set({date:new Date()});
       db.collection("follows").doc(profileUid).collection("followers").doc(currentUser.uid).set({date:new Date()});
       document.getElementById("followBtn").innerText="Unfollow";
@@ -153,12 +167,55 @@ function loadFollowCounts(){
 // Check follow status
 function checkFollowStatus(){
   if(currentUser.uid === profileUid){
-    document.getElementById("followBtn").style.display="none"; // hide follow button for self
+    document.getElementById("followBtn").style.display="none";
     return;
   }
   db.collection("follows").doc(currentUser.uid).collection("following").doc(profileUid).get().then(doc=>{
-    if(doc.exists) document.getElementById("followBtn").innerText="Unfollow";
-    else document.getElementById("followBtn").innerText="Follow";
+    document.getElementById("followBtn").innerText = doc.exists ? "Unfollow" : "Follow";
+  });
+}
+
+// ---------------------------
+// Profile post feed + video autoplay
+function loadPosts(){
+  db.collection("posts")
+  .where("userUid","==",profileUid) // only-me security
+  .orderBy("date","desc")
+  .onSnapshot(snapshot=>{
+    const container = document.getElementById("postsContainer");
+    container.innerHTML = "";
+
+    snapshot.forEach(doc=>{
+      const post = doc.data();
+      const div = document.createElement("div");
+      div.className="post";
+
+      let videoHTML = "";
+      if(post.videoURL) videoHTML=`<video src="${post.videoURL}" controls muted loop class="feedVideo"></video>`;
+
+      div.innerHTML = `
+        <p>${post.text || ""}</p>
+        ${videoHTML}
+      `;
+      container.appendChild(div);
+    });
+
+    setupAutoPlay(); // <-- autoplay observer
+  });
+}
+
+// Video autoplay using IntersectionObserver
+function setupAutoPlay(){
+  const videos = document.querySelectorAll(".feedVideo");
+  const observer = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting) entry.target.play();
+      else entry.target.pause();
+    });
+  },{threshold:0.6});
+
+  videos.forEach(video=>{
+    observer.observe(video);
   });
 }
 </script>
