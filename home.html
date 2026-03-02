@@ -20,8 +20,10 @@ button{background:#2563eb;border:none;color:white;padding:8px 12px;border-radius
 textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;}
 #bottomNav{position:fixed;bottom:0;left:0;right:0;height:60px;background:#111827;display:flex;justify-content:space-around;align-items:center;border-top:1px solid #333;}
 #bottomNav button{background:none;border:none;color:white;font-size:14px;}
+.feedVideo{width:100%;margin-top:10px;}
 </style>
 </head>
+
 <body>
 
 <div id="topbar">
@@ -39,7 +41,9 @@ textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;}
 <div id="content">
   <h3>Post haaraa</h3>
   <textarea id="postText" placeholder="Waan yaadde barreessi..."></textarea>
+  <input type="file" id="videoFile" accept="video/*">
   <button onclick="addPost()">Post godhi</button>
+
   <div id="posts"></div>
 </div>
 
@@ -60,21 +64,25 @@ messagingSenderId:"986026055368",
 appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
 };
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
+const auth = firebase.auth();
+const db = firebase.firestore();
 
+// Auth listener
 auth.onAuthStateChanged(user=>{
   if(user){
-    document.getElementById("userEmail").innerText=user.email;
+    document.getElementById("userEmail").innerText = user.email;
     loadPosts();
   }else{
-    window.location.href="index.html";
+    window.location.href = "index.html";
   }
 });
 
-function logout(){ auth.signOut().then(()=>window.location.href="index.html"); }
+// Logout
+function logout(){
+  auth.signOut().then(()=>window.location.href="index.html");
+}
 
-/* PROFILE */
+// Profile
 function showProfile(){
   const name = prompt("Maqaa kee galchi");
   if(!name) return;
@@ -84,50 +92,100 @@ function showProfile(){
   window.location.href="profile.html";
 }
 
-/* POST */
+// Video autoplay
+function setupAutoPlay(){
+  const observer = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting) entry.target.play();
+      else entry.target.pause();
+    });
+  }, {threshold:0.6});
+  document.querySelectorAll(".feedVideo").forEach(video=>{
+    observer.observe(video);
+  });
+}
+
+// Add post
 function addPost(){
   const text = document.getElementById("postText").value;
+  const file = document.getElementById("videoFile").files[0];
   const user = auth.currentUser;
   if(!user) return;
 
   db.collection("users").doc(user.uid).get().then(doc=>{
     const name = doc.exists ? doc.data().name : user.email;
+    let videoURL = "";
+    if(file) videoURL = URL.createObjectURL(file);
+
     db.collection("posts").add({
       text:text,
       userEmail:user.email,
       userName:name,
       userUid:user.uid,
-      date:new Date()
+      videoURL: videoURL,
+      date: new Date()
+    }).then(()=>{
+      document.getElementById("postText").value="";
+      document.getElementById("videoFile").value="";
     });
-    document.getElementById("postText").value="";
   });
 }
 
-/* SHARE */
-function sharePost(postId){
-  db.collection("posts").doc(postId).get().then(doc=>{
-    if(!doc.exists) return alert("Post hin jiru!");
-    const post = doc.data();
-    const text = `Barnoota Live Post\n\n${post.userName || post.userEmail}:\n${post.text}`;
-    navigator.clipboard.writeText(text)
-      .then(()=> alert("Post copy godhame! Nama biraaf paste gochuu dandeessa."))
-      .catch(err => alert("Clipboard copy hin danda'amne: " + err));
+// Load posts
+function loadPosts(){
+  const user = auth.currentUser;
+  db.collection("posts").orderBy("date","desc").onSnapshot(snapshot=>{
+    const container = document.getElementById("posts");
+    container.innerHTML = "";
+    snapshot.forEach(doc=>{
+      const postData = doc.data();
+      const post = document.createElement("div");
+      post.className = "post";
+
+      post.innerHTML = `
+        <h4>${postData.userName || postData.userEmail}</h4>
+        <p>${postData.text}</p>
+        ${postData.videoURL ? `<video class="feedVideo" src="${postData.videoURL}" controls muted></video>` : ""}
+        <button onclick="likePost('${doc.id}')">❤️ Like</button>
+        <span id="like-${doc.id}">❤️ 0</span>
+        <button onclick="commentPost('${doc.id}')">💬 Comment</button>
+        <div id="c-${doc.id}"></div>
+        <button onclick="sharePost('${doc.id}')">🔗 Share</button>
+      `;
+
+      container.appendChild(post);
+      updateLikeCount(doc.id);
+
+      // Comments
+      db.collection("posts").doc(doc.id).collection("comments").orderBy("date").onSnapshot(snap=>{
+        const area = document.getElementById("c-"+doc.id);
+        area.innerHTML = "";
+        snap.forEach(c=>{
+          const p = document.createElement("p");
+          p.textContent = `${c.data().user} : ${c.data().text}`;
+          area.appendChild(p);
+        });
+      });
+    });
+
+    setupAutoPlay();
   });
 }
 
-/* LIKE & COMMENT */
+// Like
 function likePost(id){
   const user = auth.currentUser;
   if(!user) return;
   db.collection("posts").doc(id).collection("likes").doc(user.uid).set({user:user.email});
-  updateLikeCount(id);
 }
 function updateLikeCount(id){
   db.collection("posts").doc(id).collection("likes").onSnapshot(snapshot=>{
-    const el=document.getElementById("like-"+id);
-    if(el) el.innerText="❤️ "+snapshot.size;
+    const el = document.getElementById("like-"+id);
+    if(el) el.innerText = "❤️ "+snapshot.size;
   });
 }
+
+// Comment
 function commentPost(id){
   const text = prompt("Comment kee barreessi");
   if(!text) return;
@@ -135,55 +193,42 @@ function commentPost(id){
   db.collection("posts").doc(id).collection("comments").add({text:text,user:user.email,date:new Date()});
 }
 
-/* LOAD POSTS */
-function loadPosts(){
-  const user = auth.currentUser;
-  db.collection("posts").orderBy("date","desc").onSnapshot(snapshot=>{
-    const container=document.getElementById("posts");
-    container.innerHTML="";
-    snapshot.forEach(doc=>{
-      const post=document.createElement("div");
-      post.className="post";
-      post.innerHTML=`
-<h4>${doc.data().userName || doc.data().userEmail}</h4>
-<p>${doc.data().text}</p>
-<button onclick="likePost('${doc.id}')">❤️ Like</button>
-<span id="like-${doc.id}">❤️ 0</span>
-<button onclick="commentPost('${doc.id}')">💬 Comment</button>
-<div id="c-${doc.id}"></div>
-<button onclick="sharePost('${doc.id}')">🔗 Share</button>
-      `;
-      container.appendChild(post);
-      updateLikeCount(doc.id);
-      db.collection("posts").doc(doc.id).collection("comments").orderBy("date")
-        .onSnapshot(snap=>{
-          const area=document.getElementById("c-"+doc.id);
-          area.innerHTML="";
-          snap.forEach(c=>{
-            const p=document.createElement("p");
-            p.textContent=c.data().user+" : "+c.data().text;
-            area.appendChild(p);
-          });
-        });
-    });
+// Share
+function sharePost(postId){
+  db.collection("posts").doc(postId).get().then(doc=>{
+    if(!doc.exists) return alert("Post hin jiru!");
+    const post = doc.data();
+    const text = `Barnoota Live Post\n\n${post.userName || post.userEmail}:\n${post.text}`;
+    navigator.clipboard.writeText(text).then(()=>alert("Post copy godhame! Nama biraaf paste gochuu dandeessa."));
   });
 }
 
-/* MEET */
+// MEET
 let api=null;
 function startMeet(){
   const user = auth.currentUser;
   if(!user) return alert("Login godhi!");
   const roomName = "BarnootaLiveRoom_" + Date.now();
-  db.collection("meetings").doc(roomName).set({host:user.uid,hostEmail:user.email,roomName:roomName,createdAt:new Date()});
+
+  db.collection("meetings").doc(roomName).set({
+    host: user.uid,
+    hostEmail: user.email,
+    roomName: roomName,
+    createdAt: new Date()
+  });
 
   document.getElementById("content").innerHTML = `<div id="meet" style="height:80vh;"></div>`;
-  api = new JitsiMeetExternalAPI("meet.jit.si",{roomName:roomName,parentNode:document.querySelector("#meet"),width:"100%",height:"100%"});
+  api = new JitsiMeetExternalAPI("meet.jit.si", {
+    roomName: roomName,
+    parentNode: document.querySelector("#meet"),
+    width:"100%",
+    height:"100%"
+  });
 
   const shareBtn = document.createElement("button");
   shareBtn.textContent = "🔗 Copy Meeting Link";
   shareBtn.style.marginTop="8px";
-  shareBtn.onclick = function(){
+  shareBtn.onclick = ()=>{
     const link = `${location.origin}/liveclass.html?room=${roomName}`;
     navigator.clipboard.writeText(link).then(()=>alert("Link copy godhame! Nama biraaf erguu dandeessa."));
   };
@@ -196,14 +241,19 @@ function joinMeet(){
   const roomName = room.includes("room=") ? new URL(room).searchParams.get("room") : room;
   if(!roomName) return alert("Room code sirrii miti!");
   document.getElementById("content").innerHTML = `<div id="meet" style="height:80vh;"></div>`;
-  api = new JitsiMeetExternalAPI("meet.jit.si",{roomName:roomName,parentNode:document.querySelector("#meet"),width:"100%",height:"100%"});
+  api = new JitsiMeetExternalAPI("meet.jit.si", {
+    roomName: roomName,
+    parentNode: document.querySelector("#meet"),
+    width:"100%",
+    height:"100%"
+  });
 }
 
-/* NAVIGATION */
+// Navigation
 function goHome(){ window.location.href="home.html"; }
 function goProfile(){ window.location.href="profile.html"; }
 function goMeet(){ window.location.href="liveclass.html"; }
-</script>
 
+</script>
 </body>
 </html>
