@@ -43,6 +43,7 @@ align-items:center;border-top:1px solid #333;
 <button onclick="startMeet()">Meet</button>
 <button onclick="joinMeet()">Join</button>
 <button onclick="logout()">Logout</button>
+  <button onclick="goProfile()">👤 Profile</button>
 </div>
 
 <div id="content">
@@ -51,7 +52,13 @@ align-items:center;border-top:1px solid #333;
 <button onclick="addPost()">Post godhi</button>
 <div id="posts"></div>
 </div>
+<textarea id="postText"></textarea>
+  <input type="file" id="videoFile" accept="video/*">
+<button onclick="addPost()">Post godhi</button>
 
+<input type="file" id="videoFile" accept="video/*">
+
+<div id="posts"></div>
 <div id="bottomNav">
 <button onclick="goHome()">🏠 Home</button>
 <button onclick="goProfile()">👤 Profile</button>
@@ -60,6 +67,23 @@ align-items:center;border-top:1px solid #333;
 </div>
 
 <script>
+  function setupAutoPlay(){
+const videos = document.querySelectorAll(".feedVideo");
+
+const observer = new IntersectionObserver(entries=>{
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+entry.target.play();
+}else{
+entry.target.pause();
+}
+});
+},{ threshold:0.6 });
+
+videos.forEach(video=>{
+observer.observe(video);
+});
+  }
 const firebaseConfig={
 apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
 authDomain:"abseapp-b3706.firebaseapp.com",
@@ -104,35 +128,63 @@ alert("Profile save ta'e ✔");
 window.location.href="profile.html";
 }
 
-/* ADD POST */
 function addPost(){
-const text=document.getElementById("postText").value;
-if(!text) return;
-
-const user=auth.currentUser;
+const text = document.getElementById("postText").value;
+const file = document.getElementById("videoFile").files[0];
+const user = auth.currentUser;
+if(!user) return;
 
 db.collection("users").doc(user.uid).get().then(doc=>{
 const name = doc.exists ? doc.data().name : user.email;
 
+let videoURL = "";
+
+if(file){
+videoURL = URL.createObjectURL(file);
+}
+  
 db.collection("posts").add({
 text:text,
 userEmail:user.email,
 userName:name,
+userUid:user.uid,
 date:new Date()
 });
 });
 
 document.getElementById("postText").value="";
+document.getElementById("videoFile").value="";
 }
 
-/* LOAD POSTS */
 function loadPosts(){
-db.collection("posts").orderBy("date","desc")
+const user = auth.currentUser;
+
+db.collection("follows")
+.doc(user.uid)
+.collection("following")
+.onSnapshot(followSnap=>{
+
+let followingIds = [];
+
+followSnap.forEach(doc=>{
+followingIds.push(doc.id);
+});
+
+// ofii kee dabaluu (post kee akka argitu)
+followingIds.push(user.uid);
+
+db.collection("posts")
+.orderBy("date","desc")
 .onSnapshot(snapshot=>{
+
 const container=document.getElementById("posts");
 container.innerHTML="";
 
 snapshot.forEach(doc=>{
+
+// namoota follow goote qofa mul’isa
+if(!followingIds.includes(doc.data().userUid)) return;
+
 const post=document.createElement("div");
 post.className="post";
 
@@ -150,6 +202,28 @@ post.innerHTML=`
 container.appendChild(post);
 updateLikeCount(doc.id);
 
+db.collection("posts").doc(doc.id)
+.collection("comments")
+.orderBy("date")
+.onSnapshot(snap=>{
+const area=document.getElementById("c-"+doc.id);
+area.innerHTML="";
+snap.forEach(c=>{
+const p=document.createElement("p");
+p.textContent=c.data().user+" : "+c.data().text;
+area.appendChild(p);
+});
+});
+
+});
+
+});
+
+});
+  }
+
+alert("Follow goote ✔");
+  }
 /* LOAD COMMENTS */
 db.collection("posts").doc(doc.id)
 .collection("comments")
@@ -177,6 +251,9 @@ db.collection("posts").doc(id)
 .collection("likes")
 .doc(user.uid)
 .set({user:user.email});
+  function goProfile(){
+window.location.href="profile.html";
+  }
 }
 
 /* LIKE COUNT */
