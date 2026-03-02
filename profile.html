@@ -1,225 +1,166 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Profile - Barnoota Live</title>
-<!-- Firebase compat -->
+<title>Profile - Barnoota Live</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-  <style>
-    body{
-      margin:0;
-      background:#1c1c1c;
-      color:white;
-      font-family:Arial;
-      text-align:center;
-      padding:20px;
-    }
-    img{
-      width:120px;
-      height:120px;
-      border-radius:50%;
-      object-fit:cover;
-      margin-top:20px;
-    }
-    input{
-      margin:10px;
-      padding:8px;
-      border-radius:6px;
-      border:none;
-    }
-    button{
-      padding:10px 15px;
-      border:none;
-      border-radius:6px;
-      background:red;
-      color:white;
-      cursor:pointer;
-    }
-  </style>
-</head>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
 
+<style>
+body{
+  margin:0;
+  background:#1c1c1c;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+  padding:20px;
+}
+img{
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  object-fit:cover;
+  margin-top:20px;
+}
+input{
+  margin:10px;
+  padding:8px;
+  border-radius:6px;
+  border:none;
+}
+button{
+  padding:10px 15px;
+  border:none;
+  border-radius:6px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+  margin:5px;
+}
+</style>
+</head>
 <body>
 
 <h2>👤 Profile</h2>
-
 <img id="profilePic" src="https://via.placeholder.com/120">
+<p id="profileEmail">Loading...</p>
 
-<p id="email"></p>
-<h2 id="profileName">Loading...</h2>
-<p id="profileEmail"></p>
-
-<button id="followBtn" onclick="toggleFollow()">Follow</button>
-
-<p>
-Followers: <span id="followersCount">0</span> |
-Following: <span id="followingCount">0</span>
-</p>
 <input type="text" id="nameInput" placeholder="Maqaa kee">
 <br>
 <input type="file" id="imgInput">
 <br>
 <button onclick="saveProfile()">Save Profile</button>
-<button onclick="followUser()">Follow</button>
-<div>Followers: <span id="followerCount">0</span></div>
+
+<h3>Followers: <span id="followersCount">0</span> | Following: <span id="followingCount">0</span></h3>
+<button id="followBtn" onclick="toggleFollow()">Follow</button>
+
 <script>
-  const firebaseConfig={
-  apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
-  authDomain:"abseapp-b3706.firebaseapp.com",
-  projectId:"abseapp-b3706",
-  storageBucket:"abseapp-b3706.firebasestorage.app",
-  messagingSenderId:"986026055368",
-  appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
+const firebaseConfig={
+apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
+authDomain:"abseapp-b3706.firebaseapp.com",
+projectId:"abseapp-b3706",
+storageBucket:"abseapp-b3706.firebasestorage.app",
+messagingSenderId:"986026055368",
+appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
 };
-
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
-  const userEmail = localStorage.getItem("userEmail");
-  document.getElementById("email").innerText = userEmail;
-
-  const savedName = localStorage.getItem("profileName");
-  const savedImg = localStorage.getItem("profileImg");
-
-  if(savedName) document.getElementById("nameInput").value = savedName;
-  if(savedImg) document.getElementById("profilePic").src = savedImg;
-
-  document.getElementById("imgInput").addEventListener("change", function(){
-    const file = this.files[0];
-    const reader = new FileReader();
-    reader.onload = function(e){
-      document.getElementById("profilePic").src = e.target.result;
-      localStorage.setItem("profileImg", e.target.result);
-    };
-    reader.readAsDataURL(file);
-  });
 const auth = firebase.auth();
 const db = firebase.firestore();
+const storage = firebase.storage();
 
 let profileUid = null;
+let currentUser = null;
 
+// Auth listener
 auth.onAuthStateChanged(user=>{
-if(!user){
-window.location.href="index.html";
-return;
-}
-
-profileUid = user.uid;
-
-// profile info agarsiisa
-db.collection("users").doc(profileUid).get().then(doc=>{
-if(doc.exists){
-document.getElementById("profileName").innerText = doc.data().name || "User";
-document.getElementById("profileEmail").innerText = doc.data().email;
-}else{
-document.getElementById("profileName").innerText = user.email;
-document.getElementById("profileEmail").innerText = user.email;
-}
-});
-
-loadFollowCounts();
-checkFollowStatus();
-});
-  function saveProfile(){
-    const name = document.getElementById("nameInput").value;
-    localStorage.setItem("profileName", name);
-    alert("Profile saved!");
-  }const profileName = localStorage.getItem("profileName") || "User";
-
-// follower count jalqabaa
-let followers = parseInt(localStorage.getItem("followers_"+profileName)) || 0;
-document.getElementById("followerCount").innerText = followers;
-
-function followUser(){
-  followers++;
-  localStorage.setItem("followers_"+profileName, followers);
-  document.getElementById("followerCount").innerText = followers;
-
-  // follow list keessatti galcha
-  let following = JSON.parse(localStorage.getItem("followingList")) || [];
-  if(!following.includes(profileName)){
-    following.push(profileName);
-    localStorage.setItem("followingList", JSON.stringify(following));
+  if(!user){
+    window.location.href="index.html";
+    return;
   }
+  currentUser = user;
+  profileUid = user.uid;
 
-  alert("Follow godhe ✔");
-  }
-  function checkFollowStatus(){
-const currentUser = auth.currentUser;
-if(!currentUser) return;
+  document.getElementById("profileEmail").innerText = user.email;
 
-db.collection("follows")
-.doc(currentUser.uid)
-.collection("following")
-.doc(profileUid)
-.get()
-.then(doc=>{
-if(doc.exists){
-document.getElementById("followBtn").innerText="Unfollow";
-}else{
-document.getElementById("followBtn").innerText="Follow";
-}
+  // Load profile data
+  db.collection("users").doc(profileUid).get().then(doc=>{
+    if(doc.exists){
+      document.getElementById("nameInput").value = doc.data().name || "";
+      if(doc.data().photoURL) document.getElementById("profilePic").src = doc.data().photoURL;
+    }
+  });
+
+  loadFollowCounts();
+  checkFollowStatus();
 });
+
+// Image upload
+document.getElementById("imgInput").addEventListener("change", function(){
+  const file = this.files[0];
+  if(!file) return;
+  const storageRef = storage.ref().child("profilePics/"+profileUid);
+  storageRef.put(file).then(()=>storageRef.getDownloadURL().then(url=>{
+    document.getElementById("profilePic").src = url;
+    db.collection("users").doc(profileUid).update({photoURL:url});
+  }));
+});
+
+// Save profile
+function saveProfile(){
+  const name = document.getElementById("nameInput").value;
+  db.collection("users").doc(profileUid).set({name:name},{merge:true});
+  alert("Profile saved ✔");
 }
 
+// Follow / Unfollow
+function toggleFollow(){
+  if(currentUser.uid === profileUid){
+    alert("Ofii kee follow hin dandeessu");
+    return;
+  }
+  const ref = db.collection("follows").doc(currentUser.uid).collection("following").doc(profileUid);
+  ref.get().then(doc=>{
+    if(doc.exists){
+      // Unfollow
+      ref.delete();
+      db.collection("follows").doc(profileUid).collection("followers").doc(currentUser.uid).delete();
+      document.getElementById("followBtn").innerText="Follow";
+    }else{
+      // Follow
+      ref.set({date:new Date()});
+      db.collection("follows").doc(profileUid).collection("followers").doc(currentUser.uid).set({date:new Date()});
+      document.getElementById("followBtn").innerText="Unfollow";
+    }
+    loadFollowCounts();
+  });
+}
+
+// Load follower/following counts
 function loadFollowCounts(){
-const currentUser = auth.currentUser;
-
-db.collection("follows")
-.doc(profileUid)
-.collection("followers")
-.onSnapshot(snap=>{
-document.getElementById("followersCount").innerText = snap.size;
-});
-
-db.collection("follows")
-.doc(profileUid)
-.collection("following")
-.onSnapshot(snap=>{
-document.getElementById("followingCount").innerText = snap.size;
-});
-  }function toggleFollow(){
-const currentUser = auth.currentUser;
-if(!currentUser) return;
-
-// ofii kee follow hin gootu
-if(currentUser.uid === profileUid){
-alert("Ofii kee follow hin dandeessu");
-return;
+  db.collection("follows").doc(profileUid).collection("followers").onSnapshot(snap=>{
+    document.getElementById("followersCount").innerText = snap.size;
+  });
+  db.collection("follows").doc(profileUid).collection("following").onSnapshot(snap=>{
+    document.getElementById("followingCount").innerText = snap.size;
+  });
 }
 
-const ref = db.collection("follows")
-.doc(currentUser.uid)
-.collection("following")
-.doc(profileUid);
-
-ref.get().then(doc=>{
-if(doc.exists){
-// UNFOLLOW
-ref.delete();
-db.collection("follows")
-.doc(profileUid)
-.collection("followers")
-.doc(currentUser.uid)
-.delete();
-
-document.getElementById("followBtn").innerText="Follow";
-
-}else{
-// FOLLOW
-ref.set({date:new Date()});
-db.collection("follows")
-.doc(profileUid)
-.collection("followers")
-.doc(currentUser.uid)
-.set({date:new Date()});
-
-document.getElementById("followBtn").innerText="Unfollow";
-}
-
-loadFollowCounts();
-});
+// Check follow status
+function checkFollowStatus(){
+  if(currentUser.uid === profileUid){
+    document.getElementById("followBtn").style.display="none"; // hide follow button for self
+    return;
   }
+  db.collection("follows").doc(currentUser.uid).collection("following").doc(profileUid).get().then(doc=>{
+    if(doc.exists) document.getElementById("followBtn").innerText="Unfollow";
+    else document.getElementById("followBtn").innerText="Follow";
+  });
+}
 </script>
 
 </body>
