@@ -149,21 +149,54 @@ function logout(){
 }
 
 function showProfile(){
+const name = prompt("Maqaa kee galchi");
+if(!name) return;
+
+const user = auth.currentUser;
+
+db.collection("users").doc(user.uid).set({
+name: name,
+email: user.email
+});
+
+alert("Profile save ta'e ✔");
+}{
   window.location.href="profile.html";
 }
 
 /* POST SYSTEM */
 function addPost(){
-  const text=document.getElementById("postText").value;
-  if(!text) return;
+const text=document.getElementById("postText").value;
+if(!text) return;
 
-  db.collection("posts").add({
-    text:text,
-    date:new Date()
-  });
+const user=auth.currentUser;
 
-  document.getElementById("postText").value="";
-}
+db.collection("users").doc(user.uid).get().then(doc=>{
+const name = doc.exists ? doc.data().name : user.email;
+
+db.collection("posts").add({
+text:text,
+userEmail:user.email,
+userName:name,
+likes:0,
+date:new Date()
+});
+});
+
+document.getElementById("postText").value="";
+}{
+const user=auth.currentUser;
+const text=document.getElementById("postText").value;
+if(!text || !user) return;
+
+db.collection("posts").add({
+text:text,
+userEmail:user.email,
+date:new Date()
+});
+
+document.getElementById("postText").value="";
+  }
 
 function loadPosts(){
   db.collection("posts").orderBy("date","desc")
@@ -174,17 +207,81 @@ function loadPosts(){
       const post=document.createElement("div");
       post.className="post";
       post.innerHTML=`
+<h4>${doc.data().userEmail}</h4>
+<p>${doc.data().text}</p>
+
+<button onclick="likePost('${doc.id}')">❤️ Like</button>
+<span id="like-${doc.id}">❤️ 0</span>
+
+<button onclick="commentPost('${doc.id}')">💬 Comment</button>
+<div id="c-${doc.id}"></div>
+`;
+<p>${doc.data().text}</p>
+<button onclick="likePost('${doc.id}')">❤️ Like</button>
+<span id="like-${doc.id}">❤️ 0</span>
+<button onclick="commentPost('${doc.id}')">💬 Comment</button>
+<div id="c-${doc.id}"></div>
+`;
+<p>${doc.data().text}</p>
+<button onclick="likePost('${doc.id}')">❤️ Like</button>
+<button onclick="commentPost('${doc.id}')">💬 Comment</button>
+<div id="c-${doc.id}"></div>
+`;
         <p>${doc.data().text}</p>
         <button onclick="likePost('${doc.id}')">Like</button>
         <button onclick="commentPost('${doc.id}')">Comment</button>
       `;
       container.appendChild(post);
-    });
+      updateLikeCount(doc.id);
+      db.collection("posts").doc(doc.id)
+.collection("comments")
+.orderBy("date")
+.onSnapshot(snap=>{
+  const area=document.getElementById("c-"+doc.id);
+  area.innerHTML="";
+  snap.forEach(c=>{
+    const p=document.createElement("p");
+    p.textContent=c.data().user+" : "+c.data().text;
+    area.appendChild(p);
   });
-}
+});
 
-function likePost(id){ alert("Like system itti fufna"); }
-function commentPost(id){ alert("Comment system itti fufna"); }
+});
+
+function likePost(id){
+const user=auth.currentUser;
+if(!user) return;
+function updateLikeCount(id){
+db.collection("posts").doc(id)
+.collection("likes")
+.onSnapshot(snapshot=>{
+const el=document.getElementById("like-"+id);
+if(el) el.innerText="❤️ "+snapshot.size;
+});
+    }
+const ref=db.collection("posts").doc(id);
+
+ref.collection("likes").doc(user.uid).set({
+user:user.email
+});
+
+updateLikeCount(id);
+  }
+function commentPost(id){
+  const text=prompt("Comment kee barreessi");
+  if(!text) return;
+
+  const user=auth.currentUser;
+
+  db.collection("posts")
+  .doc(id)
+  .collection("comments")
+  .add({
+    text:text,
+    user:user.email,
+    date:new Date()
+  });
+    }
 function sharePost(){ alert("Share system itti fufna"); }
 function scheduleClass(){ alert("Schedule system itti fufna"); }
 
