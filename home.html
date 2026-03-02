@@ -313,7 +313,61 @@ width:"100%",
 height:"100%"
 });
 }
-function joinMeet(){ startMeet(); }
+function joinMeet(){ startMeet();
+                   function startMeet(){
+  const user = auth.currentUser;
+  if(!user) return alert("Login godhi!");
+
+  // Generate unique room name
+  const roomName = "BarnootaLiveRoom_" + Date.now();
+
+  // Save room info in Firestore
+  db.collection("meetings").doc(roomName).set({
+    host: user.uid,
+    hostEmail: user.email,
+    roomName: roomName,
+    createdAt: new Date()
+  });
+
+  // Show meet iframe
+  document.getElementById("content").innerHTML = `<div id="meet" style="height:80vh;"></div>`;
+
+  api = new JitsiMeetExternalAPI("meet.jit.si", {
+    roomName: roomName,
+    parentNode: document.querySelector("#meet"),
+    width: "100%",
+    height: "100%"
+  });
+
+  // Copy link button
+  const shareBtn = document.createElement("button");
+  shareBtn.textContent = "🔗 Copy Meeting Link";
+  shareBtn.style.marginTop = "8px";
+  shareBtn.onclick = function(){
+    const link = `${location.origin}/liveclass.html?room=${roomName}`;
+    navigator.clipboard.writeText(link)
+      .then(()=> alert("Link copy godhame! Nama biraaf erguu dandeessa."))
+      .catch(err => alert("Clipboard copy hin danda'amne: " + err));
+  };
+  document.getElementById("content").appendChild(shareBtn);
+  }function joinMeet(){
+  const room = prompt("Room link ykn code galchi:");
+  if(!room) return;
+
+  const roomName = room.includes("room=") ? new URL(room).searchParams.get("room") : room;
+
+  if(!roomName) return alert("Room code sirrii miti!");
+
+  // Show meet iframe
+  document.getElementById("content").innerHTML = `<div id="meet" style="height:80vh;"></div>`;
+
+  api = new JitsiMeetExternalAPI("meet.jit.si", {
+    roomName: roomName,
+    parentNode: document.querySelector("#meet"),
+    width: "100%",
+    height: "100%"
+  });
+    }}
 
 /* NAVIGATION */
 function goHome(){ window.location.href="home.html"; }
