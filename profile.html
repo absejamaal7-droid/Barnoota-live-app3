@@ -43,7 +43,15 @@
 <img id="profilePic" src="https://via.placeholder.com/120">
 
 <p id="email"></p>
+<h2 id="profileName">Loading...</h2>
+<p id="profileEmail"></p>
 
+<button id="followBtn" onclick="toggleFollow()">Follow</button>
+
+<p>
+Followers: <span id="followersCount">0</span> |
+Following: <span id="followingCount">0</span>
+</p>
 <input type="text" id="nameInput" placeholder="Maqaa kee">
 <br>
 <input type="file" id="imgInput">
@@ -51,7 +59,23 @@
 <button onclick="saveProfile()">Save Profile</button>
 <button onclick="followUser()">Follow</button>
 <div>Followers: <span id="followerCount">0</span></div>
+  <!-- Firebase compat -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 <script>
+  const firebaseConfig={
+  apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
+  authDomain:"abseapp-b3706.firebaseapp.com",
+  projectId:"abseapp-b3706",
+  storageBucket:"abseapp-b3706.firebasestorage.app",
+  messagingSenderId:"986026055368",
+  appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
   const userEmail = localStorage.getItem("userEmail");
   document.getElementById("email").innerText = userEmail;
 
