@@ -2,7 +2,10 @@
 <html>
 <head>
   <title>Profile - Barnoota Live</title>
-
+<!-- Firebase compat -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
   <style>
     body{
       margin:0;
@@ -59,10 +62,6 @@ Following: <span id="followingCount">0</span>
 <button onclick="saveProfile()">Save Profile</button>
 <button onclick="followUser()">Follow</button>
 <div>Followers: <span id="followerCount">0</span></div>
-  <!-- Firebase compat -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 <script>
   const firebaseConfig={
   apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
@@ -94,7 +93,33 @@ const db=firebase.firestore();
     };
     reader.readAsDataURL(file);
   });
+const auth = firebase.auth();
+const db = firebase.firestore();
 
+let profileUid = null;
+
+auth.onAuthStateChanged(user=>{
+if(!user){
+window.location.href="index.html";
+return;
+}
+
+profileUid = user.uid;
+
+// profile info agarsiisa
+db.collection("users").doc(profileUid).get().then(doc=>{
+if(doc.exists){
+document.getElementById("profileName").innerText = doc.data().name || "User";
+document.getElementById("profileEmail").innerText = doc.data().email;
+}else{
+document.getElementById("profileName").innerText = user.email;
+document.getElementById("profileEmail").innerText = user.email;
+}
+});
+
+loadFollowCounts();
+checkFollowStatus();
+});
   function saveProfile(){
     const name = document.getElementById("nameInput").value;
     localStorage.setItem("profileName", name);
@@ -118,6 +143,82 @@ function followUser(){
   }
 
   alert("Follow godhe ✔");
+  }
+  function checkFollowStatus(){
+const currentUser = auth.currentUser;
+if(!currentUser) return;
+
+db.collection("follows")
+.doc(currentUser.uid)
+.collection("following")
+.doc(profileUid)
+.get()
+.then(doc=>{
+if(doc.exists){
+document.getElementById("followBtn").innerText="Unfollow";
+}else{
+document.getElementById("followBtn").innerText="Follow";
+}
+});
+}
+
+function loadFollowCounts(){
+const currentUser = auth.currentUser;
+
+db.collection("follows")
+.doc(profileUid)
+.collection("followers")
+.onSnapshot(snap=>{
+document.getElementById("followersCount").innerText = snap.size;
+});
+
+db.collection("follows")
+.doc(profileUid)
+.collection("following")
+.onSnapshot(snap=>{
+document.getElementById("followingCount").innerText = snap.size;
+});
+  }function toggleFollow(){
+const currentUser = auth.currentUser;
+if(!currentUser) return;
+
+// ofii kee follow hin gootu
+if(currentUser.uid === profileUid){
+alert("Ofii kee follow hin dandeessu");
+return;
+}
+
+const ref = db.collection("follows")
+.doc(currentUser.uid)
+.collection("following")
+.doc(profileUid);
+
+ref.get().then(doc=>{
+if(doc.exists){
+// UNFOLLOW
+ref.delete();
+db.collection("follows")
+.doc(profileUid)
+.collection("followers")
+.doc(currentUser.uid)
+.delete();
+
+document.getElementById("followBtn").innerText="Follow";
+
+}else{
+// FOLLOW
+ref.set({date:new Date()});
+db.collection("follows")
+.doc(profileUid)
+.collection("followers")
+.doc(currentUser.uid)
+.set({date:new Date()});
+
+document.getElementById("followBtn").innerText="Unfollow";
+}
+
+loadFollowCounts();
+});
   }
 </script>
 
