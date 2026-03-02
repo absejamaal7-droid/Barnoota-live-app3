@@ -151,7 +151,25 @@ userUid:user.uid,
 date:new Date()
 });
 });
+function sharePost(postId){
+  const postRef = db.collection("posts").doc(postId);
 
+  postRef.get().then(doc=>{
+    if(!doc.exists) return alert("Post hin jiru!");
+
+    const post = doc.data();
+
+    // Text to share
+    const text = `Barnoota Live Post\n\n${post.userName || post.userEmail}:\n${post.text}`;
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(text).then(()=>{
+      alert("Post copy godhame! Nama biraaf paste gochuu dandeessa.");
+    }).catch(err=>{
+      alert("Clipboard copy hin dandeenye: "+err);
+    });
+  });
+}
 document.getElementById("postText").value="";
 document.getElementById("videoFile").value="";
 }
@@ -188,7 +206,7 @@ if(!followingIds.includes(doc.data().userUid)) return;
 const post=document.createElement("div");
 post.className="post";
 
-post.innerHTML=`
+post.innerHTML = `
 <h4>${doc.data().userName || doc.data().userEmail}</h4>
 <p>${doc.data().text}</p>
 
@@ -197,6 +215,8 @@ post.innerHTML=`
 
 <button onclick="commentPost('${doc.id}')">💬 Comment</button>
 <div id="c-${doc.id}"></div>
+
+<button onclick="sharePost('${doc.id}')">🔗 Share</button>
 `;
 
 container.appendChild(post);
