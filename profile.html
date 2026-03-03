@@ -73,7 +73,9 @@ button{
 
 <h3>Your Posts</h3>
 <div id="postsContainer"></div>
-
+<br>
+<input type="file" id="videoInput" accept="video/*">
+<button onclick="uploadVideoPost()">Upload Video Post</button>
 <script>
 const firebaseConfig={
 apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
@@ -83,6 +85,7 @@ storageBucket:"abseapp-b3706.firebasestorage.app",
 messagingSenderId:"986026055368",
 appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
 };
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -91,12 +94,13 @@ const storage = firebase.storage();
 let profileUid = null;
 let currentUser = null;
 
-// Auth listener
+// ================= AUTH =================
 auth.onAuthStateChanged(user=>{
   if(!user){
     window.location.href="index.html";
     return;
   }
+
   currentUser = user;
   profileUid = user.uid;
 
@@ -106,171 +110,180 @@ auth.onAuthStateChanged(user=>{
   db.collection("users").doc(profileUid).get().then(doc=>{
     if(doc.exists){
       document.getElementById("nameInput").value = doc.data().name || "";
-      if(doc.data().photoURL) document.getElementById("profilePic").src = doc.data().photoURL;
+      if(doc.data().photoURL){
+        document.getElementById("profilePic").src = doc.data().photoURL;
+      }
     }
   });
 
   loadFollowCounts();
   checkFollowStatus();
-  loadPosts(); // <-- profile feed
+  loadPosts();
 });
 
-// Image upload
+// ================= IMAGE UPLOAD =================
 document.getElementById("imgInput").addEventListener("change", function(){
   const file = this.files[0];
   if(!file) return;
+
   const storageRef = storage.ref().child("profilePics/"+profileUid);
-  storageRef.put(file).then(()=>storageRef.getDownloadURL().then(url=>{
-    document.getElementById("profilePic").src = url;
-    db.collection("users").doc(profileUid).update({photoURL:url});
-  }));
+  storageRef.put(file).then(()=>{
+    storageRef.getDownloadURL().then(url=>{
+      document.getElementById("profilePic").src = url;
+      db.collection("users").doc(profileUid).update({photoURL:url});
+    });
+  });
 });
 
-// Save profile
+// ================= SAVE PROFILE =================
 function saveProfile(){
   const name = document.getElementById("nameInput").value;
   db.collection("users").doc(profileUid).set({name:name},{merge:true});
   alert("Profile saved ✔");
 }
 
-// Follow / Unfollow
+// ================= FOLLOW SYSTEM =================
 function toggleFollow(){
   if(currentUser.uid === profileUid){
     alert("Ofii kee follow hin dandeessu");
     return;
   }
-  const ref = db.collection("follows").doc(currentUser.uid).collection("following").doc(profileUid);
+
+  const ref = db.collection("follows")
+    .doc(currentUser.uid)
+    .collection("following")
+    .doc(profileUid);
+
   ref.get().then(doc=>{
     if(doc.exists){
       ref.delete();
-      db.collection("follows").doc(profileUid).collection("followers").doc(currentUser.uid).delete();
+      db.collection("follows").doc(profileUid)
+        .collection("followers")
+        .doc(currentUser.uid).delete();
       document.getElementById("followBtn").innerText="Follow";
     }else{
       ref.set({date:new Date()});
-      db.collection("follows").doc(profileUid).collection("followers").doc(currentUser.uid).set({date:new Date()});
+      db.collection("follows").doc(profileUid)
+        .collection("followers")
+        .doc(currentUser.uid).set({date:new Date()});
       document.getElementById("followBtn").innerText="Unfollow";
     }
     loadFollowCounts();
   });
 }
 
-// Load follower/following counts
 function loadFollowCounts(){
-  db.collection("follows").doc(profileUid).collection("followers").onSnapshot(snap=>{
-    document.getElementById("followersCount").innerText = snap.size;
-  });
-  db.collection("follows").doc(profileUid).collection("following").onSnapshot(snap=>{
-    document.getElementById("followingCount").innerText = snap.size;
-  });
+  db.collection("follows").doc(profileUid)
+    .collection("followers")
+    .onSnapshot(snap=>{
+      document.getElementById("followersCount").innerText = snap.size;
+    });
+
+  db.collection("follows").doc(profileUid)
+    .collection("following")
+    .onSnapshot(snap=>{
+      document.getElementById("followingCount").innerText = snap.size;
+    });
 }
 
-// Check follow status
 function checkFollowStatus(){
   if(currentUser.uid === profileUid){
     document.getElementById("followBtn").style.display="none";
     return;
   }
-  db.collection("follows").doc(currentUser.uid).collection("following").doc(profileUid).get().then(doc=>{
-    document.getElementById("followBtn").innerText = doc.exists ? "Unfollow" : "Follow";
-  });
-}
 
-// ---------------------------
-// Profile post feed + video autoplay
-function loadPosts()<!-- Hojii feed fi buttons dabaluu: Edit/Delete/Share -->
-
-// Load posts function dabaluun buttons dabalu
-function loadPosts(){
-  db.collection("posts").where("userUid","==",profileUid)
-  .orderBy("date","desc")
-  .onSnapshot(snapshot=>{
-    const container = document.getElementById("postsContainer");
-    container.innerHTML="";
-    snapshot.forEach(doc=>{
-      const post = doc.data();
-      const div = document.createElement("div");
-      div.className="post";
-
-      let videoHTML = post.videoURL ? `<video src="${post.videoURL}" controls muted loop class="feedVideo"></video>` : "";
-
-      // Buttons: Edit, Delete, Share
-      div.innerHTML = `
-        <p>${post.text || ""}</p>
-        ${videoHTML}
-        <button onclick="editPost('${doc.id}')">✏️ Edit</button>
-        <button onclick="deletePost('${doc.id}')">🗑 Delete</button>
-        <button onclick="sharePost('${doc.id}')">🔗 Share</button>
-      `;
-      container.appendChild(div);
+  db.collection("follows").doc(currentUser.uid)
+    .collection("following")
+    .doc(profileUid)
+    .get().then(doc=>{
+      document.getElementById("followBtn").innerText =
+        doc.exists ? "Unfollow" : "Follow";
     });
+}
 
-    setupAutoPlay();
+// ================= LOAD POSTS =================
+function loadPosts(){
+  db.collection("posts")
+    .where("userUid","==",profileUid)
+    .orderBy("date","desc")
+    .onSnapshot(snapshot=>{
+      const container = document.getElementById("postsContainer");
+      container.innerHTML = "";
+
+      snapshot.forEach(doc=>{
+        const post = doc.data();
+        const div = document.createElement("div");
+        div.className="post";
+
+        let videoHTML = post.videoURL
+          ? `<video src="${post.videoURL}" controls muted loop class="feedVideo"></video>`
+          : "";
+
+        div.innerHTML = `
+          <p>${post.text || ""}</p>
+          ${videoHTML}
+          <button onclick="editPost('${doc.id}','${post.userUid}')">✏️ Edit</button>
+          <button onclick="deletePost('${doc.id}','${post.userUid}')">🗑 Delete</button>
+          <button onclick="sharePost('${doc.id}')">🔗 Share</button>
+        `;
+
+        container.appendChild(div);
+      });
+
+      setupAutoPlay();
   });
 }
 
-// Edit post
-function editPost(postId){
-  const newText = prompt("Post barreessi sirreessi:");
+// ================= EDIT =================
+function editPost(postId, postUserId){
+  if(currentUser.uid !== postUserId){
+    return alert("Post kan nama biraa edit hin dandeessu!");
+  }
+
+  const newText = prompt("Post sirreessi:");
   if(newText===null) return;
 
   db.collection("posts").doc(postId).update({text:newText})
-  .then(()=>alert("Post update ✔"));
+    .then(()=>alert("Post update ✔"));
 }
 
-// Delete post
-function deletePost(postId){
+// ================= DELETE =================
+function deletePost(postId, postUserId){
+  if(currentUser.uid !== postUserId){
+    return alert("Post kan nama biraa delete hin dandeessu!");
+  }
+
   if(!confirm("Post haqaa?")) return;
+
   db.collection("posts").doc(postId).delete()
-  .then(()=>alert("Post haqe ✔"));
+    .then(()=>alert("Post haqe ✔"));
 }
 
-// Share post
+// ================= SHARE =================
 function sharePost(postId){
   db.collection("posts").doc(postId).get().then(doc=>{
-    if(!doc.exists) return alert("Post hin jiru!");
+    if(!doc.exists) return;
+
     const post = doc.data();
-    let text = `Barnoota Live Post\n\n${post.userEmail}:\n${post.text}`;
+    let text = `Barnoota Live Post\n\n${post.userEmail}:\n${post.text || ""}`;
     if(post.videoURL) text += `\nVideo: ${post.videoURL}`;
-    
+
     navigator.clipboard.writeText(text)
-    .then(()=> alert("Post link/text copy godhame! Nama biraaf erguu dandeessa."))
-    .catch(err=>alert("Clipboard copy hin danda'amne: "+err));
-  });
-}
-{
-  db.collection("posts")
-  .where("userUid","==",profileUid) // only-me security
-  .orderBy("date","desc")
-  .onSnapshot(snapshot=>{
-    const container = document.getElementById("postsContainer");
-    container.innerHTML = "";
-
-    snapshot.forEach(doc=>{
-      const post = doc.data();
-      const div = document.createElement("div");
-      div.className="post";
-
-      let videoHTML = "";
-      if(post.videoURL) videoHTML=`<video src="${post.videoURL}" controls muted loop class="feedVideo"></video>`;
-
-      div.innerHTML = `
-        <p>${post.text || ""}</p>
-        ${videoHTML}
-      `;
-      container.appendChild(div);
-    });
-
-    setupAutoPlay(); // <-- autoplay observer
+      .then(()=>alert("Post copy godhame ✔"));
   });
 }
 
-// Video autoplay using IntersectionObserver
+// ================= AUTOPLAY =================
 function setupAutoPlay(){
   const videos = document.querySelectorAll(".feedVideo");
+
   const observer = new IntersectionObserver(entries=>{
     entries.forEach(entry=>{
-      if(entry.isIntersecting) entry.target.play();
-      else entry.target.pause();
+      if(entry.isIntersecting){
+        entry.target.play();
+      }else{
+        entry.target.pause();
+      }
     });
   },{threshold:0.6});
 
@@ -278,6 +291,31 @@ function setupAutoPlay(){
     observer.observe(video);
   });
 }
+
+// ================= VIDEO UPLOAD =================
+function uploadVideoPost(){
+  const file = document.getElementById("videoInput").files[0];
+  const text = prompt("Video description barreessi:");
+  if(!file) return alert("Video filadhu!");
+
+  const storageRef = storage.ref()
+    .child("userVideos/"+profileUid+"/"+Date.now()+"_"+file.name);
+
+  storageRef.put(file).then(()=>{
+    storageRef.getDownloadURL().then(url=>{
+      db.collection("posts").add({
+        userUid: profileUid,
+        userEmail: currentUser.email,
+        text: text || "",
+        videoURL: url,
+        date: new Date()
+      }).then(()=>{
+        alert("Video post saved ✔");
+        document.getElementById("videoInput").value="";
+      });
+    });
+  });
+          }
 </script>
 
 </body>
