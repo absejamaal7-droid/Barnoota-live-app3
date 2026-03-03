@@ -9,6 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
 
 <style>
 body{margin:0;font-family:Arial;background:#0f172a;color:white;}
@@ -20,7 +21,7 @@ button{background:#2563eb;border:none;color:white;padding:8px 12px;border-radius
 textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;}
 #bottomNav{position:fixed;bottom:0;left:0;right:0;height:60px;background:#111827;display:flex;justify-content:space-around;align-items:center;border-top:1px solid #333;}
 #bottomNav button{background:none;border:none;color:white;font-size:14px;}
-.feedVideo{width:100%;margin-top:10px;}
+.feedVideo{width:100%;margin-top:10px;border-radius:6px;}
 </style>
 </head>
 
@@ -32,10 +33,10 @@ textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;}
 </div>
 
 <div id="menu">
-  <button onclick="showProfile()">Profile</button>
-  <button onclick="startMeet()">Meet</button>
-  <button onclick="joinMeet()">Join</button>
-  <button onclick="logout()">Logout</button>
+  <button onclick="goProfile()">👤 Profile</button>
+  <button onclick="startMeet()">🎥 Meet</button>
+  <button onclick="joinMeet()">Join Meet</button>
+  <button onclick="logout()">🚪 Logout</button>
 </div>
 
 <div id="content">
@@ -44,8 +45,8 @@ textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;}
   <input type="file" id="videoFile" accept="video/*">
   <button onclick="addPost()">Post godhi</button>
 
-  <div id="posts"><button onclick="toggleLike('${doc.id}')">❤️ Like</button>
-<span id="like-count-${doc.id}">0</span></div>
+  <h3>Posts</h3>
+  <div id="posts"></div>
 </div>
 
 <div id="bottomNav">
@@ -67,21 +68,27 @@ appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+const storage = firebase.storage();
+
+let api=null;
 
 // Auth listener
 auth.onAuthStateChanged(user=>{
-  if(user){
+  if(!user){
+    window.location.href = "index.html";
+  } else {
     document.getElementById("userEmail").innerText = user.email;
     loadPosts();
-  }else{
-    window.location.href = "index.html";
   }
 });
 
 // Logout
-function logout(){
-  auth.signOut().then(()=>window.location.href="index.html");
-}
+function logout(){ auth.signOut().then(()=>window.location.href="index.html"); }
+
+// Navigation
+function goHome(){ window.location.href="home.html"; }
+function goProfile(){ window.location.href="profile.html"; }
+function goMeet(){ window.location.href="liveclass.html"; }
 
 // Profile
 function showProfile(){
@@ -93,82 +100,75 @@ function showProfile(){
   window.location.href="profile.html";
 }
 
-// Video autoplay
-function setupAutoPlay(){
-  const observer = new IntersectionObserver(entries=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting) entry.target.play();
-      else entry.target.pause();
-    });
-  }, {threshold:0.6});
-  document.querySelectorAll(".feedVideo").forEach(video=>{
-    observer.observe(video);
-  });
-}
+// ----------------- Post Functions -----------------
 
-// Add post
 function addPost(){
-  const text = document.getElementById("postText").value;
-  const file = document.getElementById("videoFile").files[0];
   const user = auth.currentUser;
   if(!user) return;
 
-  db.collection("users").doc(user.uid).get().then(doc=>{
-    const name = doc.exists ? doc.data().name : user.email;
-    let videoURL = "";
-    if(file) videoURL = URL.createObjectURL(file);
+  const text = document.getElementById("postText").value;
+  const file = document.getElementById("videoFile").files[0];
 
-    db.collection("posts").add({
-      text:text,
-      userEmail:user.email,
-      userName:name,
-      userUid:user.uid,
-      videoURL: videoURL,
-      date: new Date()
-    }).then(()=>{
-      document.getElementById("postText").value="";
-      document.getElementById("videoFile").value="";
-    });
+  if(file){
+    const storageRef = storage.ref().child(`userVideos/${user.uid}/${Date.now()}_${file.name}`);
+    storageRef.put(file).then(()=>storageRef.getDownloadURL().then(url=>{
+      savePostToFirestore(user, text, url);
+    }));
+  } else {
+    savePostToFirestore(user, text, "");
+  }
+}
+
+function savePostToFirestore(user, text, videoURL){
+  db.collection("posts").add({
+    userUid: user.uid,
+    userEmail: user.email,
+    text: text || "",
+    videoURL: videoURL || "",
+    date: new Date()
+  }).then(()=>{
+    document.getElementById("postText").value="";
+    document.getElementById("videoFile").value="";
   });
 }
 
 // Load posts
-function loadPosts()db.collection("posts")
-.doc(doc.id)
-.collection("likes")
-.onSnapshot(snapshot=>{
-  document.getElementById(`like-count-${doc.id}`).innerText = snapshot.size;
-});{
+function loadPosts(){
   const user = auth.currentUser;
   db.collection("posts").orderBy("date","desc").onSnapshot(snapshot=>{
     const container = document.getElementById("posts");
     container.innerHTML = "";
+
     snapshot.forEach(doc=>{
       const postData = doc.data();
       const post = document.createElement("div");
-      post.className = "post";
+      post.className="post";
 
-      post.innerHTML = `
-        <h4>${postData.userName || postData.userEmail}</h4>
+      post.innerHTML=`
+        <h4>${postData.userEmail}</h4>
         <p>${postData.text}</p>
-        ${postData.videoURL ? `<video class="feedVideo" src="${postData.videoURL}" controls muted></video>` : ""}
-        <button onclick="likePost('${doc.id}')">❤️ Like</button>
-        <span id="like-${doc.id}">❤️ 0</span>
+        ${postData.videoURL ? `<video class="feedVideo" src="${postData.videoURL}" controls muted loop></video>` : ""}
+        <button onclick="toggleLike('${doc.id}')">❤️ Like</button>
+        <span id="like-count-${doc.id}">0</span>
         <button onclick="commentPost('${doc.id}')">💬 Comment</button>
         <div id="c-${doc.id}"></div>
         <button onclick="sharePost('${doc.id}')">🔗 Share</button>
       `;
 
       container.appendChild(post);
-      updateLikeCount(doc.id);
 
-      // Comments
+      // Like listener
+      db.collection("posts").doc(doc.id).collection("likes").onSnapshot(snap=>{
+        document.getElementById(`like-count-${doc.id}`).innerText = snap.size;
+      });
+
+      // Comments listener
       db.collection("posts").doc(doc.id).collection("comments").orderBy("date").onSnapshot(snap=>{
         const area = document.getElementById("c-"+doc.id);
         area.innerHTML = "";
         snap.forEach(c=>{
-          const p = document.createElement("p");
-          p.textContent = `${c.data().user} : ${c.data().text}`;
+          const p=document.createElement("p");
+          p.textContent=`${c.data().user}: ${c.data().text}`;
           area.appendChild(p);
         });
       });
@@ -178,25 +178,29 @@ function loadPosts()db.collection("posts")
   });
 }
 
-// Like
-function likePost(id){
+// Like toggle
+function toggleLike(postId){
   const user = auth.currentUser;
   if(!user) return;
-  db.collection("posts").doc(id).collection("likes").doc(user.uid).set({user:user.email});
-}
-function updateLikeCount(id){
-  db.collection("posts").doc(id).collection("likes").onSnapshot(snapshot=>{
-    const el = document.getElementById("like-"+id);
-    if(el) el.innerText = "❤️ "+snapshot.size;
+
+  const likeRef = db.collection("posts").doc(postId).collection("likes").doc(user.uid);
+  likeRef.get().then(doc=>{
+    if(doc.exists){ likeRef.delete(); } 
+    else { likeRef.set({userUid:user.uid,date:new Date()}); }
   });
 }
 
 // Comment
-function commentPost(id){
+function commentPost(postId){
+  const user = auth.currentUser;
+  if(!user) return;
   const text = prompt("Comment kee barreessi");
   if(!text) return;
-  const user = auth.currentUser;
-  db.collection("posts").doc(id).collection("comments").add({text:text,user:user.email,date:new Date()});
+  db.collection("posts").doc(postId).collection("comments").add({
+    user: user.email,
+    text: text,
+    date: new Date()
+  });
 }
 
 // Share
@@ -204,13 +208,25 @@ function sharePost(postId){
   db.collection("posts").doc(postId).get().then(doc=>{
     if(!doc.exists) return alert("Post hin jiru!");
     const post = doc.data();
-    const text = `Barnoota Live Post\n\n${post.userName || post.userEmail}:\n${post.text}`;
-    navigator.clipboard.writeText(text).then(()=>alert("Post copy godhame! Nama biraaf paste gochuu dandeessa."));
+    let text = `Barnoota Live Post\n\n${post.userEmail}:\n${post.text}`;
+    if(post.videoURL) text+=`\nVideo: ${post.videoURL}`;
+    navigator.clipboard.writeText(text).then(()=>alert("Post copy godhame!"));
   });
 }
 
-// MEET
-let api=null;
+// Video autoplay
+function setupAutoPlay(){
+  const observer = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting) entry.target.play();
+      else entry.target.pause();
+    });
+  }, {threshold:0.6});
+  document.querySelectorAll(".feedVideo").forEach(v=>observer.observe(v));
+}
+
+// ----------------- Meet Functions -----------------
+
 function startMeet(){
   const user = auth.currentUser;
   if(!user) return alert("Login godhi!");
@@ -223,7 +239,7 @@ function startMeet(){
     createdAt: new Date()
   });
 
-  document.getElementById("content").innerHTML = `<div id="meet" style="height:80vh;"></div>`;
+  document.getElementById("content").innerHTML=`<div id="meet" style="height:80vh;"></div>`;
   api = new JitsiMeetExternalAPI("meet.jit.si", {
     roomName: roomName,
     parentNode: document.querySelector("#meet"),
@@ -232,11 +248,11 @@ function startMeet(){
   });
 
   const shareBtn = document.createElement("button");
-  shareBtn.textContent = "🔗 Copy Meeting Link";
+  shareBtn.textContent="🔗 Copy Meeting Link";
   shareBtn.style.marginTop="8px";
-  shareBtn.onclick = ()=>{
+  shareBtn.onclick=()=>{ 
     const link = `${location.origin}/liveclass.html?room=${roomName}`;
-    navigator.clipboard.writeText(link).then(()=>alert("Link copy godhame! Nama biraaf erguu dandeessa."));
+    navigator.clipboard.writeText(link).then(()=>alert("Link copy godhame!")); 
   };
   document.getElementById("content").appendChild(shareBtn);
 }
@@ -244,42 +260,16 @@ function startMeet(){
 function joinMeet(){
   const room = prompt("Room link ykn code galchi:");
   if(!room) return;
-  const roomName = room.includes("room=") ? new URL(room).searchParams.get("room") : room;
+  const roomName = room.includes("room=")? new URL(room).searchParams.get("room"): room;
   if(!roomName) return alert("Room code sirrii miti!");
-  document.getElementById("content").innerHTML = `<div id="meet" style="height:80vh;"></div>`;
-  api = new JitsiMeetExternalAPI("meet.jit.si", {
+  document.getElementById("content").innerHTML=`<div id="meet" style="height:80vh;"></div>`;
+  api = new JitsiMeetExternalAPI("meet.jit.si",{
     roomName: roomName,
     parentNode: document.querySelector("#meet"),
     width:"100%",
     height:"100%"
   });
 }
-function toggleLike(postId){
-  const user = firebase.auth().currentUser;
-  if(!user) return alert("Login first");
-
-  const likeRef = db.collection("posts")
-    .doc(postId)
-    .collection("likes")
-    .doc(user.uid);
-
-  likeRef.get().then(doc=>{
-    if(doc.exists){
-      // Unlike
-      likeRef.delete();
-    }else{
-      // Like
-      likeRef.set({
-        userUid:user.uid,
-        date:new Date()
-      });
-    }
-  });
-    }
-// Navigation
-function goHome(){ window.location.href="home.html"; }
-function goProfile(){ window.location.href="profile.html"; }
-function goMeet(){ window.location.href="liveclass.html"; }
 
 </script>
 </body>
