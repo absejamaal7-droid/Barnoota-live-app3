@@ -45,7 +45,6 @@ textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;}
   <input type="file" id="videoFile" accept="video/*">
   <button onclick="addPost()">Post godhi</button>
 
-  <h3>Posts</h3>
   <div id="posts"></div>
 </div>
 
@@ -70,16 +69,14 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-let api=null;
+let currentUser = null;
 
 // Auth listener
 auth.onAuthStateChanged(user=>{
-  if(!user){
-    window.location.href = "index.html";
-  } else {
-    document.getElementById("userEmail").innerText = user.email;
-    loadPosts();
-  }
+  if(!user) window.location.href="index.html";
+  currentUser = user;
+  document.getElementById("userEmail").innerText = user.email;
+  loadPosts();
 });
 
 // Logout
@@ -90,116 +87,113 @@ function goHome(){ window.location.href="home.html"; }
 function goProfile(){ window.location.href="profile.html"; }
 function goMeet(){ window.location.href="liveclass.html"; }
 
-// Profile
-function showProfile(){
-  const name = prompt("Maqaa kee galchi");
-  if(!name) return;
-  const user = auth.currentUser;
-  db.collection("users").doc(user.uid).set({name:name,email:user.email});
-  alert("Profile save ta'e ✔");
-  window.location.href="profile.html";
-}
-
-// ----------------- Post Functions -----------------
-
+// Add post
 function addPost(){
-  const user = auth.currentUser;
-  if(!user) return;
-
   const text = document.getElementById("postText").value;
   const file = document.getElementById("videoFile").files[0];
+  if(!currentUser) return;
+  if(!text && !file) return alert("Text ykn video galchi!");
 
-  if(file){
-    const storageRef = storage.ref().child(`userVideos/${user.uid}/${Date.now()}_${file.name}`);
-    storageRef.put(file).then(()=>storageRef.getDownloadURL().then(url=>{
-      savePostToFirestore(user, text, url);
-    }));
-  } else {
-    savePostToFirestore(user, text, "");
+  if(!file){
+    db.collection("posts").add({
+      text:text,
+      userEmail: currentUser.email,
+      userName: currentUser.displayName || currentUser.email,
+      userUid: currentUser.uid,
+      videoURL:"",
+      date:new Date()
+    }).then(()=>document.getElementById("postText").value="");
+    return;
   }
-}
 
-function savePostToFirestore(user, text, videoURL){
-  db.collection("posts").add({
-    userUid: user.uid,
-    userEmail: user.email,
-    text: text || "",
-    videoURL: videoURL || "",
-    date: new Date()
-  }).then(()=>{
-    document.getElementById("postText").value="";
-    document.getElementById("videoFile").value="";
-  });
+  const storageRef = storage.ref().child("userVideos/"+currentUser.uid+"/"+Date.now()+"_"+file.name);
+  const uploadTask = storageRef.put(file);
+
+  uploadTask.on('state_changed', null, 
+    error => alert("Video upload fail: "+error),
+    ()=>{
+      uploadTask.snapshot.ref.getDownloadURL().then(url=>{
+        db.collection("posts").add({
+          text:text,
+          userEmail: currentUser.email,
+          userName: currentUser.displayName || currentUser.email,
+          userUid: currentUser.uid,
+          videoURL:url,
+          date:new Date()
+        }).then(()=>{
+          document.getElementById("postText").value="";
+          document.getElementById("videoFile").value="";
+        });
+      });
+    }
+  );
 }
 
 // Load posts
 function loadPosts(){
-  const user = auth.currentUser;
   db.collection("posts").orderBy("date","desc").onSnapshot(snapshot=>{
     const container = document.getElementById("posts");
-    container.innerHTML = "";
-
+    container.innerHTML="";
     snapshot.forEach(doc=>{
-      const postData = doc.data();
-      const post = document.createElement("div");
-      post.className="post";
-
-      post.innerHTML=`
-        <h4>${postData.userEmail}</h4>
-        <p>${postData.text}</p>
-        ${postData.videoURL ? `<video class="feedVideo" src="${postData.videoURL}" controls muted loop></video>` : ""}
+      const data = doc.data();
+      const div = document.createElement("div");
+      div.className="post";
+      div.innerHTML = `
+        <h4>${data.userName || data.userEmail}</h4>
+        <p>${data.text}</p>
+        ${data.videoURL ? `<video class="feedVideo" src="${data.videoURL}" controls muted loop></video>` : ""}
         <button onclick="toggleLike('${doc.id}')">❤️ Like</button>
-        <span id="like-count-${doc.id}">0</span>
+        <span id="like-${doc.id}">❤️ 0</span>
         <button onclick="commentPost('${doc.id}')">💬 Comment</button>
         <div id="c-${doc.id}"></div>
         <button onclick="sharePost('${doc.id}')">🔗 Share</button>
       `;
+      container.appendChild(div);
 
-      container.appendChild(post);
+      // Load likes count
+      updateLikeCount(doc.id);
 
-      // Like listener
-      db.collection("posts").doc(doc.id).collection("likes").onSnapshot(snap=>{
-        document.getElementById(`like-count-${doc.id}`).innerText = snap.size;
-      });
-
-      // Comments listener
-      db.collection("posts").doc(doc.id).collection("comments").orderBy("date").onSnapshot(snap=>{
-        const area = document.getElementById("c-"+doc.id);
-        area.innerHTML = "";
-        snap.forEach(c=>{
-          const p=document.createElement("p");
-          p.textContent=`${c.data().user}: ${c.data().text}`;
-          area.appendChild(p);
+      // Load comments
+      db.collection("posts").doc(doc.id).collection("comments").orderBy("date")
+        .onSnapshot(snap=>{
+          const area = document.getElementById("c-"+doc.id);
+          area.innerHTML="";
+          snap.forEach(c=>{
+            const p = document.createElement("p");
+            p.textContent = `${c.data().user}: ${c.data().text}`;
+            area.appendChild(p);
+          });
         });
-      });
     });
-
     setupAutoPlay();
   });
 }
 
-// Like toggle
+// Like
 function toggleLike(postId){
-  const user = auth.currentUser;
-  if(!user) return;
-
-  const likeRef = db.collection("posts").doc(postId).collection("likes").doc(user.uid);
+  const likeRef = db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);
   likeRef.get().then(doc=>{
-    if(doc.exists){ likeRef.delete(); } 
-    else { likeRef.set({userUid:user.uid,date:new Date()}); }
+    if(doc.exists) likeRef.delete();
+    else likeRef.set({userUid:currentUser.uid,date:new Date()});
   });
+}
+
+function updateLikeCount(postId){
+  db.collection("posts").doc(postId).collection("likes")
+    .onSnapshot(snapshot=>{
+      const el = document.getElementById("like-"+postId);
+      if(el) el.innerText = "❤️ "+snapshot.size;
+    });
 }
 
 // Comment
 function commentPost(postId){
-  const user = auth.currentUser;
-  if(!user) return;
-  const text = prompt("Comment kee barreessi");
+  const text = prompt("Comment kee barreessi:");
   if(!text) return;
   db.collection("posts").doc(postId).collection("comments").add({
-    user: user.email,
-    text: text,
-    date: new Date()
+    text:text,
+    user:currentUser.email,
+    date:new Date()
   });
 }
 
@@ -207,9 +201,9 @@ function commentPost(postId){
 function sharePost(postId){
   db.collection("posts").doc(postId).get().then(doc=>{
     if(!doc.exists) return alert("Post hin jiru!");
-    const post = doc.data();
-    let text = `Barnoota Live Post\n\n${post.userEmail}:\n${post.text}`;
-    if(post.videoURL) text+=`\nVideo: ${post.videoURL}`;
+    const data = doc.data();
+    let text = `Barnoota Live Post\n\n${data.userName || data.userEmail}:\n${data.text}`;
+    if(data.videoURL) text += `\nVideo: ${data.videoURL}`;
     navigator.clipboard.writeText(text).then(()=>alert("Post copy godhame!"));
   });
 }
@@ -225,52 +219,28 @@ function setupAutoPlay(){
   document.querySelectorAll(".feedVideo").forEach(v=>observer.observe(v));
 }
 
-// ----------------- Meet Functions -----------------
-
+// MEET functions (start/join) same as before
+let api=null;
 function startMeet(){
-  const user = auth.currentUser;
-  if(!user) return alert("Login godhi!");
-  const roomName = "BarnootaLiveRoom_" + Date.now();
-
-  db.collection("meetings").doc(roomName).set({
-    host: user.uid,
-    hostEmail: user.email,
-    roomName: roomName,
-    createdAt: new Date()
-  });
-
+  const roomName = "BarnootaLiveRoom_"+Date.now();
+  db.collection("meetings").doc(roomName).set({host:currentUser.uid,hostEmail:currentUser.email,roomName:roomName,createdAt:new Date()});
   document.getElementById("content").innerHTML=`<div id="meet" style="height:80vh;"></div>`;
-  api = new JitsiMeetExternalAPI("meet.jit.si", {
-    roomName: roomName,
-    parentNode: document.querySelector("#meet"),
-    width:"100%",
-    height:"100%"
-  });
-
-  const shareBtn = document.createElement("button");
+  api=new JitsiMeetExternalAPI("meet.jit.si",{roomName:roomName,parentNode:document.querySelector("#meet"),width:"100%",height:"100%"});
+  const shareBtn=document.createElement("button");
   shareBtn.textContent="🔗 Copy Meeting Link";
   shareBtn.style.marginTop="8px";
-  shareBtn.onclick=()=>{ 
-    const link = `${location.origin}/liveclass.html?room=${roomName}`;
-    navigator.clipboard.writeText(link).then(()=>alert("Link copy godhame!")); 
-  };
+  shareBtn.onclick=()=>{navigator.clipboard.writeText(`${location.origin}/liveclass.html?room=${roomName}`).then(()=>alert("Link copy godhame!"));};
   document.getElementById("content").appendChild(shareBtn);
 }
 
 function joinMeet(){
   const room = prompt("Room link ykn code galchi:");
   if(!room) return;
-  const roomName = room.includes("room=")? new URL(room).searchParams.get("room"): room;
-  if(!roomName) return alert("Room code sirrii miti!");
+  const roomName = room.includes("room=")? new URL(room).searchParams.get("room"):room;
   document.getElementById("content").innerHTML=`<div id="meet" style="height:80vh;"></div>`;
-  api = new JitsiMeetExternalAPI("meet.jit.si",{
-    roomName: roomName,
-    parentNode: document.querySelector("#meet"),
-    width:"100%",
-    height:"100%"
-  });
+  api=new JitsiMeetExternalAPI("meet.jit.si",{roomName:roomName,parentNode:document.querySelector("#meet"),width:"100%",height:"100%"});
 }
-
 </script>
+
 </body>
 </html>
