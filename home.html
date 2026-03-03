@@ -10,7 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
-
+<link rel="stylesheet" href="style.css">
 <style>
 body{margin:0;font-family:Arial;background:#0f172a;color:white;}
 #topbar{background:#1e293b;padding:12px;display:flex;justify-content:space-between;align-items:center;}
@@ -22,11 +22,105 @@ textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;}
 #bottomNav{position:fixed;bottom:0;left:0;right:0;height:60px;background:#111827;display:flex;justify-content:space-around;align-items:center;border-top:1px solid #333;}
 #bottomNav button{background:none;border:none;color:white;font-size:14px;}
 .feedVideo{width:100%;margin-top:10px;border-radius:6px;}
+  body {
+  font-family: Arial;
+  margin: 0;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  background: #1877f2;
+  color: white;
+  padding: 10px;
+}
+
+.topbar span {
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+.dropdown {
+  display: none;
+  position: absolute;
+  right: 10px;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.side-menu {
+  display: none;
+  position: fixed;
+  left: 0;
+  bottom: 60px;
+  background: white;
+  width: 200px;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.learning-btn {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  padding: 10px;
+  background: #1877f2;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.show {
+  display: block;
+  }
 </style>
 </head>
 
 <body>
 
+  <div class="topbar">
+  <div class="top-left">
+    <span>🏠 Home</span>
+    <span>🖥 Video</span>
+    <span>🫂 Add Friends</span>
+    <span>☎️ Notification</span>
+    <span>👜 Story</span>
+    <span>👤 Profile</span>
+    <span onclick="toggleMenu()">🟰</span>
+  </div>
+
+  <div class="top-right">
+    <span>🔍</span>
+    <span onclick="toggleAdd()">➕</span>
+  </div>
+</div>
+
+<div id="addMenu" class="dropdown">
+  <p>Post</p>
+  <p>Reel</p>
+  <p>Story</p>
+  <p>Note</p>
+</div>
+
+<button class="learning-btn" onclick="toggleLearning()">📚 Learning</button>
+
+<div id="learningMenu" class="side-menu">
+  <p>Meet</p>
+  <p>Join</p>
+  <p>Share</p>
+  <p>Schedule 📅</p>
+  <p>Team Chat</p>
+  <p>Docs</p>
+  <p>Calendar 📅</p>
+  <p>Tasks</p>
+  <p>Mail</p>
+  <p>Whiteboards</p>
+  <p>Clips</p>
+  <p>Contacts</p>
+  <p>Events</p>
+  <p>Apps</p>
+</div>
 <div id="topbar">
   <div>Barnoota Live</div>
   <div id="userEmail">Loading...</div>
@@ -240,7 +334,18 @@ function joinMeet(){
   document.getElementById("content").innerHTML=`<div id="meet" style="height:80vh;"></div>`;
   api=new JitsiMeetExternalAPI("meet.jit.si",{roomName:roomName,parentNode:document.querySelector("#meet"),width:"100%",height:"100%"});
 }
-</script>
+  function toggleAdd() {
+  document.getElementById("addMenu").classList.toggle("show");
+}
 
+function toggleLearning() {
+  document.getElementById("learningMenu").classList.toggle("show");
+}
+
+function toggleMenu() {
+  alert("Settings coming soon...");
+    }
+</script>
+</body>
 </body>
 </html>
