@@ -177,7 +177,67 @@ function checkFollowStatus(){
 
 // ---------------------------
 // Profile post feed + video autoplay
+function loadPosts()<!-- Hojii feed fi buttons dabaluu: Edit/Delete/Share -->
+
+// Load posts function dabaluun buttons dabalu
 function loadPosts(){
+  db.collection("posts").where("userUid","==",profileUid)
+  .orderBy("date","desc")
+  .onSnapshot(snapshot=>{
+    const container = document.getElementById("postsContainer");
+    container.innerHTML="";
+    snapshot.forEach(doc=>{
+      const post = doc.data();
+      const div = document.createElement("div");
+      div.className="post";
+
+      let videoHTML = post.videoURL ? `<video src="${post.videoURL}" controls muted loop class="feedVideo"></video>` : "";
+
+      // Buttons: Edit, Delete, Share
+      div.innerHTML = `
+        <p>${post.text || ""}</p>
+        ${videoHTML}
+        <button onclick="editPost('${doc.id}')">✏️ Edit</button>
+        <button onclick="deletePost('${doc.id}')">🗑 Delete</button>
+        <button onclick="sharePost('${doc.id}')">🔗 Share</button>
+      `;
+      container.appendChild(div);
+    });
+
+    setupAutoPlay();
+  });
+}
+
+// Edit post
+function editPost(postId){
+  const newText = prompt("Post barreessi sirreessi:");
+  if(newText===null) return;
+
+  db.collection("posts").doc(postId).update({text:newText})
+  .then(()=>alert("Post update ✔"));
+}
+
+// Delete post
+function deletePost(postId){
+  if(!confirm("Post haqaa?")) return;
+  db.collection("posts").doc(postId).delete()
+  .then(()=>alert("Post haqe ✔"));
+}
+
+// Share post
+function sharePost(postId){
+  db.collection("posts").doc(postId).get().then(doc=>{
+    if(!doc.exists) return alert("Post hin jiru!");
+    const post = doc.data();
+    let text = `Barnoota Live Post\n\n${post.userEmail}:\n${post.text}`;
+    if(post.videoURL) text += `\nVideo: ${post.videoURL}`;
+    
+    navigator.clipboard.writeText(text)
+    .then(()=> alert("Post link/text copy godhame! Nama biraaf erguu dandeessa."))
+    .catch(err=>alert("Clipboard copy hin danda'amne: "+err));
+  });
+}
+{
   db.collection("posts")
   .where("userUid","==",profileUid) // only-me security
   .orderBy("date","desc")
