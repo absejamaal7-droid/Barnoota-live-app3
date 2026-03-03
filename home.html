@@ -44,7 +44,8 @@ textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;}
   <input type="file" id="videoFile" accept="video/*">
   <button onclick="addPost()">Post godhi</button>
 
-  <div id="posts"></div>
+  <div id="posts"><button onclick="toggleLike('${doc.id}')">❤️ Like</button>
+<span id="like-count-${doc.id}">0</span></div>
 </div>
 
 <div id="bottomNav">
@@ -132,7 +133,12 @@ function addPost(){
 }
 
 // Load posts
-function loadPosts(){
+function loadPosts()db.collection("posts")
+.doc(doc.id)
+.collection("likes")
+.onSnapshot(snapshot=>{
+  document.getElementById(`like-count-${doc.id}`).innerText = snapshot.size;
+});{
   const user = auth.currentUser;
   db.collection("posts").orderBy("date","desc").onSnapshot(snapshot=>{
     const container = document.getElementById("posts");
@@ -248,7 +254,28 @@ function joinMeet(){
     height:"100%"
   });
 }
+function toggleLike(postId){
+  const user = firebase.auth().currentUser;
+  if(!user) return alert("Login first");
 
+  const likeRef = db.collection("posts")
+    .doc(postId)
+    .collection("likes")
+    .doc(user.uid);
+
+  likeRef.get().then(doc=>{
+    if(doc.exists){
+      // Unlike
+      likeRef.delete();
+    }else{
+      // Like
+      likeRef.set({
+        userUid:user.uid,
+        date:new Date()
+      });
+    }
+  });
+    }
 // Navigation
 function goHome(){ window.location.href="home.html"; }
 function goProfile(){ window.location.href="profile.html"; }
