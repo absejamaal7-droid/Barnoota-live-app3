@@ -12,49 +12,13 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
 
 <style>
-body{
-  margin:0;
-  background:#1c1c1c;
-  color:white;
-  font-family:Arial;
-  text-align:center;
-  padding:20px;
-}
-img{
-  width:120px;
-  height:120px;
-  border-radius:50%;
-  object-fit:cover;
-  margin-top:20px;
-}
-input{
-  margin:10px;
-  padding:8px;
-  border-radius:6px;
-  border:none;
-}
-button{
-  padding:10px 15px;
-  border:none;
-  border-radius:6px;
-  background:#2563eb;
-  color:white;
-  cursor:pointer;
-  margin:5px;
-}
-.post{
-  background:#2a2a2a;
-  margin:10px auto;
-  padding:10px;
-  border-radius:8px;
-  max-width:500px;
-  text-align:left;
-}
-.post video{
-  width:100%;
-  border-radius:6px;
-  margin-top:5px;
-}
+body{margin:0;background:#1c1c1c;color:white;font-family:Arial;text-align:center;padding:20px;}
+img{width:120px;height:120px;border-radius:50%;object-fit:cover;margin-top:20px;}
+input, textarea{margin:10px;padding:8px;border-radius:6px;border:none;width:90%;}
+button{padding:8px 15px;border:none;border-radius:6px;background:#2563eb;color:white;cursor:pointer;margin:5px;}
+.post{background:#2a2a2a;margin:10px auto;padding:10px;border-radius:8px;max-width:500px;text-align:left;}
+.post video{width:100%;border-radius:6px;margin-top:5px;}
+.commentArea p{margin:3px 0;padding-left:10px;border-left:2px solid #444;}
 </style>
 </head>
 <body>
@@ -62,10 +26,8 @@ button{
 <h2>👤 Profile</h2>
 <img id="profilePic" src="https://via.placeholder.com/120">
 <p id="profileEmail">Loading...</p>
-<input type="text" id="nameInput" placeholder="Maqaa kee">
-<br>
-<input type="file" id="imgInput">
-<br>
+<input type="text" id="nameInput" placeholder="Maqaa kee"><br>
+<input type="file" id="imgInput"><br>
 <button onclick="saveProfile()">Save Profile</button>
 
 <h3>Followers: <span id="followersCount">0</span> | Following: <span id="followingCount">0</span></h3>
@@ -76,16 +38,16 @@ button{
 <br>
 <input type="file" id="videoInput" accept="video/*">
 <button onclick="uploadVideoPost()">Upload Video Post</button>
+
 <script>
 const firebaseConfig={
-apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
-authDomain:"abseapp-b3706.firebaseapp.com",
-projectId:"abseapp-b3706",
-storageBucket:"abseapp-b3706.firebasestorage.app",
-messagingSenderId:"986026055368",
-appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
+  apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
+  authDomain:"abseapp-b3706.firebaseapp.com",
+  projectId:"abseapp-b3706",
+  storageBucket:"abseapp-b3706.firebasestorage.app",
+  messagingSenderId:"986026055368",
+  appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
 };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -94,25 +56,17 @@ const storage = firebase.storage();
 let profileUid = null;
 let currentUser = null;
 
-// ================= AUTH =================
+// Auth listener
 auth.onAuthStateChanged(user=>{
-  if(!user){
-    window.location.href="index.html";
-    return;
-  }
-
+  if(!user){ window.location.href="index.html"; return; }
   currentUser = user;
   profileUid = user.uid;
-
   document.getElementById("profileEmail").innerText = user.email;
 
-  // Load profile info
   db.collection("users").doc(profileUid).get().then(doc=>{
     if(doc.exists){
       document.getElementById("nameInput").value = doc.data().name || "";
-      if(doc.data().photoURL){
-        document.getElementById("profilePic").src = doc.data().photoURL;
-      }
+      if(doc.data().photoURL) document.getElementById("profilePic").src = doc.data().photoURL;
     }
   });
 
@@ -121,202 +75,174 @@ auth.onAuthStateChanged(user=>{
   loadPosts();
 });
 
-// ================= IMAGE UPLOAD =================
+// Image upload
 document.getElementById("imgInput").addEventListener("change", function(){
   const file = this.files[0];
   if(!file) return;
-
   const storageRef = storage.ref().child("profilePics/"+profileUid);
-  storageRef.put(file).then(()=>{
-    storageRef.getDownloadURL().then(url=>{
-      document.getElementById("profilePic").src = url;
-      db.collection("users").doc(profileUid).update({photoURL:url});
-    });
-  });
+  storageRef.put(file).then(()=>storageRef.getDownloadURL().then(url=>{
+    document.getElementById("profilePic").src = url;
+    db.collection("users").doc(profileUid).update({photoURL:url});
+  }));
 });
 
-// ================= SAVE PROFILE =================
+// Save profile
 function saveProfile(){
   const name = document.getElementById("nameInput").value;
   db.collection("users").doc(profileUid).set({name:name},{merge:true});
   alert("Profile saved ✔");
 }
 
-// ================= FOLLOW SYSTEM =================
+// Follow / Unfollow
 function toggleFollow(){
-  if(currentUser.uid === profileUid){
-    alert("Ofii kee follow hin dandeessu");
-    return;
-  }
-
-  const ref = db.collection("follows")
-    .doc(currentUser.uid)
-    .collection("following")
-    .doc(profileUid);
-
+  if(currentUser.uid === profileUid){ alert("Ofii kee follow hin dandeessu"); return; }
+  const ref = db.collection("follows").doc(currentUser.uid).collection("following").doc(profileUid);
   ref.get().then(doc=>{
     if(doc.exists){
       ref.delete();
-      db.collection("follows").doc(profileUid)
-        .collection("followers")
-        .doc(currentUser.uid).delete();
+      db.collection("follows").doc(profileUid).collection("followers").doc(currentUser.uid).delete();
       document.getElementById("followBtn").innerText="Follow";
     }else{
       ref.set({date:new Date()});
-      db.collection("follows").doc(profileUid)
-        .collection("followers")
-        .doc(currentUser.uid).set({date:new Date()});
+      db.collection("follows").doc(profileUid).collection("followers").doc(currentUser.uid).set({date:new Date()});
       document.getElementById("followBtn").innerText="Unfollow";
     }
     loadFollowCounts();
   });
 }
 
+// Load follower/following counts
 function loadFollowCounts(){
-  db.collection("follows").doc(profileUid)
-    .collection("followers")
-    .onSnapshot(snap=>{
-      document.getElementById("followersCount").innerText = snap.size;
-    });
-
-  db.collection("follows").doc(profileUid)
-    .collection("following")
-    .onSnapshot(snap=>{
-      document.getElementById("followingCount").innerText = snap.size;
-    });
+  db.collection("follows").doc(profileUid).collection("followers").onSnapshot(snap=>{
+    document.getElementById("followersCount").innerText = snap.size;
+  });
+  db.collection("follows").doc(profileUid).collection("following").onSnapshot(snap=>{
+    document.getElementById("followingCount").innerText = snap.size;
+  });
 }
 
+// Check follow status
 function checkFollowStatus(){
-  if(currentUser.uid === profileUid){
-    document.getElementById("followBtn").style.display="none";
-    return;
-  }
-
-  db.collection("follows").doc(currentUser.uid)
-    .collection("following")
-    .doc(profileUid)
-    .get().then(doc=>{
-      document.getElementById("followBtn").innerText =
-        doc.exists ? "Unfollow" : "Follow";
-    });
+  if(currentUser.uid === profileUid){ document.getElementById("followBtn").style.display="none"; return; }
+  db.collection("follows").doc(currentUser.uid).collection("following").doc(profileUid).get().then(doc=>{
+    document.getElementById("followBtn").innerText = doc.exists ? "Unfollow" : "Follow";
+  });
 }
 
-// ================= LOAD POSTS =================
+// Load posts + buttons + video autoplay + like/comment real-time
 function loadPosts(){
-  db.collection("posts")
-    .where("userUid","==",profileUid)
-    .orderBy("date","desc")
-    .onSnapshot(snapshot=>{
-      const container = document.getElementById("postsContainer");
-      container.innerHTML = "";
+  db.collection("posts").where("userUid","==",profileUid).orderBy("date","desc").onSnapshot(snapshot=>{
+    const container = document.getElementById("postsContainer");
+    container.innerHTML = "";
+    snapshot.forEach(doc=>{
+      const post = doc.data();
+      const div = document.createElement("div");
+      div.className="post";
 
-      snapshot.forEach(doc=>{
-        const post = doc.data();
-        const div = document.createElement("div");
-        div.className="post";
+      let videoHTML = post.videoURL ? `<video src="${post.videoURL}" controls muted loop class="feedVideo"></video>` : "";
 
-        let videoHTML = post.videoURL
-          ? `<video src="${post.videoURL}" controls muted loop class="feedVideo"></video>`
-          : "";
+      div.innerHTML = `
+        <p>${post.text || ""}</p>
+        ${videoHTML}
+        <button onclick="editPost('${doc.id}')">✏️ Edit</button>
+        <button onclick="deletePost('${doc.id}')">🗑 Delete</button>
+        <button onclick="sharePost('${doc.id}')">🔗 Share</button>
+        <button onclick="toggleLike('${doc.id}')">❤️ Like</button>
+        <span id="like-count-${doc.id}">0</span>
+        <button onclick="addComment('${doc.id}')">💬 Comment</button>
+        <div class="commentArea" id="comments-${doc.id}"></div>
+      `;
+      container.appendChild(div);
 
-        div.innerHTML = `
-          <p>${post.text || ""}</p>
-          ${videoHTML}
-          <button onclick="editPost('${doc.id}','${post.userUid}')">✏️ Edit</button>
-          <button onclick="deletePost('${doc.id}','${post.userUid}')">🗑 Delete</button>
-          <button onclick="sharePost('${doc.id}')">🔗 Share</button>
-        `;
-
-        container.appendChild(div);
+      // Real-time Likes
+      db.collection("posts").doc(doc.id).collection("likes").onSnapshot(snap=>{
+        document.getElementById(`like-count-${doc.id}`).innerText = snap.size;
       });
 
-      setupAutoPlay();
+      // Real-time Comments
+      db.collection("posts").doc(doc.id).collection("comments").orderBy("date").onSnapshot(snap=>{
+        const commentDiv = document.getElementById(`comments-${doc.id}`);
+        commentDiv.innerHTML = "";
+        snap.forEach(c=>{
+          const p = document.createElement("p");
+          p.textContent = `${c.data().user}: ${c.data().text}`;
+          commentDiv.appendChild(p);
+        });
+      });
+    });
+
+    setupAutoPlay();
   });
 }
 
-// ================= EDIT =================
-function editPost(postId, postUserId){
-  if(currentUser.uid !== postUserId){
-    return alert("Post kan nama biraa edit hin dandeessu!");
-  }
+// Video autoplay
+function setupAutoPlay(){
+  const observer = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{ if(entry.isIntersecting) entry.target.play(); else entry.target.pause(); });
+  },{threshold:0.6});
+  document.querySelectorAll(".feedVideo").forEach(v=>observer.observe(v));
+}
 
-  const newText = prompt("Post sirreessi:");
+// Post functions
+function editPost(postId){
+  const newText = prompt("Post barreessi sirreessi:");
   if(newText===null) return;
-
-  db.collection("posts").doc(postId).update({text:newText})
-    .then(()=>alert("Post update ✔"));
+  db.collection("posts").doc(postId).update({text:newText}).then(()=>alert("Post update ✔"));
 }
-
-// ================= DELETE =================
-function deletePost(postId, postUserId){
-  if(currentUser.uid !== postUserId){
-    return alert("Post kan nama biraa delete hin dandeessu!");
-  }
-
+function deletePost(postId){
   if(!confirm("Post haqaa?")) return;
-
-  db.collection("posts").doc(postId).delete()
-    .then(()=>alert("Post haqe ✔"));
+  db.collection("posts").doc(postId).delete().then(()=>alert("Post haqe ✔"));
 }
-
-// ================= SHARE =================
 function sharePost(postId){
   db.collection("posts").doc(postId).get().then(doc=>{
-    if(!doc.exists) return;
-
+    if(!doc.exists) return alert("Post hin jiru!");
     const post = doc.data();
-    let text = `Barnoota Live Post\n\n${post.userEmail}:\n${post.text || ""}`;
-    if(post.videoURL) text += `\nVideo: ${post.videoURL}`;
-
-    navigator.clipboard.writeText(text)
-      .then(()=>alert("Post copy godhame ✔"));
+    let text = `Barnoota Live Post\n\n${post.userEmail}:\n${post.text}`;
+    if(post.videoURL) text+=`\nVideo: ${post.videoURL}`;
+    navigator.clipboard.writeText(text).then(()=>alert("Post copy godhame!"));
   });
 }
 
-// ================= AUTOPLAY =================
-function setupAutoPlay(){
-  const videos = document.querySelectorAll(".feedVideo");
-
-  const observer = new IntersectionObserver(entries=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting){
-        entry.target.play();
-      }else{
-        entry.target.pause();
-      }
-    });
-  },{threshold:0.6});
-
-  videos.forEach(video=>{
-    observer.observe(video);
-  });
-}
-
-// ================= VIDEO UPLOAD =================
+// Upload video post
 function uploadVideoPost(){
   const file = document.getElementById("videoInput").files[0];
   const text = prompt("Video description barreessi:");
   if(!file) return alert("Video filadhu!");
+  if(!currentUser) return;
 
-  const storageRef = storage.ref()
-    .child("userVideos/"+profileUid+"/"+Date.now()+"_"+file.name);
-
-  storageRef.put(file).then(()=>{
-    storageRef.getDownloadURL().then(url=>{
-      db.collection("posts").add({
-        userUid: profileUid,
-        userEmail: currentUser.email,
-        text: text || "",
-        videoURL: url,
-        date: new Date()
-      }).then(()=>{
-        alert("Video post saved ✔");
-        document.getElementById("videoInput").value="";
-      });
+  const storageRef = storage.ref().child("userVideos/"+profileUid+"/"+Date.now()+"_"+file.name);
+  storageRef.put(file).then(()=>storageRef.getDownloadURL().then(url=>{
+    db.collection("posts").add({
+      userUid: profileUid,
+      userEmail: currentUser.email,
+      text: text || "",
+      videoURL: url,
+      date: new Date()
+    }).then(()=>{
+      alert("Video post saved ✔");
+      document.getElementById("videoInput").value="";
+      loadPosts();
     });
-  });
-          }
-</script>
+  }));
+}
 
+// Like toggle
+function toggleLike(postId){
+  const user = auth.currentUser;
+  if(!user) return alert("Login first");
+  const likeRef = db.collection("posts").doc(postId).collection("likes").doc(user.uid);
+  likeRef.get().then(doc=>{
+    if(doc.exists){ likeRef.delete(); }else{ likeRef.set({userUid:user.uid,date:new Date()}); }
+  });
+}
+
+// Add comment
+function addComment(postId){
+  const text = prompt("Comment kee barreessi:");
+  if(!text) return;
+  const user = auth.currentUser;
+  db.collection("posts").doc(postId).collection("comments").add({text:text,user:user.email,date:new Date()});
+}
+</script>
 </body>
 </html>
