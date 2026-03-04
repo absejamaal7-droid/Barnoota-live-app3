@@ -96,16 +96,29 @@ button{cursor:pointer;}
 
 <div id="addMenu" class="dropdown">
 <p onclick="document.getElementById('postText').focus()">Post</p>
-<p>Reel</p>
-<p>Story</p>
-<p>Note</p>
+<p onclick="Reel()">Reel</p>
+<p onclick="Story()">Story</p>
+<p onclick="Note()">Note</p>
 </div>
 
 <button class="learning-btn" onclick="toggleLearning()">📚</button>
 
 <div id="learningMenu" class="side-menu">
-<p onclick="startMeet()">Meet</p>
-<p onclick="joinMeet()">Join</p>
+<div id="learningMenu" class="side-menu">
+<p onclick="Startmeet()">Meet</p>
+<p onclick="JoinMeet()">Join</p>
+<p onclick="Share()">Share</p>
+<p onclick="Schedule()">Schedule</p>
+<p onclick="TeamChat()">Team Chat</p>
+<p onclick="Docs()">Docs</p>
+<p onclick="📅()">📅</p>
+<p onclick="Tasks()">tasks</p>
+<p onclick="Mail()">mail</p>
+<p onclick="Whiteboards()">whiteboards</p>
+<p onclick="clips()">clips</p>
+<p onclick="contacts()">Contacts</p>
+<p onclick="Events()">Events</p>
+<p onclick="Apps()">Apps</p>
 </div>
 
 <div id="content">
@@ -113,7 +126,7 @@ button{cursor:pointer;}
 <textarea id="postText" placeholder="Waan yaadde barreessi..."></textarea>
 <input type="file" id="videoFile" accept="video/*">
 <button onclick="addPost()">Post godhi</button>
-<div id="posts"></div>
+<div id="posts()">Poss"></div>
 </div>
 
 <script>
