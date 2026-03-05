@@ -81,7 +81,7 @@ button{cursor:pointer;}
 <div class="topbar">
 <div>
 <span onclick="goHome()">🏠</span>
-<span onclick="goMeet()">🖥</span>
+<span onclick="video(' video play coming soon')">🖥</span>
 <span onclick="alert('Add Friends coming soon')">🫂</span>
 <span onclick="alert('Notification coming soon')">☎️</span>
 <span onclick="alert('Story coming soon')">👜</span>
@@ -164,7 +164,7 @@ document.getElementById("learningMenu").classList.toggle("show");
 
 function addPost(){
 const text=document.getElementById("postText").value;
-const file=document.getElementById("videoFile").files[0];
+const file=document.getElementById("videoFile").files[value];
 if(!text && !file) return alert("Text ykn video galchi!");
 
 if(!file){
