@@ -13,63 +13,14 @@
 
 <style>
 body{margin:0;font-family:Arial;background:#0f172a;color:white;}
-
-.topbar{
-display:flex;
-justify-content:space-between;
-background:#1877f2;
-color:white;
-padding:10px;
-}
-
+.topbar{display:flex;justify-content:space-between;background:#1877f2;color:white;padding:10px;}
 .topbar span{margin-right:15px;cursor:pointer;}
-
-.dropdown{
-display:none;
-position:absolute;
-right:10px;
-background:white;
-color:black;
-padding:10px;
-border-radius:6px;
-}
-
-.side-menu{
-display:none;
-position:fixed;
-left:10px;
-bottom:70px;
-background:white;
-color:black;
-width:200px;
-padding:10px;
-border-radius:8px;
-}
-
-.learning-btn{
-position:fixed;
-bottom:10px;
-left:10px;
-background:#1877f2;
-color:white;
-border:none;
-padding:12px;
-border-radius:50%;
-font-size:20px;
-cursor:pointer;
-}
-
+.dropdown{display:none;position:absolute;right:10px;background:white;color:black;padding:10px;border-radius:6px;}
+.side-menu{display:none;position:fixed;left:10px;bottom:70px;background:white;color:black;width:200px;padding:10px;border-radius:8px;}
+.learning-btn{position:fixed;bottom:10px;left:10px;background:#1877f2;color:white;border:none;padding:12px;border-radius:50%;font-size:20px;cursor:pointer;}
 .show{display:block;}
-
 #content{padding:15px;}
-
-.post{
-background:#1e293b;
-padding:12px;
-margin-top:10px;
-border-radius:8px;
-}
-
+.post{background:#1e293b;padding:12px;margin-top:10px;border-radius:8px;}
 textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;}
 .feedVideo{width:100%;margin-top:10px;border-radius:6px;}
 button{cursor:pointer;}
@@ -81,7 +32,7 @@ button{cursor:pointer;}
 <div class="topbar">
 <div>
 <span onclick="goHome()">🏠</span>
-<span onclick="video(' video play coming soon')">🖥</span>
+<span onclick="alert('Video coming soon')">🖥</span>
 <span onclick="alert('Add Friends coming soon')">🫂</span>
 <span onclick="alert('Notification coming soon')">☎️</span>
 <span onclick="alert('Story coming soon')">👜</span>
@@ -96,29 +47,29 @@ button{cursor:pointer;}
 
 <div id="addMenu" class="dropdown">
 <p onclick="document.getElementById('postText').focus()">Post</p>
-  <p onclick="🖋()">🖋</p>
-<p onclick="Reel()">Reel</p>
-<p onclick="Story()">Story</p>
-<p onclick="Note()">Note</p>
+<p onclick="alert('Write coming soon')">🖋</p>
+<p onclick="alert('Reel coming soon')">Reel</p>
+<p onclick="alert('Story coming soon')">Story</p>
+<p onclick="alert('Note coming soon')">Note</p>
 </div>
 
 <button class="learning-btn" onclick="toggleLearning()">📚</button>
 
 <div id="learningMenu" class="side-menu">
-<p onclick="Startmeet()">Meet</p>
-<p onclick="JoinMeet()">Join</p>
-<p onclick="Share()">Share</p>
-<p onclick="Schedule()">Schedule</p>
-<p onclick="TeamChat()">Team Chat</p>
-<p onclick="Docs()">Docs</p>
-<p onclick="📅()">📅</p>
-<p onclick="Tasks()">tasks</p>
-<p onclick="Mail()">mail</p>
-<p onclick="Whiteboards()">whiteboards</p>
-<p onclick="clips()">clips</p>
-<p onclick="contacts()">Contacts</p>
-<p onclick="Events()">Events</p>
-<p onclick="Apps()">Apps</p>
+<p onclick="startMeet()">Meet</p>
+<p onclick="joinMeet()">Join</p>
+<p onclick="alert('Share coming soon')">Share</p>
+<p onclick="alert('Schedule coming soon')">Schedule</p>
+<p onclick="alert('Team Chat coming soon')">Team Chat</p>
+<p onclick="alert('Docs coming soon')">Docs</p>
+<p onclick="alert('Calendar coming soon')">📅</p>
+<p onclick="alert('Tasks coming soon')">Tasks</p>
+<p onclick="alert('Mail coming soon')">Mail</p>
+<p onclick="alert('Whiteboards coming soon')">Whiteboards</p>
+<p onclick="alert('Clips coming soon')">Clips</p>
+<p onclick="alert('Contacts coming soon')">Contacts</p>
+<p onclick="alert('Events coming soon')">Events</p>
+<p onclick="alert('Apps coming soon')">Apps</p>
 </div>
 
 <div id="content">
@@ -130,6 +81,7 @@ button{cursor:pointer;}
 </div>
 
 <script>
+
 const firebaseConfig={
 apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
 authDomain:"abseapp-b3706.firebaseapp.com",
@@ -138,10 +90,13 @@ storageBucket:"abseapp-b3706.firebasestorage.app",
 messagingSenderId:"986026055368",
 appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
 };
+
 firebase.initializeApp(firebaseConfig);
+
 const auth=firebase.auth();
 const db=firebase.firestore();
 const storage=firebase.storage();
+
 let currentUser=null;
 
 auth.onAuthStateChanged(user=>{
@@ -152,8 +107,6 @@ loadPosts();
 
 function goHome(){window.location.href="home.html";}
 function goProfile(){window.location.href="profile.html";}
-function goMeet(){window.location.href="liveclass.html";}
-function logout(){auth.signOut().then(()=>window.location.href="index.html");}
 
 function toggleAdd(){
 document.getElementById("addMenu").classList.toggle("show");
@@ -164,46 +117,93 @@ document.getElementById("learningMenu").classList.toggle("show");
 }
 
 function addPost(){
+
 const text=document.getElementById("postText").value;
-const file=document.getElementById("videoFile").files[value];
+const file=document.getElementById("videoFile").files[0];
+
 if(!text && !file) return alert("Text ykn video galchi!");
 
 if(!file){
+
 db.collection("posts").add({
-text,user:currentUser.email,date:new Date()
+text:text,
+user:currentUser.email,
+date:new Date()
 });
+
 document.getElementById("postText").value="";
 return;
+
 }
 
 const ref=storage.ref().child("videos/"+Date.now()+file.name);
+
 ref.put(file).then(()=>{
+
 ref.getDownloadURL().then(url=>{
+
 db.collection("posts").add({
-text,user:currentUser.email,videoURL:url,date:new Date()
+text:text,
+user:currentUser.email,
+videoURL:url,
+date:new Date()
 });
+
 document.getElementById("postText").value="";
 document.getElementById("videoFile").value="";
+
 });
+
 });
+
 }
 
 function loadPosts(){
-db.collection("posts").orderBy("date","desc").onSnapshot(snap=>{
+
+db.collection("posts")
+.orderBy("date","desc")
+.onSnapshot(snap=>{
+
 const container=document.getElementById("posts");
 container.innerHTML="";
+
 snap.forEach(doc=>{
+
 const d=doc.data();
 const div=document.createElement("div");
 div.className="post";
-  updateLikeCount(doc.id);db.collection("posts")
+
+div.innerHTML=`
+
+<button onclick="sharePost('${doc.id}')">🔗 Share</button>
+
+<button onclick="commentPost('${doc.id}')">💬 Comment</button>
+
+<div id="c-${doc.id}"></div>
+
+<button onclick="toggleLike('${doc.id}')">❤️ Like</button>
+
+<span id="like-${doc.id}">❤️ 0</span>
+
+<h4>${d.user}</h4>
+
+<p>${d.text||""}</p>
+
+${d.videoURL?`<video class="feedVideo" src="${d.videoURL}" controls></video>`:""}
+
+`;
+
+container.appendChild(div);
+
+updateLikeCount(doc.id);
+
+db.collection("posts")
 .doc(doc.id)
 .collection("comments")
 .orderBy("date")
 .onSnapshot(snap=>{
 
-const area = document.getElementById("c-"+doc.id);
-
+const area=document.getElementById("c-"+doc.id);
 area.innerHTML="";
 
 snap.forEach(c=>{
@@ -217,51 +217,16 @@ area.appendChild(p);
 });
 
 });
-div.innerHTML=`<button onclick="sharePost('${doc.id}')">🔗 Share</button><button onclick="commentPost('${doc.id}')">💬 Comment</button>
-<div id="c-${doc.id}"></div><button onclick="toggleLike('${doc.id}')">❤️ Like</button>
-<span id="like-${doc.id}">❤️ 0</span>
-<h4>${d.user}</h4>
-<p>${d.text||""}</p>
-${d.videoURL?`<video class="feedVideo" src="${d.videoURL}" controls></video>`:""}
-`;
-container.appendChild(div);updateLikeCount(doc.id);
+
 });
+
 });
+
 }
 
-let api=null;
-function startMeet(){
-const roomName="BarnootaLive_"+Date.now();
-document.getElementById("content").innerHTML=`<div id="meet" style="height:80vh;"></div>`;
-api=new JitsiMeetExternalAPI("meet.jit.si",{roomName,parentNode:document.querySelector("#meet"),width:"100%",height:"100%"});
-}function sharePost(postId){
+function toggleLike(postId){
 
-db.collection("posts")
-.doc(postId)
-.get()
-.then(doc=>{
-
-if(!doc.exists) return;
-
-const data=doc.data();
-
-let text="Barnoota Live Post\n\n";
-
-text+=data.userName+"\n";
-
-text+=data.text+"\n";
-
-if(data.videoURL){
-text+=data.videoURL;
-}
-
-navigator.clipboard.writeText(text);
-
-alert("Post copy godhame");
-
-});function toggleLike(postId){
-
-const likeRef = db.collection("posts")
+const likeRef=db.collection("posts")
 .doc(postId)
 .collection("likes")
 .doc(currentUser.uid);
@@ -279,15 +244,16 @@ date:new Date()
 
 });
 
-  }
-  function updateLikeCount(postId){
+}
+
+function updateLikeCount(postId){
 
 db.collection("posts")
 .doc(postId)
 .collection("likes")
 .onSnapshot(snapshot=>{
 
-const el = document.getElementById("like-"+postId);
+const el=document.getElementById("like-"+postId);
 
 if(el){
 el.innerText="❤️ "+snapshot.size;
@@ -295,10 +261,11 @@ el.innerText="❤️ "+snapshot.size;
 
 });
 
-  }
-  function commentPost(postId){
+}
 
-const text = prompt("Comment kee barreessi:");
+function commentPost(postId){
+
+const text=prompt("Comment kee barreessi:");
 
 if(!text) return;
 
@@ -315,15 +282,69 @@ date:new Date()
 
 }
 
-                                      }
+function sharePost(postId){
+
+db.collection("posts")
+.doc(postId)
+.get()
+.then(doc=>{
+
+if(!doc.exists) return;
+
+const data=doc.data();
+
+let text="Barnoota Live Post\n\n";
+
+text+=data.user+"\n";
+
+text+=data.text+"\n";
+
+if(data.videoURL){
+text+=data.videoURL;
+}
+
+navigator.clipboard.writeText(text);
+
+alert("Post copy godhame");
+
+});
+
+}
+
+let api=null;
+
+function startMeet(){
+
+const roomName="BarnootaLive_"+Date.now();
+
+document.getElementById("content").innerHTML=`<div id="meet" style="height:80vh;"></div>`;
+
+api=new JitsiMeetExternalAPI("meet.jit.si",{
+roomName:roomName,
+parentNode:document.querySelector("#meet"),
+width:"100%",
+height:"100%"
+});
+
+}
 
 function joinMeet(){
+
 const room=prompt("Room code galchi:");
+
 if(!room) return;
+
 document.getElementById("content").innerHTML=`<div id="meet" style="height:80vh;"></div>`;
-api=new JitsiMeetExternalAPI("meet.jit.si",{roomName:room,parentNode:document.querySelector("#meet"),width:"100%",height:"100%"});
+
+api=new JitsiMeetExternalAPI("meet.jit.si",{
+roomName:room,
+parentNode:document.querySelector("#meet"),
+width:"100%",
+height:"100%"
+});
+
 }
-  function goMeet(){ window.location.href="liveclass.html"; }
+
 </script>
 
 </body>
