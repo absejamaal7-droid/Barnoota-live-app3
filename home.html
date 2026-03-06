@@ -29,6 +29,31 @@ button{cursor:pointer;}
 
 <body>
 
+  <div id="chatBox" style="
+position:fixed;
+bottom:0;
+right:0;
+width:300px;
+height:400px;
+background:white;
+color:black;
+display:none;
+flex-direction:column;
+border-radius:10px 10px 0 0;
+">
+
+<div style="background:#1877f2;color:white;padding:8px;">
+<span id="chatUser"></span>
+<button onclick="closeChat()" style="float:right;">X</button>
+</div>
+
+<div id="chatMessages" style="flex:1;overflow:auto;padding:8px;"></div>
+
+<div style="display:flex;">
+<input id="chatInput" style="flex:1;border:none;padding:8px;" placeholder="Message...">
+<button onclick="sendChat()">Send</button>
+</div>
+
 <div class="topbar">
 <div>
 <span onclick="goHome()">🏠</span>
@@ -43,7 +68,7 @@ button{cursor:pointer;}
 <span onclick="alert('Search coming soon')">🔍</span>
 <span onclick="toggleAdd()">➕</span>
 </div>
-</div>
+
 
 <div id="addMenu" class="dropdown">
 <p onclick="document.getElementById('postText').focus()">Post</p>
@@ -184,9 +209,11 @@ div.className="post";
 
 div.innerHTML=`
 
+<button onclick="commentPost('${doc.id}')">💬 Comment</button>
+
 <button onclick="sharePost('${doc.id}')">🔗 Share</button>
 
-<button onclick="commentPost('${doc.id}')">💬 Comment</button>
+<button onclick="openChat('${d.user}')">💬 Chat</button>
 
 <div id="c-${doc.id}"></div>
 
@@ -355,6 +382,63 @@ box.style.display="none";
 }
 
 }
+  let chattingWith=null;
+
+function openChat(user){
+chattingWith=user;
+document.getElementById("chatUser").innerText=user;
+document.getElementById("chatBox").style.display="flex";
+loadMessages();
+}
+
+function closeChat(){
+document.getElementById("chatBox").style.display="none";
+}
+
+function sendChat(){
+const text=document.getElementById("chatInput").value;
+if(!text) return;
+
+db.collection("messages").add({
+from:currentUser.email,
+to:chattingWith,
+text:text,
+date:new Date()
+});
+
+document.getElementById("chatInput").value="";
+}
+
+  let chattingWith"null;
+    
+function loadMessages(){
+
+db.collection("messages")
+.orderBy("date")
+.onSnapshot(snap=>{
+
+const box=document.getElementById("chatMessages");
+box.innerHTML="";
+
+snap.forEach(doc=>{
+const m=doc.data();
+
+if(
+(m.from==currentUser.email && m.to==chattingWith) ||
+(m.from==chattingWith && m.to==currentUser.email)
+){
+
+const p=document.createElement("p");
+p.textContent=m.from+" : "+m.text;
+box.appendChild(p);
+
+}
+
+});
+
+});
+
+  }
 
 let api=null;
 
