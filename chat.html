@@ -9,7 +9,27 @@
 <input id="msg">
 <button onclick="sendMsg()">Send</button>
 
-<script src="script.js"></script>
+<script src="script.js">
+  const params = new URLSearchParams(location.search);
+const chatUser = params.get("user");
+
+document.getElementById("chatUser").innerText = chatUser;
+
+function sendMsg(){
+
+const text = document.getElementById("msg").value;
+
+db.collection("messages").add({
+
+from: currentUser.uid,
+to: chatUser,
+text: text,
+time: new Date()
+
+});
+
+}
+</script>
 
 </body>
 
