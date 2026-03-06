@@ -24,6 +24,9 @@ button{padding:8px 15px;border:none;border-radius:6px;background:#2563eb;color:w
 <body>
 
 <h2>👤 Profile</h2>
+  <button onclick="startChat()">💬 Chat</button>
+<button onclick="startAudioCall()">📞 Audio Call</button>
+<button onclick="startVideoCall()">🎥 Video Call</button>
 <img id="profilePic" src="https://via.placeholder.com/120">
 <p id="profileEmail">Loading...</p>
 <input type="text" id="nameInput" placeholder="Maqaa kee"><br>
@@ -235,6 +238,20 @@ function toggleLike(postId){
     if(doc.exists){ likeRef.delete(); }else{ likeRef.set({userUid:user.uid,date:new Date()}); }
   });
 }
+  let profileUser = null;
+
+function loadProfile(uid){
+
+db.collection("users").doc(uid).get().then(doc=>{
+const user = doc.data();
+
+profileUser = user;
+
+document.getElementById("profileName").innerText = user.name;
+
+});
+
+  }
 
 // Add comment
 function addComment(postId){
@@ -243,6 +260,11 @@ function addComment(postId){
   const user = auth.currentUser;
   db.collection("posts").doc(postId).collection("comments").add({text:text,user:user.email,date:new Date()});
 }
+  function startChat(){
+
+window.location = "chat.html?user=" + profileUser.uid;
+
+      }
 </script>
 </body>
 </html>
