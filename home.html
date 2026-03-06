@@ -71,19 +71,15 @@ button{cursor:pointer;}
 <p onclick="alert('Events coming soon')">Events</p>
 <p onclick="alert('Apps coming soon')">Apps</p>
 </div>
+
 <div id="addFriendsBox" style="display:none;background:#1e293b;padding:15px;border-radius:10px;margin-top:10px;">
-
 <h3>Add Friend</h3>
-
 <input id="friendEmail" placeholder="Friend email galchi" style="padding:8px;width:100%;border-radius:6px;border:none;">
-
 <br><br>
-
 <button onclick="sendFriendRequest()">Send Request</button>
-
 <div id="friendResult"></div>
-
 </div>
+
 <div id="content">
 <h3>Post haaraa</h3>
 <textarea id="postText" placeholder="Waan yaadde barreessi..."></textarea>
@@ -115,7 +111,7 @@ auth.onAuthStateChanged(user=>{
 if(!user) window.location.href="index.html";
 currentUser=user;
 loadPosts();
-  checkFriendRequests();
+checkFriendRequests();
 });
 
 function goHome(){window.location.href="home.html";}
@@ -148,30 +144,6 @@ document.getElementById("postText").value="";
 return;
 
 }
-  function checkFriendRequests(){
-
-db.collection("friendRequests")
-.where("toUid","==",currentUser.uid)
-.where("status","==","pending")
-.onSnapshot(snapshot=>{
-
-snapshot.forEach(doc=>{
-
-const data = doc.data();
-
-if(confirm("Friend request haaraa jira. Accept goota?")){
-
-db.collection("friendRequests")
-.doc(doc.id)
-.update({status:"accepted"});
-
-}
-
-});
-
-});
-
-  }
 
 const ref=storage.ref().child("videos/"+Date.now()+file.name);
 
@@ -214,8 +186,6 @@ div.innerHTML=`
 
 <button onclick="sharePost('${doc.id}')">🔗 Share</button>
 
-<button onclick="sendFriendRequest('${data.userUid}')">🫂 Add Friend</button>
-
 <button onclick="commentPost('${doc.id}')">💬 Comment</button>
 
 <div id="c-${doc.id}"></div>
@@ -248,9 +218,7 @@ area.innerHTML="";
 snap.forEach(c=>{
 
 const p=document.createElement("p");
-
 p.textContent=c.data().user+" : "+c.data().text;
-
 area.appendChild(p);
 
 });
@@ -271,16 +239,13 @@ const likeRef=db.collection("posts")
 .doc(currentUser.uid);
 
 likeRef.get().then(doc=>{
-
-if(doc.exists){
-likeRef.delete();
-}else{
+if(doc.exists){likeRef.delete();}
+else{
 likeRef.set({
 userUid:currentUser.uid,
 date:new Date()
 });
 }
-
 });
 
 }
@@ -291,13 +256,8 @@ db.collection("posts")
 .doc(postId)
 .collection("likes")
 .onSnapshot(snapshot=>{
-
 const el=document.getElementById("like-"+postId);
-
-if(el){
-el.innerText="❤️ "+snapshot.size;
-}
-
+if(el){el.innerText="❤️ "+snapshot.size;}
 });
 
 }
@@ -305,18 +265,15 @@ el.innerText="❤️ "+snapshot.size;
 function commentPost(postId){
 
 const text=prompt("Comment kee barreessi:");
-
 if(!text) return;
 
 db.collection("posts")
 .doc(postId)
 .collection("comments")
 .add({
-
 text:text,
 user:currentUser.email,
 date:new Date()
-
 });
 
 }
@@ -333,9 +290,7 @@ if(!doc.exists) return;
 const data=doc.data();
 
 let text="Barnoota Live Post\n\n";
-
 text+=data.user+"\n";
-
 text+=data.text+"\n";
 
 if(data.videoURL){
@@ -343,34 +298,63 @@ text+=data.videoURL;
 }
 
 navigator.clipboard.writeText(text);
-
 alert("Post copy godhame");
 
 });
 
 }
-  function sendFriendRequest(toUid){
 
-if(toUid === currentUser.uid){
-alert("Ofitti request hin ergu!");
-return;
-}
+function sendFriendRequest(){
+
+const email=document.getElementById("friendEmail").value;
+if(!email) return alert("Email galchi");
 
 db.collection("friendRequests").add({
+from:currentUser.email,
+to:email,
+status:"pending",
+date:new Date()
+}).then(()=>{
+document.getElementById("friendResult").innerText="Request sent ✔";
+document.getElementById("friendEmail").value="";
+});
 
-fromUid: currentUser.uid,
-toUid: toUid,
-status: "pending",
-date: new Date()
+}
 
-})
-.then(()=>{
+function checkFriendRequests(){
 
-alert("Friend request ergame");
+db.collection("friendRequests")
+.where("to","==",currentUser.email)
+.where("status","==","pending")
+.onSnapshot(snapshot=>{
+
+snapshot.forEach(doc=>{
+
+if(confirm("Friend request haaraa jira. Accept goota?")){
+
+db.collection("friendRequests")
+.doc(doc.id)
+.update({status:"accepted"});
+
+}
 
 });
 
-  }
+});
+
+}
+
+function openAddFriends(){
+
+const box=document.getElementById("addFriendsBox");
+
+if(box.style.display==="none"){
+box.style.display="block";
+}else{
+box.style.display="none";
+}
+
+}
 
 let api=null;
 
@@ -392,7 +376,6 @@ height:"100%"
 function joinMeet(){
 
 const room=prompt("Room code galchi:");
-
 if(!room) return;
 
 document.getElementById("content").innerHTML=`<div id="meet" style="height:80vh;"></div>`;
@@ -405,37 +388,7 @@ height:"100%"
 });
 
 }
-  function sendFriendRequest(){
 
-const email=document.getElementById("friendEmail").value;
-
-if(!email) return alert("Email galchi");
-
-db.collection("friendRequests").add({
-
-from:currentUser.email,
-to:email,
-status:"pending",
-date:new Date()
-
-}).then(()=>{
-
-document.getElementById("friendResult").innerText="Request sent ✔";
-document.getElementById("friendEmail").value="";
-
-});
-
-  }
-function openAddFriends(){
-const box=document.getElementById("addFriendsBox");
-
-if(box.style.display==="none"){
-box.style.display="block";
-}else{
-box.style.display="none";
-}
-  }
-  
 </script>
 
 </body>
