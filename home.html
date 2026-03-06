@@ -279,7 +279,8 @@ date:new Date()
 
 });
 
-  }function updateLikeCount(postId){
+  }
+  function updateLikeCount(postId){
 
 db.collection("posts")
 .doc(postId)
@@ -294,7 +295,8 @@ el.innerText="❤️ "+snapshot.size;
 
 });
 
-  }function commentPost(postId){
+  }
+  function commentPost(postId){
 
 const text = prompt("Comment kee barreessi:");
 
