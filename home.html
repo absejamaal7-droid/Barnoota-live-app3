@@ -24,106 +24,119 @@ body{margin:0;font-family:Arial;background:#0f172a;color:white;}
 textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;}
 .feedVideo{width:100%;margin-top:10px;border-radius:6px;}
 button{cursor:pointer;}
-#chatBox{position:fixed;bottom:0;right:0;width:300px;height:400px;background:white;color:black;display:none;flex-direction:column;border-radius:10px 10px 0 0;}
-#chatBox div:first-child{background:#1877f2;color:white;padding:8px;}
-#chatMessages{flex:1;overflow:auto;padding:8px;}
-#chatBox input{flex:1;border:none;padding:8px;}
+/* Chat Box Styles */
+#chatBox{position:fixed;bottom:0;right:0;width:350px;height:450px;background:white;color:black;display:none;flex-direction:column;border-radius:10px 10px 0 0;}
+#chatBoxHeader{background:#1877f2;color:white;padding:8px;display:flex;justify-content:space-between;align-items:center;}
+#chatMessages{flex:1;overflow:auto;padding:8px;background:#f0f0f0;}
+#chatInputSection{display:flex;}
+#chatInput{flex:1;border:none;padding:8px;}
 </style>
 </head>
 
 <body>
 
-<div id="chatBox">
-<div>
-<span id="chatUser"></span>
-<button onclick="closeChat()" style="float:right;">X</button>
-</div>
-<div id="chatMessages"></div>
-<div style="display:flex;">
-<input id="chatInput" placeholder="Message...">
-<button onclick="sendChat()">Send</button>
-</div>
-</div>
-
+<!-- Top Bar -->
 <div class="topbar">
-<div>
-<span onclick="goHome()">🏠</span>
-<span onclick="alert('Video coming soon')">🖥</span>
-<span onclick="openAddFriends()">🫂</span>
-<span onclick="alert('Notification coming soon')">☎️</span>
-<span onclick="alert('Story coming soon')">👜</span>
-<span onclick="goProfile()">👤</span>
-</div>
-<div>
-<span onclick="alert('Search coming soon')">🔍</span>
-<span onclick="toggleAdd()">➕</span>
-</div>
+  <div>
+    <span onclick="goHome()">🏠</span>
+    <span onclick="alert('Video coming soon')">🖥</span>
+    <span onclick="openAddFriends()">🫂</span>
+    <span onclick="alert('Notification coming soon')">☎️</span>
+    <span onclick="alert('Story coming soon')">👜</span>
+    <span onclick="goProfile()">👤</span>
+  </div>
+  <div>
+    <span onclick="alert('Search coming soon')">🔍</span>
+    <span onclick="toggleAdd()">➕</span>
+  </div>
 </div>
 
+<!-- Add Menu -->
 <div id="addMenu" class="dropdown">
-<p onclick="document.getElementById('postText').focus()">Post</p>
-<p onclick="alert('Write coming soon')">🖋</p>
-<p onclick="alert('Reel coming soon')">Reel</p>
-<p onclick="alert('Story coming soon')">Story</p>
-<p onclick="alert('Note coming soon')">Note</p>
+  <p onclick="document.getElementById('postText').focus()">Post</p>
+  <p onclick="alert('Write coming soon')">🖋</p>
+  <p onclick="alert('Reel coming soon')">Reel</p>
+  <p onclick="alert('Story coming soon')">Story</p>
+  <p onclick="alert('Note coming soon')">Note</p>
 </div>
 
+<!-- Learning Menu -->
 <button class="learning-btn" onclick="toggleLearning()">📚</button>
 <div id="learningMenu" class="side-menu">
-<p onclick="startMeet()">Meet</p>
-<p onclick="joinMeet()">Join</p>
-<p onclick="alert('Share coming soon')">Share</p>
-<p onclick="alert('Schedule coming soon')">Schedule</p>
-<p onclick="alert('Team Chat coming soon')">Team Chat</p>
-<p onclick="alert('Docs coming soon')">Docs</p>
-<p onclick="alert('Calendar coming soon')">📅</p>
-<p onclick="alert('Tasks coming soon')">Tasks</p>
-<p onclick="alert('Mail coming soon')">Mail</p>
-<p onclick="alert('Whiteboards coming soon')">Whiteboards</p>
-<p onclick="alert('Clips coming soon')">Clips</p>
-<p onclick="alert('Contacts coming soon')">Contacts</p>
-<p onclick="alert('Events coming soon')">Events</p>
-<p onclick="alert('Apps coming soon')">Apps</p>
+  <p onclick="startMeet()">Meet</p>
+  <p onclick="joinMeet()">Join</p>
+  <p onclick="alert('Share coming soon')">Share</p>
+  <p onclick="alert('Schedule coming soon')">Schedule</p>
+  <p onclick="alert('Team Chat coming soon')">Team Chat</p>
+  <p onclick="alert('Docs coming soon')">Docs</p>
+  <p onclick="alert('Calendar coming soon')">📅</p>
+  <p onclick="alert('Tasks coming soon')">Tasks</p>
+  <p onclick="alert('Mail coming soon')">Mail</p>
+  <p onclick="alert('Whiteboards coming soon')">Whiteboards</p>
+  <p onclick="alert('Clips coming soon')">Clips</p>
+  <p onclick="alert('Contacts coming soon')">Contacts</p>
+  <p onclick="alert('Events coming soon')">Events</p>
+  <p onclick="alert('Apps coming soon')">Apps</p>
 </div>
 
+<!-- Add Friends Box -->
 <div id="addFriendsBox" style="display:none;background:#1e293b;padding:15px;border-radius:10px;margin-top:10px;">
-<h3>Add Friend</h3>
-<input id="friendEmail" placeholder="Friend email galchi" style="padding:8px;width:100%;border-radius:6px;border:none;">
-<br><br>
-<button onclick="sendFriendRequest()">Send Request</button>
-<div id="friendResult"></div>
+  <h3>Add Friend</h3>
+  <input id="friendEmail" placeholder="Friend email galchi" style="padding:8px;width:100%;border-radius:6px;border:none;">
+  <br><br>
+  <button onclick="sendFriendRequest()">Send Request</button>
+  <div id="friendResult"></div>
 </div>
 
+<!-- Chat Box -->
+<div id="chatBox">
+  <div id="chatBoxHeader">
+    <span id="chatUser"></span>
+    <div>
+      <button onclick="startAudioCall()" title="Audio Call">🎤</button>
+      <button onclick="startVideoCall()" title="Video Call">📹</button>
+      <button onclick="startScreenShare()" title="Share Screen">🖥</button>
+      <button onclick="closeChat()">❌</button>
+    </div>
+  </div>
+  <div id="chatMessages"></div>
+  <div id="chatInputSection">
+    <input id="chatInput" placeholder="Message...">
+    <button onclick="sendChat()">Send</button>
+  </div>
+</div>
+
+<!-- Posts -->
 <div id="content">
-<h3>Post haaraa</h3>
-<textarea id="postText" placeholder="Waan yaadde barreessi..."></textarea>
-<input type="file" id="videoFile" accept="video/*">
-<button onclick="addPost()">Post godhi</button>
-<div id="posts"></div>
+  <h3>Post haaraa</h3>
+  <textarea id="postText" placeholder="Waan yaadde barreessi..."></textarea>
+  <input type="file" id="videoFile" accept="video/*">
+  <button onclick="addPost()">Post godhi</button>
+  <div id="posts"></div>
 </div>
 
 <script>
 const firebaseConfig={
-apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
-authDomain:"abseapp-b3706.firebaseapp.com",
-projectId:"abseapp-b3706",
-storageBucket:"abseapp-b3706.firebasestorage.app",
-messagingSenderId:"986026055368",
-appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
+  apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
+  authDomain:"abseapp-b3706.firebaseapp.com",
+  projectId:"abseapp-b3706",
+  storageBucket:"abseapp-b3706.firebasestorage.app",
+  messagingSenderId:"986026055368",
+  appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"
 };
 firebase.initializeApp(firebaseConfig);
-
 const auth=firebase.auth();
 const db=firebase.firestore();
 const storage=firebase.storage();
 let currentUser=null;
 let chattingWith=null;
+let api=null;
 
 auth.onAuthStateChanged(user=>{
-if(!user) window.location.href="index.html";
-currentUser=user;
-loadPosts();
-checkFriendRequests();
+  if(!user) window.location.href="index.html";
+  currentUser=user;
+  loadPosts();
+  checkFriendRequests();
 });
 
 function goHome(){window.location.href="home.html";}
@@ -132,157 +145,159 @@ function toggleAdd(){document.getElementById("addMenu").classList.toggle("show")
 function toggleLearning(){document.getElementById("learningMenu").classList.toggle("show");}
 
 function addPost(){
-const text=document.getElementById("postText").value;
-const file=document.getElementById("videoFile").files[0];
-if(!text && !file) return alert("Text ykn video galchi!");
-if(!file){
-db.collection("posts").add({text:text,user:currentUser.email,date:new Date()});
-document.getElementById("postText").value="";
-return;
-}
-const ref=storage.ref().child("videos/"+Date.now()+file.name);
-ref.put(file).then(()=>{
-ref.getDownloadURL().then(url=>{
-db.collection("posts").add({text:text,user:currentUser.email,videoURL:url,date:new Date()});
-document.getElementById("postText").value="";
-document.getElementById("videoFile").value="";
-});
-});
+  const text=document.getElementById("postText").value;
+  const file=document.getElementById("videoFile").files[0];
+  if(!text && !file) return alert("Text ykn video galchi!");
+  if(!file){
+    db.collection("posts").add({text:text,user:currentUser.email,date:new Date()});
+    document.getElementById("postText").value="";
+    return;
+  }
+  const ref=storage.ref().child("videos/"+Date.now()+file.name);
+  ref.put(file).then(()=>ref.getDownloadURL().then(url=>{
+    db.collection("posts").add({text:text,user:currentUser.email,videoURL:url,date:new Date()});
+    document.getElementById("postText").value="";
+    document.getElementById("videoFile").value="";
+  }));
 }
 
 function loadPosts(){
-db.collection("posts").orderBy("date","desc").onSnapshot(snap=>{
-const container=document.getElementById("posts");
-container.innerHTML="";
-snap.forEach(doc=>{
-const d=doc.data();
-const div=document.createElement("div");
-div.className="post";
-div.innerHTML=`
-<button onclick="commentPost('${doc.id}')">💬 Comment</button>
-<button onclick="sharePost('${doc.id}')">🔗 Share</button>
-<button onclick="openChat('${d.user}')">💬 Chat</button>
-<div id="c-${doc.id}"></div>
-<button onclick="toggleLike('${doc.id}')">❤️ Like</button>
-<span id="like-${doc.id}">❤️ 0</span>
-<h4>${d.user}</h4>
-<p>${d.text||""}</p>
-${d.videoURL?`<video class="feedVideo" src="${d.videoURL}" controls></video>`:""}
-`;
-container.appendChild(div);
-updateLikeCount(doc.id);
-db.collection("posts").doc(doc.id).collection("comments").orderBy("date").onSnapshot(snap=>{
-const area=document.getElementById("c-"+doc.id);
-area.innerHTML="";
-snap.forEach(c=>{
-const p=document.createElement("p");
-p.textContent=c.data().user+" : "+c.data().text;
-area.appendChild(p);
-});
-});
-});
-});
+  db.collection("posts").orderBy("date","desc").onSnapshot(snap=>{
+    const container=document.getElementById("posts");
+    container.innerHTML="";
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const div=document.createElement("div");
+      div.className="post";
+      div.innerHTML=`
+        <button onclick="commentPost('${doc.id}')">💬 Comment</button>
+        <button onclick="sharePost('${doc.id}')">🔗 Share</button>
+        <button onclick="openChat('${d.user}')">💬 Chat</button>
+        <div id="c-${doc.id}"></div>
+        <button onclick="toggleLike('${doc.id}')">❤️ Like</button>
+        <span id="like-${doc.id}">❤️ 0</span>
+        <h4>${d.user}</h4>
+        <p>${d.text||""}</p>
+        ${d.videoURL?`<video class="feedVideo" src="${d.videoURL}" controls></video>`:""}
+      `;
+      container.appendChild(div);
+      updateLikeCount(doc.id);
+      db.collection("posts").doc(doc.id).collection("comments").orderBy("date").onSnapshot(snap=>{
+        const area=document.getElementById("c-"+doc.id);
+        area.innerHTML="";
+        snap.forEach(c=>{
+          const p=document.createElement("p");
+          p.textContent=c.data().user+" : "+c.data().text;
+          area.appendChild(p);
+        });
+      });
+    });
+  });
 }
 
 function toggleLike(postId){
-const likeRef=db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);
-likeRef.get().then(doc=>{if(doc.exists){likeRef.delete();}else{likeRef.set({userUid:currentUser.uid,date:new Date()});}});
+  const likeRef=db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);
+  likeRef.get().then(doc=>{
+    if(doc.exists){likeRef.delete();}else{likeRef.set({userUid:currentUser.uid,date:new Date()});}
+  });
 }
 
 function updateLikeCount(postId){
-db.collection("posts").doc(postId).collection("likes").onSnapshot(snapshot=>{
-const el=document.getElementById("like-"+postId);
-if(el){el.innerText="❤️ "+snapshot.size;}
-});
+  db.collection("posts").doc(postId).collection("likes").onSnapshot(snapshot=>{
+    const el=document.getElementById("like-"+postId);
+    if(el){el.innerText="❤️ "+snapshot.size;}
+  });
 }
 
 function commentPost(postId){
-const text=prompt("Comment kee barreessi:");
-if(!text) return;
-db.collection("posts").doc(postId).collection("comments").add({text:text,user:currentUser.email,date:new Date()});
+  const text=prompt("Comment kee barreessi:");
+  if(!text) return;
+  db.collection("posts").doc(postId).collection("comments").add({text:text,user:currentUser.email,date:new Date()});
 }
 
 function sharePost(postId){
-db.collection("posts").doc(postId).get().then(doc=>{
-if(!doc.exists) return;
-const data=doc.data();
-let text="Barnoota Live Post\n\n";
-text+=data.user+"\n";
-text+=data.text+"\n";
-if(data.videoURL){text+=data.videoURL;}
-navigator.clipboard.writeText(text);
-alert("Post copy godhame");
-});
+  db.collection("posts").doc(postId).get().then(doc=>{
+    if(!doc.exists) return;
+    const data=doc.data();
+    let text="Barnoota Live Post\n\n"+data.user+"\n"+data.text+"\n";
+    if(data.videoURL) text+=data.videoURL;
+    navigator.clipboard.writeText(text);
+    alert("Post copy godhame");
+  });
 }
 
 function sendFriendRequest(){
-const email=document.getElementById("friendEmail").value;
-if(!email) return alert("Email galchi");
-db.collection("friendRequests").add({from:currentUser.email,to:email,status:"pending",date:new Date()})
-.then(()=>{document.getElementById("friendResult").innerText="Request sent ✔";document.getElementById("friendEmail").value="";});
+  const email=document.getElementById("friendEmail").value;
+  if(!email) return alert("Email galchi");
+  db.collection("friendRequests").add({from:currentUser.email,to:email,status:"pending",date:new Date()})
+  .then(()=>{document.getElementById("friendResult").innerText="Request sent ✔";document.getElementById("friendEmail").value="";});
 }
 
 function checkFriendRequests(){
-db.collection("friendRequests").where("to","==",currentUser.email).where("status","==","pending").onSnapshot(snapshot=>{
-snapshot.forEach(doc=>{
-if(confirm("Friend request haaraa jira. Accept goota?")){
-db.collection("friendRequests").doc(doc.id).update({status:"accepted"});
-}
-});
-});
+  db.collection("friendRequests").where("to","==",currentUser.email).where("status","==","pending").onSnapshot(snapshot=>{
+    snapshot.forEach(doc=>{
+      if(confirm("Friend request haaraa jira. Accept goota?")){
+        db.collection("friendRequests").doc(doc.id).update({status:"accepted"});
+      }
+    });
+  });
 }
 
 function openAddFriends(){
-const box=document.getElementById("addFriendsBox");
-box.style.display=(box.style.display==="none")?"block":"none";
+  const box=document.getElementById("addFriendsBox");
+  box.style.display=(box.style.display==="none")?"block":"none";
 }
 
-// ================= Chat =================
+// --- Chat Functions ---
 function openChat(user){
-chattingWith=user;
-document.getElementById("chatUser").innerText=user;
-document.getElementById("chatBox").style.display="flex";
-loadMessages();
+  chattingWith=user;
+  document.getElementById("chatUser").innerText=user;
+  document.getElementById("chatBox").style.display="flex";
+  loadMessages();
 }
 
-function closeChat(){document.getElementById("chatBox").style.display="none";}
+function closeChat(){
+  document.getElementById("chatBox").style.display="none";
+  if(api){ api.dispose(); api=null; }
+}
 
 function sendChat(){
-const text=document.getElementById("chatInput").value;
-if(!text) return;
-db.collection("messages").add({from:currentUser.email,to:chattingWith,text:text,date:new Date()});
-document.getElementById("chatInput").value="";
+  const text=document.getElementById("chatInput").value;
+  if(!text) return;
+  db.collection("messages").add({from:currentUser.email,to:chattingWith,text:text,date:new Date()});
+  document.getElementById("chatInput").value="";
 }
 
 function loadMessages(){
-db.collection("messages").orderBy("date").onSnapshot(snap=>{
-const box=document.getElementById("chatMessages");
-box.innerHTML="";
-snap.forEach(doc=>{
-const m=doc.data();
-if((m.from==currentUser.email && m.to==chattingWith)||(m.from==chattingWith && m.to==currentUser.email)){
-const p=document.createElement("p");
-p.textContent=m.from+" : "+m.text;
-box.appendChild(p);
-}
-});
-});
+  db.collection("messages").orderBy("date").onSnapshot(snap=>{
+    const box=document.getElementById("chatMessages");
+    box.innerHTML="";
+    snap.forEach(doc=>{
+      const m=doc.data();
+      if((m.from===currentUser.email && m.to===chattingWith) || (m.from===chattingWith && m.to===currentUser.email)){
+        const p=document.createElement("p");
+        p.textContent=m.from+" : "+m.text;
+        box.appendChild(p);
+        box.scrollTop = box.scrollHeight;
+      }
+    });
+  });
 }
 
-// ================= Meet =================
-let api=null;
-function startMeet(){
-const roomName="BarnootaLive_"+Date.now();
-document.getElementById("content").innerHTML=`<div id="meet" style="height:80vh;"></div>`;
-api=new JitsiMeetExternalAPI("meet.jit.si",{roomName:roomName,parentNode:document.querySelector("#meet"),width:"100%",height:"100%"});
+// --- Jitsi Meet Call ---
+function startVideoCall(){startJitsiCall({video:true,audio:true});}
+function startAudioCall(){startJitsiCall({video:false,audio:true});}
+function startScreenShare(){
+  if(!api) return alert("Start video/audio call first!");
+  api.executeCommand('toggleShareScreen');
 }
-function joinMeet(){
-const room=prompt("Room code galchi:");
-if(!room) return;
-document.getElementById("content").innerHTML=`<div id="meet" style="height:80vh;"></div>`;
-api=new JitsiMeetExternalAPI("meet.jit.si",{roomName:room,parentNode:document.querySelector("#meet"),width:"100%",height:"100%"});
+function startJitsiCall({video,audio}){
+  if(api) api.dispose();
+  const room = "ChatRoom_"+currentUser.email+"_"+chattingWith;
+  const container = document.getElementById("chatMessages");
+  container.innerHTML=`<div id="meet" style="height:300px;width:100%;"></div>`;
+  api = new JitsiMeetExternalAPI("meet.jit.si",{roomName:room,parentNode:document.querySelector("#meet"),width:"100%",height:300,configOverwrite:{startWithAudioMuted:!audio,startWithVideoMuted:!video,enableWelcomePage:false},interfaceConfigOverwrite:{SHOW_JITSI_WATERMARK:false,SHOW_WATERMARK_FOR_GUESTS:false}});
 }
 </script>
-
 </body>
 </html>
