@@ -68,7 +68,7 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <p onclick="document.getElementById('postText').focus()">Post</p>
   <p onclick="alert('Write coming soon')">🖋</p>
   <p onclick="alert('Reel coming soon')">Reel</p>
-  <p onclick="alert('Story coming soon')">Story</p>
+  <p onclick="openStoryUpload()">Story</p>
   <p onclick="alert('Note coming soon')">Note</p>
 </div>
 
@@ -146,6 +146,54 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
 
   <div id="stories"></div>
 
+</div>
+  <!-- STORY UPLOAD POPUP -->
+<div id="storyUploadBox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;">
+
+<div style="background:#1e293b;padding:20px;border-radius:10px;width:300px;text-align:center;">
+
+<h3>Upload Story</h3>
+
+<input type="file" id="storyFile2" accept="image/*,video/*">
+
+<br><br>
+
+<button onclick="uploadStoryFromMenu()">Upload</button>
+<button onclick="closeStoryUpload()" style="background:red;">Cancel</button>
+
+</div>
+</div>
+
+  <!-- LIVE SECTION -->
+<div id="liveSection" style="margin-top:20px;">
+  <h3>Live Broadcasting</h3>
+  <video id="liveVideo" width="100%" height="300" controls autoplay muted></video>
+  <br>
+  <button id="startLiveBtn">Start Live</button>
+  <button id="stopLiveBtn">Stop Live</button>
+</div>
+  <div id="posts"></div>
+
+  <!-- LIVE + CHAT SECTION -->
+<div id="liveSection" style="margin-top:20px;">
+  <h3>Live Broadcasting</h3>
+  <video id="liveVideo" width="100%" height="300" controls autoplay muted></video>
+  <br>
+  <button id="startLiveBtn">Start Live</button>
+  <button id="stopLiveBtn">Stop Live</button>
+</div>
+
+<!-- CHAT -->
+<div id="chatBox" style="position:fixed;bottom:0;right:0;width:100%;max-width:400px;height:500px;background:#111b2b;color:white;display:flex;flex-direction:column;border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.5);">
+  <div id="chatBoxHeader" style="background:#1877f2;color:white;padding:10px;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0;">
+    <span id="chatUser">Live Chat</span>
+    <button onclick="closeChat()">❌</button>
+  </div>
+  <div id="chatMessages" style="flex:1;overflow:auto;padding:10px;background:#0a1a2a;scroll-behavior:smooth;"></div>
+  <div id="chatInputSection" style="display:flex;padding:5px;background:#192b3a;border-radius:0 0 12px 12px;">
+    <input id="chatInput" placeholder="Message..." style="flex:1;border:none;padding:10px;border-radius:20px;margin-right:5px;background:white;color:black;">
+    <button onclick="sendChat()">Send</button>
+  </div>
 </div>
   
 <script>
@@ -317,6 +365,41 @@ date:new Date()
 });
 
                  }
+  function openStoryUpload(){
+document.getElementById("storyUploadBox").style.display="flex";
+}
+
+function closeStoryUpload(){
+document.getElementById("storyUploadBox").style.display="none";
+}
+
+function uploadStoryFromMenu(){
+
+const file=document.getElementById("storyFile2").files[0];
+if(!file) return alert("File filadhu");
+
+const ref=storage.ref().child("stories/"+Date.now()+file.name);
+
+ref.put(file).then(()=>{
+
+ref.getDownloadURL().then(url=>{
+
+db.collection("stories").add({
+user:currentUser.email,
+url:url,
+type:file.type,
+date:new Date()
+});
+
+alert("Story uploaded ✔");
+
+document.getElementById("storyUploadBox").style.display="none";
+
+});
+
+});
+
+  }
 // Posts & Friend
 function addPost(){const text=document.getElementById("postText").value;const file=document.getElementById("videoFile").files[0];if(!text&&!file)return alert("Text ykn video galchi!");if(!file){db.collection("posts").add({text,user:currentUser.email,date:new Date()});document.getElementById("postText").value="";return;}const ref=storage.ref().child("videos/"+Date.now()+file.name);ref.put(file).then(()=>ref.getDownloadURL().then(url=>{db.collection("posts").add({text,user:currentUser.email,videoURL:url,date:new Date()});document.getElementById("postText").value="";document.getElementById("videoFile").value="";}));}
 function loadPosts(){db.collection("posts").orderBy("date","desc").onSnapshot(snap=>{const container=document.getElementById("posts");container.innerHTML="";snap.forEach(doc=>{const d=doc.data();const div=document.createElement("div");div.className="post";div.innerHTML=`<button onclick="commentPost('${doc.id}')">💬 Comment</button><button onclick="sharePost('${doc.id}')">🔗 Share</button><button onclick="openChat('${d.user}')">💬 Chat</button><div id="c-${doc.id}"></div><button onclick="toggleLike('${doc.id}')">❤️ Like</button><span id="like-${doc.id}">❤️ 0</span><h4>${d.user}</h4><p>${d.text||""}</p>${d.videoURL?`<video class="feedVideo" src="${d.videoURL}" controls></video>`:""}`;container.appendChild(div);updateLikeCount(doc.id);db.collection("posts").doc(doc.id).collection("comments").orderBy("date").onSnapshot(snap=>{const area=document.getElementById("c-"+doc.id);area.innerHTML="";snap.forEach(c=>{const p=document.createElement("p");p.textContent=c.data().user+" : "+c.data().text;area.appendChild(p);});});});});}
