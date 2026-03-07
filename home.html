@@ -101,10 +101,10 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <div id="friendResult"></div>
 </div>
 
-<!-- Chat Box -->
+<!-- CHAT BOX -->
 <div id="chatBox">
   <div id="chatBoxHeader">
-    <span id="chatUser">User</span>
+    <span id="chatUser">Live Chat</span>
     <div>
       <button onclick="startAudioCall()" title="Audio Call">🎤</button>
       <button onclick="startVideoCall()" title="Video Call">📹</button>
@@ -134,9 +134,8 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <div id="posts"></div>
 </div>
 
-  <!-- STORY SECTION -->
+<!-- STORY SECTION -->
 <div id="storySection" style="display:flex;overflow-x:auto;padding:10px;background:#111b2b;border-radius:10px;margin-bottom:10px;">
-  
   <div style="text-align:center;margin-right:10px;">
     <label style="cursor:pointer;">
       <div style="width:60px;height:60px;border-radius:50%;background:#1877f2;display:flex;align-items:center;justify-content:center;font-size:24px;">+</div>
@@ -144,38 +143,21 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
     </label>
     <small>Add Story</small>
   </div>
-
   <div id="stories"></div>
-
 </div>
-  <!-- STORY UPLOAD POPUP -->
+
+<!-- STORY UPLOAD POPUP -->
 <div id="storyUploadBox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;">
-
-<div style="background:#1e293b;padding:20px;border-radius:10px;width:300px;text-align:center;">
-
-<h3>Upload Story</h3>
-
-<input type="file" id="storyFile2" accept="image/*,video/*">
-
-<br><br>
-
-<button onclick="uploadStoryFromMenu()">Upload</button>
-<button onclick="closeStoryUpload()" style="background:red;">Cancel</button>
-
-</div>
+  <div style="background:#1e293b;padding:20px;border-radius:10px;width:300px;text-align:center;">
+    <h3>Upload Story</h3>
+    <input type="file" id="storyFile2" accept="image/*,video/*">
+    <br><br>
+    <button onclick="uploadStoryFromMenu()">Upload</button>
+    <button onclick="closeStoryUpload()" style="background:red;">Cancel</button>
+  </div>
 </div>
 
-  <!-- LIVE SECTION -->
-<div id="liveSection" style="margin-top:20px;">
-  <h3>Live Broadcasting</h3>
-  <video id="liveVideo" width="100%" height="300" controls autoplay muted></video>
-  <br>
-  <button id="startLiveBtn">Start Live</button>
-  <button id="stopLiveBtn">Stop Live</button>
-</div>
-  <div id="posts"></div>
-
-  <!-- LIVE + CHAT SECTION -->
+<!-- LIVE SECTION -->
 <div id="liveSection" style="margin-top:20px;">
   <h3>Live Broadcasting</h3>
   <video id="liveVideo" width="100%" height="300" controls autoplay muted></video>
@@ -184,49 +166,36 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <button id="stopLiveBtn">Stop Live</button>
 </div>
 
-<!-- CHAT -->
-<div id="chatBox" style="position:fixed;bottom:0;right:0;width:100%;max-width:400px;height:500px;background:#111b2b;color:white;display:flex;flex-direction:column;border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.5);">
-  <div id="chatBoxHeader" style="background:#1877f2;color:white;padding:10px;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0;">
-    <span id="chatUser">Live Chat</span>
-    <button onclick="closeChat()">❌</button>
-  </div>
-  <div id="chatMessages" style="flex:1;overflow:auto;padding:10px;background:#0a1a2a;scroll-behavior:smooth;"></div>
-  <div id="chatInputSection" style="display:flex;padding:5px;background:#192b3a;border-radius:0 0 12px 12px;">
-    <input id="chatInput" placeholder="Message..." style="flex:1;border:none;padding:10px;border-radius:20px;margin-right:5px;background:white;color:black;">
-    <button onclick="sendChat()">Send</button>
-  </div>
-</div>
-  
 <script>
-// Firebase
+// Firebase initialization
 const firebaseConfig={apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",authDomain:"abseapp-b3706.firebaseapp.com",projectId:"abseapp-b3706",storageBucket:"abseapp-b3706.firebasestorage.app",messagingSenderId:"986026055368",appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"};
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.firestore(),storage=firebase.storage();
 let currentUser=null,chattingWith=null,api=null;
 
 // Auth
-auth.onAuthStateChanged(user=>{if(!user) window.location.href="index.html";currentUser=user;loadPosts();deleteOldStories();loadStories();// DELETE OLD STORIES (24h)
-function deleteOldStories(){
+auth.onAuthStateChanged(user=>{
+    if(!user) window.location.href="index.html";
+    currentUser=user;
+    loadPosts();
+    deleteOldStories();
+    loadStories();
+    checkFriendRequests();
 
-const now = new Date().getTime();
-const day = 24 * 60 * 60 * 1000;
-
-db.collection("stories").get().then(snapshot=>{
-
-snapshot.forEach(doc=>{
-
-const story = doc.data();
-const time = story.date.toDate().getTime();
-
-if(now - time > day){
-db.collection("stories").doc(doc.id).delete();
-}
-
+    function deleteOldStories(){
+        const now = new Date().getTime();
+        const day = 24 * 60 * 60 * 1000;
+        db.collection("stories").get().then(snapshot=>{
+            snapshot.forEach(doc=>{
+                const story = doc.data();
+                const time = story.date.toDate().getTime();
+                if(now - time > day){
+                    db.collection("stories").doc(doc.id).delete();
+                }
+            });
+        });
+    }
 });
-
-});
-
-}checkFriendRequests();});
 
 // Navigation
 function goHome(){window.location.href="home.html";}
@@ -239,69 +208,126 @@ function toggleTheme(){document.body.classList.toggle("light");}
 const emojis=["😀","😂","❤️","👍","🙏","😎","🎉","🥳","😢","😡"];
 function toggleEmojiPicker(){const picker=document.getElementById("emojiPicker");picker.style.display=(picker.style.display==="none")?"flex":"none";picker.innerHTML="";emojis.forEach(e=>{const span=document.createElement("span");span.textContent=e;span.onclick=()=>{document.getElementById("chatInput").value+=e;};picker.appendChild(span);});}
 
-// Chat
+// Chat functions
 function openChat(user){chattingWith=user;document.getElementById("chatUser").innerText=user;document.getElementById("chatBox").style.display="flex";loadMessages();}
 function closeChat(){document.getElementById("chatBox").style.display="none";if(api)api.dispose();}
 function sendChat(){const text=document.getElementById("chatInput").value;if(!text)return;db.collection("messages").add({from:currentUser.email,to:chattingWith,text,date:new Date()});document.getElementById("chatInput").value="";}
 function loadMessages(){db.collection("messages").orderBy("date").onSnapshot(snap=>{const box=document.getElementById("chatMessages");box.innerHTML="";snap.forEach(doc=>{const m=doc.data();if((m.from===currentUser.email&&m.to===chattingWith)||(m.from===chattingWith&&m.to===currentUser.email)){const p=document.createElement("div");p.className=(m.from===currentUser.email)?"message sent":"message received";p.textContent=m.text;p.onclick=(e)=>{showReactionsPopup(e,p,doc.id)};box.appendChild(p);box.scrollTop=box.scrollHeight;}});});}
 
-// Reactions popup
+// Reactions
 function showReactionsPopup(e,messageEl,msgId){let popup=document.getElementById("reactionsPopup");if(!popup){popup=document.createElement("div");popup.id="reactionsPopup";popup.className="reactionsPopup";document.body.appendChild(popup);}popup.style.display="flex";popup.style.top=(e.clientY-40)+"px";popup.style.left=e.clientX+"px";popup.innerHTML="";emojis.forEach(em=>{const span=document.createElement("span");span.textContent=em;span.onclick=()=>{addReaction(msgId,em);popup.style.display="none";};popup.appendChild(span);});}
 function addReaction(msgId,emoji){db.collection("messages").doc(msgId).collection("reactions").add({user:currentUser.email,emoji,date:new Date()});}
 
-// Audio/Video/Screen
+// Video/Audio calls
 function startVideoCall(){startJitsiCall({video:true,audio:true});}
 function startAudioCall(){startJitsiCall({video:false,audio:true});}
 function startScreenShare(){if(!api)return alert("Start call first!");api.executeCommand('toggleShareScreen');}
 function startJitsiCall({video,audio}){if(api)api.dispose();const room="ChatRoom_"+currentUser.email+"_"+chattingWith;const container=document.getElementById("chatMessages");container.innerHTML=`<div id="meet" style="height:300px;width:100%;"></div>`;api=new JitsiMeetExternalAPI("meet.jit.si",{roomName:room,parentNode:document.querySelector("#meet"),width:"100%",height:300,configOverwrite:{startWithAudioMuted:!audio,startWithVideoMuted:!video,enableWelcomePage:false},interfaceConfigOverwrite:{SHOW_JITSI_WATERMARK:false,SHOW_WATERMARK_FOR_GUESTS:false}});}
 
-  // STORY SYSTEM
-function uploadStory(){
+// Stories
+function uploadStory(){const file=document.getElementById("storyFile").files[0];if(!file) return;const ref=storage.ref().child("stories/"+Date.now()+file.name);ref.put(file).then(()=>ref.getDownloadURL().then(url=>{db.collection("stories").add({user:currentUser.email,url:url,type:file.type,date:new Date()});alert("Story uploaded ✔");}));}
+function openStoryUpload(){document.getElementById("storyUploadBox").style.display="flex";}
+function closeStoryUpload(){document.getElementById("storyUploadBox").style.display="none";}
+function uploadStoryFromMenu(){const file=document.getElementById("storyFile2").files[0];if(!file) return alert("File filadhu");const ref=storage.ref().child("stories/"+Date.now()+file.name);ref.put(file).then(()=>ref.getDownloadURL().then(url=>{db.collection("stories").add({user:currentUser.email,url:url,type:file.type,date:new Date()});alert("Story uploaded ✔");document.getElementById("storyUploadBox").style.display="none";}));}
 
-const file=document.getElementById("storyFile").files[0];
-if(!file) return;
+// Posts & Friends
+function addPost(){const text=document.getElementById("postText").value;const file=document.getElementById("videoFile").files[0];if(!text&&!file)return alert("Text ykn video galchi!");if(!file){db.collection("posts").add({text,user:currentUser.email,date:new Date()});document.getElementById("postText").value="";return;}const ref=storage.ref().child("videos/"+Date.now()+file.name);ref.put(file).then(()=>ref.getDownloadURL().then(url=>{db.collection("posts").add({text,user:currentUser.email,videoURL:url,date:new Date()});document.getElementById("postText").value="";document.getElementById("videoFile").value="";}));}
+function loadPosts(){db.collection("posts").orderBy("date","desc").onSnapshot(snap=>{const container=document.getElementById("posts");container.innerHTML="";snap.forEach(doc=>{const d=doc.data();const div=document.createElement("div");div.className="post";div.innerHTML=`<button onclick="commentPost('${doc.id}')">💬 Comment</button><button onclick="sharePost('${doc.id}')">🔗 Share</button><button onclick="openChat('${d.user}')">💬 Chat</button>
+<div id="c-${doc.id}"></div>
+<button onclick="toggleLike('${doc.id}')">❤️ Like</button>
+<span id="like-${doc.id}">❤️ 0</span>
+<h4>${d.user}</h4>
+<p>${d.text||""}</p>
+${d.videoURL?`<video class="feedVideo" src="${d.videoURL}" controls></video>`:""}`;
+container.appendChild(div);
 
-const ref=storage.ref().child("stories/"+Date.now()+file.name);
+// Update likes
+updateLikeCount(doc.id);
 
-ref.put(file).then(()=>{
-
-ref.getDownloadURL().then(url=>{
-
-db.collection("stories").add({
-user:currentUser.email,
-url:url,
-type:file.type,
-date:new Date()
+// Load comments
+db.collection("posts").doc(doc.id).collection("comments").orderBy("date").onSnapshot(snap=>{
+    const area=document.getElementById("c-"+doc.id);
+    area.innerHTML="";
+    snap.forEach(c=>{
+        const p=document.createElement("p");
+        p.textContent=c.data().user+" : "+c.data().text;
+        area.appendChild(p);
+    });
 });
+});});
 
-alert("Story uploaded ✔");
-
-});
-
-});
-
+// Likes
+function toggleLike(postId){
+    const likeRef=db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);
+    likeRef.get().then(doc=>{
+        if(doc.exists){likeRef.delete();}else{likeRef.set({userUid:currentUser.uid,date:new Date()});}
+    });
 }
-  let localStream = null;
+function updateLikeCount(postId){
+    db.collection("posts").doc(postId).collection("likes").onSnapshot(snapshot=>{
+        const el=document.getElementById("like-"+postId);
+        if(el){el.innerText="❤️ "+snapshot.size;}
+    });
+}
 
-// RTMP Server URL
-const rtmpUrl = "rtmp://YOUR_SERVER_IP/live/STREAM_KEY";
+// Comments
+function commentPost(postId){
+    const text=prompt("Comment kee barreessi:");
+    if(!text) return;
+    db.collection("posts").doc(postId).collection("comments").add({text,user:currentUser.email,date:new Date()});
+}
 
+// Share
+function sharePost(postId){
+    db.collection("posts").doc(postId).get().then(doc=>{
+        if(!doc.exists) return;
+        const data=doc.data();
+        let text="Barnoota Live Post\n\n"+data.user+"\n"+data.text+"\n";
+        if(data.videoURL) text+=data.videoURL;
+        navigator.clipboard.writeText(text);
+        alert("Post copy godhame");
+    });
+}
+
+// Friends
+function sendFriendRequest(){
+    const email=document.getElementById("friendEmail").value;
+    if(!email) return alert("Email galchi");
+    db.collection("friendRequests").add({from:currentUser.email,to:email,status:"pending",date:new Date()}).then(()=>{
+        document.getElementById("friendResult").innerText="Request sent ✔";
+        document.getElementById("friendEmail").value="";
+    });
+}
+
+function checkFriendRequests(){
+    db.collection("friendRequests").where("to","==",currentUser.email).where("status","==","pending").onSnapshot(snapshot=>{
+        snapshot.forEach(doc=>{
+            if(confirm("Friend request haaraa jira. Accept goota?")){
+                db.collection("friendRequests").doc(doc.id).update({status:"accepted"});
+            }
+        });
+    });
+}
+
+function openAddFriends(){
+    const box=document.getElementById("addFriendsBox");
+    box.style.display=(box.style.display==="none")?"block":"none";
+}
+
+// Live Streaming
+let localStream = null;
 document.getElementById("startLiveBtn").onclick = async () => {
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     const videoElem = document.getElementById("liveVideo");
     videoElem.srcObject = localStream;
-
-    // Browser only preview
     alert("Live started locally. Server connect gara RTMP server jalqabuu.");
-
     // TODO: RTMP push gochuuf WebRTC / MediaRecorder + server upload
   } catch (err) {
     console.error("Camera/microphone access failed:", err);
     alert("Camera fi mic hin argamne!");
   }
 };
-
 document.getElementById("stopLiveBtn").onclick = () => {
   if (localStream) {
     localStream.getTracks().forEach(track => track.stop());
@@ -309,19 +335,7 @@ document.getElementById("stopLiveBtn").onclick = () => {
   }
 };
 
-// CHAT
-function sendChat() {
-  const text = document.getElementById("chatInput").value;
-  if (!text) return;
-  db.collection("liveChat").add({
-    user: currentUser.email,
-    text,
-    date: new Date()
-  });
-  document.getElementById("chatInput").value = "";
-}
-
-// Load chat messages
+// Live chat
 db.collection("liveChat").orderBy("date").onSnapshot(snapshot => {
   const box = document.getElementById("chatMessages");
   box.innerHTML = "";
@@ -333,136 +347,6 @@ db.collection("liveChat").orderBy("date").onSnapshot(snapshot => {
     box.scrollTop = box.scrollHeight;
   });
 });
-
-function loadStories(){
-
-db.collection("stories").orderBy("date","desc").onSnapshot(snapshot=>{
-
-const container=document.getElementById("stories");
-container.innerHTML="";
-
-snapshot.forEach(doc=>{
-
-const s=doc.data();
-
-const div=document.createElement("div");
-
-div.style.marginRight="10px";
-div.style.cursor="pointer";
-div.style.textAlign="center";
-
-div.innerHTML=`
-<div style="width:60px;height:60px;border-radius:50%;overflow:hidden;border:2px solid #1877f2;">
-${s.type.startsWith("video") ?
-`<video src="${s.url}" style="width:100%;height:100%;object-fit:cover;"></video>`
-:
-`<img src="${s.url}" style="width:100%;height:100%;object-fit:cover;">`
-}
-</div>
-<small>${s.user.split("@")[0]}</small>
-`;
-db.collection("stories")
-.doc(doc.id)
-.collection("views")
-.get()
-.then(v=>{
-div.innerHTML += "<br><small>👁 "+v.size+"</small>";
-});
-div.onclick=()=>viewStory(s);
-
-container.appendChild(div);
-
-});
-
-});
-
-}
-
-function viewStory(s){
-
-let html="";
-
-if(s.type.startsWith("video")){
-html=`<video src="${s.url}" controls autoplay style="width:100%">`;
-}else{
-html=`<img src="${s.url}" style="width:100%">`;
-}
-
-const box=document.createElement("div");
-box.style.position="fixed";
-box.style.top="0";
-box.style.left="0";
-box.style.width="100%";
-box.style.height="100%";
-box.style.background="black";
-box.style.display="flex";
-box.style.alignItems="center";
-box.style.justifyContent="center";
-box.innerHTML=`<div style="max-width:400px;">${html}<br><button onclick="this.parentElement.parentElement.remove()">Close</button></div>`;
-
-document.body.appendChild(box);// ADD VIEW
-db.collection("stories")
-.where("url","==",s.url)
-.get()
-.then(snapshot=>{
-snapshot.forEach(doc=>{
-db.collection("stories")
-.doc(doc.id)
-.collection("views")
-.doc(currentUser.uid)
-.set({
-user:currentUser.email,
-date:new Date()
-});
-});
-});
-
-                 }
-  function openStoryUpload(){
-document.getElementById("storyUploadBox").style.display="flex";
-}
-
-function closeStoryUpload(){
-document.getElementById("storyUploadBox").style.display="none";
-}
-
-function uploadStoryFromMenu(){
-
-const file=document.getElementById("storyFile2").files[0];
-if(!file) return alert("File filadhu");
-
-const ref=storage.ref().child("stories/"+Date.now()+file.name);
-
-ref.put(file).then(()=>{
-
-ref.getDownloadURL().then(url=>{
-
-db.collection("stories").add({
-user:currentUser.email,
-url:url,
-type:file.type,
-date:new Date()
-});
-
-alert("Story uploaded ✔");
-
-document.getElementById("storyUploadBox").style.display="none";
-
-});
-
-});
-
-  }
-// Posts & Friend
-function addPost(){const text=document.getElementById("postText").value;const file=document.getElementById("videoFile").files[0];if(!text&&!file)return alert("Text ykn video galchi!");if(!file){db.collection("posts").add({text,user:currentUser.email,date:new Date()});document.getElementById("postText").value="";return;}const ref=storage.ref().child("videos/"+Date.now()+file.name);ref.put(file).then(()=>ref.getDownloadURL().then(url=>{db.collection("posts").add({text,user:currentUser.email,videoURL:url,date:new Date()});document.getElementById("postText").value="";document.getElementById("videoFile").value="";}));}
-function loadPosts(){db.collection("posts").orderBy("date","desc").onSnapshot(snap=>{const container=document.getElementById("posts");container.innerHTML="";snap.forEach(doc=>{const d=doc.data();const div=document.createElement("div");div.className="post";div.innerHTML=`<button onclick="commentPost('${doc.id}')">💬 Comment</button><button onclick="sharePost('${doc.id}')">🔗 Share</button><button onclick="openChat('${d.user}')">💬 Chat</button><div id="c-${doc.id}"></div><button onclick="toggleLike('${doc.id}')">❤️ Like</button><span id="like-${doc.id}">❤️ 0</span><h4>${d.user}</h4><p>${d.text||""}</p>${d.videoURL?`<video class="feedVideo" src="${d.videoURL}" controls></video>`:""}`;container.appendChild(div);updateLikeCount(doc.id);db.collection("posts").doc(doc.id).collection("comments").orderBy("date").onSnapshot(snap=>{const area=document.getElementById("c-"+doc.id);area.innerHTML="";snap.forEach(c=>{const p=document.createElement("p");p.textContent=c.data().user+" : "+c.data().text;area.appendChild(p);});});});});}
-function toggleLike(postId){const likeRef=db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);likeRef.get().then(doc=>{if(doc.exists){likeRef.delete();}else{likeRef.set({userUid:currentUser.uid,date:new Date()});}});}
-function updateLikeCount(postId){db.collection("posts").doc(postId).collection("likes").onSnapshot(snapshot=>{const el=document.getElementById("like-"+postId);if(el){el.innerText="❤️ "+snapshot.size;}});}
-function commentPost(postId){const text=prompt("Comment kee barreessi:");if(!text)return;db.collection("posts").doc(postId).collection("comments").add({text,user:currentUser.email,date:new Date()});}
-function sharePost(postId){db.collection("posts").doc(postId).get().then(doc=>{if(!doc.exists)return;const data=doc.data();let text="Barnoota Live Post\n\n"+data.user+"\n"+data.text+"\n";if(data.videoURL)text+=data.videoURL;navigator.clipboard.writeText(text);alert("Post copy godhame");});}
-function sendFriendRequest(){const email=document.getElementById("friendEmail").value;if(!email)return alert("Email galchi");db.collection("friendRequests").add({from:currentUser.email,to:email,status:"pending",date:new Date()}).then(()=>{document.getElementById("friendResult").innerText="Request sent ✔";document.getElementById("friendEmail").value="";});}
-function checkFriendRequests(){db.collection("friendRequests").where("to","==",currentUser.email).where("status","==","pending").onSnapshot(snapshot=>{snapshot.forEach(doc=>{if(confirm("Friend request haaraa jira. Accept goota?")){db.collection("friendRequests").doc(doc.id).update({status:"accepted"});}});});}
-function openAddFriends(){const box=document.getElementById("addFriendsBox");box.style.display=(box.style.display==="none")?"block":"none";}
 </script>
 </body>
 </html>
