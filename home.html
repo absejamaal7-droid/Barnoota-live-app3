@@ -281,6 +281,58 @@ alert("Story uploaded ✔");
 });
 
 }
+  let localStream = null;
+
+// RTMP Server URL
+const rtmpUrl = "rtmp://YOUR_SERVER_IP/live/STREAM_KEY";
+
+document.getElementById("startLiveBtn").onclick = async () => {
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    const videoElem = document.getElementById("liveVideo");
+    videoElem.srcObject = localStream;
+
+    // Browser only preview
+    alert("Live started locally. Server connect gara RTMP server jalqabuu.");
+
+    // TODO: RTMP push gochuuf WebRTC / MediaRecorder + server upload
+  } catch (err) {
+    console.error("Camera/microphone access failed:", err);
+    alert("Camera fi mic hin argamne!");
+  }
+};
+
+document.getElementById("stopLiveBtn").onclick = () => {
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+    document.getElementById("liveVideo").srcObject = null;
+  }
+};
+
+// CHAT
+function sendChat() {
+  const text = document.getElementById("chatInput").value;
+  if (!text) return;
+  db.collection("liveChat").add({
+    user: currentUser.email,
+    text,
+    date: new Date()
+  });
+  document.getElementById("chatInput").value = "";
+}
+
+// Load chat messages
+db.collection("liveChat").orderBy("date").onSnapshot(snapshot => {
+  const box = document.getElementById("chatMessages");
+  box.innerHTML = "";
+  snapshot.forEach(doc => {
+    const m = doc.data();
+    const p = document.createElement("p");
+    p.textContent = `${m.user}: ${m.text}`;
+    box.appendChild(p);
+    box.scrollTop = box.scrollHeight;
+  });
+});
 
 function loadStories(){
 
