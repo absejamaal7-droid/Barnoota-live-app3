@@ -133,6 +133,21 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <div id="posts"></div>
 </div>
 
+  <!-- STORY SECTION -->
+<div id="storySection" style="display:flex;overflow-x:auto;padding:10px;background:#111b2b;border-radius:10px;margin-bottom:10px;">
+  
+  <div style="text-align:center;margin-right:10px;">
+    <label style="cursor:pointer;">
+      <div style="width:60px;height:60px;border-radius:50%;background:#1877f2;display:flex;align-items:center;justify-content:center;font-size:24px;">+</div>
+      <input type="file" id="storyFile" accept="image/*,video/*" style="display:none" onchange="uploadStory()">
+    </label>
+    <small>Add Story</small>
+  </div>
+
+  <div id="stories"></div>
+
+</div>
+  
 <script>
 // Firebase
 const firebaseConfig={apiKey:"AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",authDomain:"abseapp-b3706.firebaseapp.com",projectId:"abseapp-b3706",storageBucket:"abseapp-b3706.firebasestorage.app",messagingSenderId:"986026055368",appId:"1:986026055368:web:8ad2557f64c24d3c28b7fd"};
@@ -141,7 +156,28 @@ const auth=firebase.auth(),db=firebase.firestore(),storage=firebase.storage();
 let currentUser=null,chattingWith=null,api=null;
 
 // Auth
-auth.onAuthStateChanged(user=>{if(!user) window.location.href="index.html";currentUser=user;loadPosts();checkFriendRequests();});
+auth.onAuthStateChanged(user=>{if(!user) window.location.href="index.html";currentUser=user;loadPosts();deleteOldStories();loadStories();// DELETE OLD STORIES (24h)
+function deleteOldStories(){
+
+const now = new Date().getTime();
+const day = 24 * 60 * 60 * 1000;
+
+db.collection("stories").get().then(snapshot=>{
+
+snapshot.forEach(doc=>{
+
+const story = doc.data();
+const time = story.date.toDate().getTime();
+
+if(now - time > day){
+db.collection("stories").doc(doc.id).delete();
+}
+
+});
+
+});
+
+}checkFriendRequests();});
 
 // Navigation
 function goHome(){window.location.href="home.html";}
@@ -170,6 +206,117 @@ function startAudioCall(){startJitsiCall({video:false,audio:true});}
 function startScreenShare(){if(!api)return alert("Start call first!");api.executeCommand('toggleShareScreen');}
 function startJitsiCall({video,audio}){if(api)api.dispose();const room="ChatRoom_"+currentUser.email+"_"+chattingWith;const container=document.getElementById("chatMessages");container.innerHTML=`<div id="meet" style="height:300px;width:100%;"></div>`;api=new JitsiMeetExternalAPI("meet.jit.si",{roomName:room,parentNode:document.querySelector("#meet"),width:"100%",height:300,configOverwrite:{startWithAudioMuted:!audio,startWithVideoMuted:!video,enableWelcomePage:false},interfaceConfigOverwrite:{SHOW_JITSI_WATERMARK:false,SHOW_WATERMARK_FOR_GUESTS:false}});}
 
+  // STORY SYSTEM
+function uploadStory(){
+
+const file=document.getElementById("storyFile").files[0];
+if(!file) return;
+
+const ref=storage.ref().child("stories/"+Date.now()+file.name);
+
+ref.put(file).then(()=>{
+
+ref.getDownloadURL().then(url=>{
+
+db.collection("stories").add({
+user:currentUser.email,
+url:url,
+type:file.type,
+date:new Date()
+});
+
+alert("Story uploaded ✔");
+
+});
+
+});
+
+}
+
+function loadStories(){
+
+db.collection("stories").orderBy("date","desc").onSnapshot(snapshot=>{
+
+const container=document.getElementById("stories");
+container.innerHTML="";
+
+snapshot.forEach(doc=>{
+
+const s=doc.data();
+
+const div=document.createElement("div");
+
+div.style.marginRight="10px";
+div.style.cursor="pointer";
+div.style.textAlign="center";
+
+div.innerHTML=`
+<div style="width:60px;height:60px;border-radius:50%;overflow:hidden;border:2px solid #1877f2;">
+${s.type.startsWith("video") ?
+`<video src="${s.url}" style="width:100%;height:100%;object-fit:cover;"></video>`
+:
+`<img src="${s.url}" style="width:100%;height:100%;object-fit:cover;">`
+}
+</div>
+<small>${s.user.split("@")[0]}</small>
+`;
+db.collection("stories")
+.doc(doc.id)
+.collection("views")
+.get()
+.then(v=>{
+div.innerHTML += "<br><small>👁 "+v.size+"</small>";
+});
+div.onclick=()=>viewStory(s);
+
+container.appendChild(div);
+
+});
+
+});
+
+}
+
+function viewStory(s){
+
+let html="";
+
+if(s.type.startsWith("video")){
+html=`<video src="${s.url}" controls autoplay style="width:100%">`;
+}else{
+html=`<img src="${s.url}" style="width:100%">`;
+}
+
+const box=document.createElement("div");
+box.style.position="fixed";
+box.style.top="0";
+box.style.left="0";
+box.style.width="100%";
+box.style.height="100%";
+box.style.background="black";
+box.style.display="flex";
+box.style.alignItems="center";
+box.style.justifyContent="center";
+box.innerHTML=`<div style="max-width:400px;">${html}<br><button onclick="this.parentElement.parentElement.remove()">Close</button></div>`;
+
+document.body.appendChild(box);// ADD VIEW
+db.collection("stories")
+.where("url","==",s.url)
+.get()
+.then(snapshot=>{
+snapshot.forEach(doc=>{
+db.collection("stories")
+.doc(doc.id)
+.collection("views")
+.doc(currentUser.uid)
+.set({
+user:currentUser.email,
+date:new Date()
+});
+});
+});
+
+                 }
 // Posts & Friend
 function addPost(){const text=document.getElementById("postText").value;const file=document.getElementById("videoFile").files[0];if(!text&&!file)return alert("Text ykn video galchi!");if(!file){db.collection("posts").add({text,user:currentUser.email,date:new Date()});document.getElementById("postText").value="";return;}const ref=storage.ref().child("videos/"+Date.now()+file.name);ref.put(file).then(()=>ref.getDownloadURL().then(url=>{db.collection("posts").add({text,user:currentUser.email,videoURL:url,date:new Date()});document.getElementById("postText").value="";document.getElementById("videoFile").value="";}));}
 function loadPosts(){db.collection("posts").orderBy("date","desc").onSnapshot(snap=>{const container=document.getElementById("posts");container.innerHTML="";snap.forEach(doc=>{const d=doc.data();const div=document.createElement("div");div.className="post";div.innerHTML=`<button onclick="commentPost('${doc.id}')">💬 Comment</button><button onclick="sharePost('${doc.id}')">🔗 Share</button><button onclick="openChat('${d.user}')">💬 Chat</button><div id="c-${doc.id}"></div><button onclick="toggleLike('${doc.id}')">❤️ Like</button><span id="like-${doc.id}">❤️ 0</span><h4>${d.user}</h4><p>${d.text||""}</p>${d.videoURL?`<video class="feedVideo" src="${d.videoURL}" controls></video>`:""}`;container.appendChild(div);updateLikeCount(doc.id);db.collection("posts").doc(doc.id).collection("comments").orderBy("date").onSnapshot(snap=>{const area=document.getElementById("c-"+doc.id);area.innerHTML="";snap.forEach(c=>{const p=document.createElement("p");p.textContent=c.data().user+" : "+c.data().text;area.appendChild(p);});});});});}
