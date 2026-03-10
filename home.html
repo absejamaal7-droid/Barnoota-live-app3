@@ -200,6 +200,7 @@ function uploadStoryFromMenu(){
   ref.put(file).then(()=>ref.getDownloadURL().then(url=>{
     db.collection("stories").add({user:currentUser.email,url:url,type:file.type,date:new Date()});
     alert("Story uploaded ✔");
+    document.getElementById("storyUploadBox").style.display="none";
     closeStoryUpload();
   }));
 }
