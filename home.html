@@ -92,7 +92,10 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <div id="friendResult"></div>
 </div>
 
-<!-- Posts -->
+<!-- logout-->
+  <div id="logout=">
+    <button onclick="logout()">logout</button>
+    <-- post -->
 <div id="content">
   <h3>Post haaraa</h3>
   <textarea id="postText" placeholder="Waan yaadde barreessi..."></textarea>
@@ -172,6 +175,7 @@ auth.onAuthStateChanged(user=>{
   currentUser=user;
   loadPosts();
   loadStories();
+  logout();
 });
 
 // Navigation
@@ -250,6 +254,8 @@ function loadPosts(){
   });
 }
 
+  function logout(){
+    goindex(){window.location.href="index.html";}
 // Chat
 function openChat(user){document.getElementById("chatBox").style.display="flex";}
 function closeChat(){document.getElementById("chatBox").style.display="none";}
