@@ -71,8 +71,9 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <p onclick="openStoryUpload()">Story</p>
   <p onclick="alert('Note coming soon')">Note</p>
   <p onclick="showLiveSetion()">Live</p>
+  </div>
 </div>
-
+  
 <!-- Learning Menu -->
 <button class="learning-btn" onclick="toggleLearning()">📚</button>
 <div id="learningMenu" class="side-menu">
@@ -81,8 +82,9 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <p onclick="alert('Share coming soon')">Share</p>
   <p onclick="alert('Schedule coming soon')">Schedule</p>
   <p onclick="alert('Team Chat coming soon')">Team Chat</p>
+  </div>
 </div>
-
+  
 <!-- Add Friends Box -->
 <div id="addFriendsBox" style="display:none;background:#1e293b;padding:10px;border-radius:12px;margin:10px;">
   <h3>Add Friend</h3>
@@ -91,10 +93,14 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <button onclick="sendFriendRequest()">Send Request</button>
   <div id="friendResult"></div>
 </div>
-
+</div>
+  
 <!-- logout-->
   <div id="logout=">
     <button onclick="logout()">logout</button>
+  </div>
+</div>
+  
     <-- post -->
 <div id="content">
   <h3>Post haaraa</h3>
@@ -112,8 +118,8 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
       <input type="file" id="storyFile" accept="image/*,video/*" style="display:none" onchange="uploadStory()">
     </label>
     <small>Add Story</small>
+  <div id="stories">
   </div>
-  <div id="stories"></div>
 </div>
 
 <!-- Story Upload Popup -->
@@ -135,13 +141,13 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <button id="startLiveBtn">Start Live</button>
   <button id="stopLiveBtn">Stop Live</button>
 </div>
-
+  </div>
+  
 <!-- Chat Box -->
 <div id="chatBox">
   <div id="chatBoxHeader">
     <span id="chatUser">Live Chat</span>
     <button onclick="closeChat()">❌</button>
-  </div>
   <div id="chatMessages"></div>
   <div id="chatInputSection">
     <input id="chatInput" placeholder="Message...">
@@ -149,7 +155,6 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   </div>
 </div>
 
-  <div>
 <!-- Theme Toggle -->
 <button id="themeToggle" onclick="toggleTheme()">🌓</button>
   </div>
