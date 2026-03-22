@@ -55,7 +55,7 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
     <span onclick="alert('Notification coming soon')">☎️</span>
     <span onclick="alert('Story coming soon')">👜</span>
     <span onclick="goProfile()">👤</span>
-  </div>
+    </div>
     <span onclick="alert('Search coming soon')">🔍</span>
     <span onclick="toggleAdd()">➕</span>
   </div>
@@ -131,7 +131,8 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
 <button onclick="uploadStoryFromMenu()">Upload</button>
 <button onclick="closeStoryUpload()" style="background:red;">Cancel</button>
 </div>
-
+ </div>
+  
 <!-- Live Section -->
 <div id="liveSection" style="margin-top:20px;">
   <h3>Live Broadcasting</h3>
@@ -140,23 +141,25 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <button id="startLiveBtn">Start Live</button>
   <button id="stopLiveBtn">Stop Live</button>
 </div>
-  
+ </div>
 <!-- Chat Box -->
 <div id="chatBox">
   <div id="chatBoxHeader">
     <span id="chatUser">Live Chat</span>
     <button onclick="closeChat()">❌</button>
     </div>
-  <div id="chatMessages"></div>
+  </div>
+  <div id="chatMessages">
   <div id="chatInputSection">
     <input id="chatInput" placeholder="Message...">
     <button onclick="sendChat()">Send</button>
   </div>
-  
+   </div>
 <!-- Theme Toggle -->
+  <div id="themeToggle">
 <button id="themeToggle" onclick="toggleTheme()">🌓</button>
   </div>
-  
+
 <script>
 // Firebase
 const firebaseConfig = {
