@@ -110,11 +110,19 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <div id="posts">
   </div>
 </div>
+<body>
 
-  <input id="commentInput" 💬="Yaada kee barreessi">
-<button onclick="addComment()">Send</button>
+<h3>Post koo</h3>
+
+<button onclick="addComment()">💬 Comment</button>
 
 <div id="comments"></div>
+
+  <input id="commentInput" placeholder="Yaada kee barreessi">
+<button onclick="addComment()">Send</button>
+<button onclick="deleteComment('${doc.id}', '${c.user}')">🗑 Delete</button>
+  <button onclick="editComment('${doc.id}', '${c.text}', '${c.user}')">✏️ Edit</button>
+<div id="comments💬"></div>
 <!-- Story Section -->
 <div id="storySection" style="display:flex;overflow-x:auto;padding:10px;background:#111b2b;border-radius:10px;margin-bottom:10px;">
   <div style="text-align:center;margin-right:10px;">
@@ -159,15 +167,6 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
     <button onclick="sendChat()">Send</button>
   </div>
 </div>
-
-<h3>Post koo</h3>
-
-<button onclick="addComment()">💬 Comment</button>
-
-<div id="comments"></div>
-
-<script src="app.js"></script>
-  </body>
 <!-- Theme Toggle -->
 <button id="themeToggle" onclick="toggleTheme()">🌓</button>
   </div>
@@ -265,6 +264,20 @@ function addComment(){
       <span id="like-${doc.id}">0</span>
       <button onclick="replyComment('${doc.id}')">↩️ Reply</button>
       <div id="reply-${doc.id}"></div>
+      div.innerHTML = `
+  <p><b>${c.user}</b>: ${c.text}</p>
+
+  <button onclick="likeComment('${doc.id}')">❤️ Like</button>
+  <span id="like-${doc.id}">0</span>
+
+  <button onclick="replyComment('${doc.id}')">↩️ Reply</button>
+
+  <button onclick="deleteComment('${doc.id}')">🗑 Delete</button>
+
+  <button onclick="editComment('${doc.id}', '${c.text}')">✏️ Edit</button>
+
+  <div id="reply-${doc.id}"></div>
+`;
     `;
 
     box.appendChild(div);
@@ -310,7 +323,24 @@ function addComment(){
       user: auth.currentUser.email,
       date: new Date()
     });
-                }function loadReplies(commentId){
+                }function reply(btn){
+
+  const text = prompt("Reply kee barreessi:");
+
+  if(!text) return;
+
+  const replyDiv = document.createElement("p");
+  replyDiv.style.marginLeft = "20px";
+  replyDiv.innerText = text;
+
+  btn.nextElementSibling.appendChild(replyDiv);
+  }function like(btn){
+  const span = btn.nextElementSibling;
+  let count = parseInt(span.innerText);
+
+  span.innerText = count + 1;
+  }
+  function loadReplies(commentId){
 
   db.collection("comments")
     .doc(commentId)
@@ -333,6 +363,53 @@ function addComment(){
 
     });
                        }
+  function deleteComment(commentId){
+
+  if(confirm("Comment delete gochuu barbaaddaa?")){
+
+    db.collection("comments")
+      .doc(commentId)
+      .delete();
+
+  }
+  }function editComment(commentId, oldText){
+
+  const newText = prompt("Edit comment kee:", oldText);
+
+  if(!newText) return;
+
+  db.collection("comments")
+    .doc(commentId)
+    .update({
+      text: newText
+    });
+
+          }function deleteComment(commentId, ownerEmail){
+
+  if(auth.currentUser.email !== ownerEmail){
+    alert("Kan kee qofa delete gochuu dandeessa!");
+    return;
+  }
+
+  db.collection("comments")
+    .doc(commentId)
+    .delete();
+  }function editComment(commentId, oldText, ownerEmail){
+
+  if(auth.currentUser.email !== ownerEmail){
+    alert("Kan kee qofa edit gochuu dandeessa!");
+    return;
+  }
+
+  const newText = prompt("Edit:", oldText);
+  if(!newText) return;
+
+  db.collection("comments")
+    .doc(commentId)
+    .update({
+      text: newText
+    });
+  }
 function loadStories(){
   db.collection("stories").orderBy("date","desc").onSnapshot(snapshot=>{
     const container=document.getElementById("stories");
