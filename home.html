@@ -229,7 +229,7 @@ function uploadStoryFromMenu(){
 
   db.collection("comments").add({
     text: text,
-    user: auth.currentUser.user,
+    user: auth.currentUser.Email,
     date: new Date()
   });
 
@@ -275,7 +275,7 @@ function uploadStoryFromMenu(){
     .collection("likes")
     .doc(auth.currentUser.uid)
     .set({
-      user: auth.currentUser.user
+      user: auth.currentUser.Email
     });
   }function loadLikes(commentId){
 
@@ -301,7 +301,7 @@ function uploadStoryFromMenu(){
     .collection("replies")
     .add({
       text: text,
-      user: auth.currentUser.user,
+      user: auth.currentUser.Email,
       date: new Date()
     });
                 }function reply(btn){
@@ -345,7 +345,7 @@ function uploadStoryFromMenu(){
     });
                        }function deleteComment(commentId, ownerEmail){
 
-  if(auth.currentUser.user !== ownerEmail){
+  if(auth.currentUser.Email !== ownerEmail){
     alert("Kan kee qofa delete gochuu dandeessa!");
     return;
   }
@@ -355,7 +355,7 @@ function uploadStoryFromMenu(){
     .delete();
   }function editComment(commentId, oldText, ownerEmail){
 
-  if(auth.currentUser.user !== ownerEmail){
+  if(auth.currentUser.Email !== ownerEmail){
     alert("Kan kee qofa edit gochuu dandeessa!");
     return;
   }
@@ -396,7 +396,7 @@ function addPost(){
   }
   const ref=storage.ref().child("videos/"+Date.now()+file.name);
   ref.put(file).then(()=>ref.getDownloadURL().then(url=>{
-    db.collection("posts").add({text,user:currentUser.user,videoURL:url,date:new Date()});
+    db.collection("posts").add({text,user:currentUser.Email,videoURL:url,date:new Date()});
     document.getElementById("postText").value="";
     document.getElementById("videoFile").value="";
   }));
@@ -426,7 +426,7 @@ function closeChat(){document.getElementById("chatBox").style.display="none";}
 function sendChat(){
   const text=document.getElementById("chatInput").value;
   if(!text) return;
-  db.collection("liveChat").add({user:currentUser.user,text,date:new Date()});
+  db.collection("liveChat").add({user:currentUser.Email,text,date:new Date()});
   document.getElementById("chatInput").value="";
 }
 db.collection("liveChat").orderBy("date").onSnapshot(snapshot=>{
@@ -439,6 +439,8 @@ db.collection("liveChat").orderBy("date").onSnapshot(snapshot=>{
     box.appendChild(p);
     box.scrollTop = box.scrollHeight;
   });
+}function showLiveSection(){
+  document.getElementById("liveSection").scrollIntoView({behavior:"smooth"});
 }
 
 // Friend
