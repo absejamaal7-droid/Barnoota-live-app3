@@ -56,11 +56,9 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
     <span onclick="alert('Story coming soon')">👜</span>
     <span onclick="goProfile()">👤</span>
   </div>
-  <div>
     <span onclick="alert('Search coming soon')">🔍</span>
     <span onclick="toggleAdd()">➕</span>
   </div>
-</div>
 
 <!-- Add Menu -->
 <div id="addMenu" class="dropdown">
@@ -71,7 +69,6 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <p onclick="alert('Note coming soon')">Note</p>
   <p onclick="showLiveSection()">Live</p>
   </div>
-</div>
   
 <!-- Learning Menu -->
 <button class="learning-btn" onclick="toggleLearning()">📚</button>
@@ -82,7 +79,6 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <p onclick="alert('Schedule coming soon')">Schedule</p>
   <p onclick="alert('Team Chat coming soon')">Team Chat</p>
   </div>
-</div>
   
 <!-- Add Friends Box -->
 <div id="addFriendsBox" style="display:none;background:#1e293b;padding:10px;border-radius:12px;margin:10px;">
@@ -92,13 +88,11 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <button onclick="sendFriendRequest()">Send Request</button>
   <div id="friendResult"></div>
 </div>
-</div>
   
 <!-- logout -->
   <div id="logout">
     <button onclick="logout()">logout</button>
   </div>
-</div>
   
   <!-- post -->
 <div id="content">
@@ -108,7 +102,6 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <button onclick="addPost()">Post godhi</button>
   <div id="posts">
   </div>
-</div>
 
 <h3>Post koo</h3>
 
@@ -128,7 +121,6 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
     <small>Add Story</small>
   <div id="stories"></div>
   </div>
-</div>
 
 <!-- Story Upload Popup -->
 <div id="storyUploadBox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;">
@@ -139,7 +131,6 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
 <button onclick="uploadStoryFromMenu()">Upload</button>
 <button onclick="closeStoryUpload()" style="background:red;">Cancel</button>
 </div>
-</div>
 
 <!-- Live Section -->
 <div id="liveSection" style="margin-top:20px;">
@@ -149,7 +140,6 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <button id="startLiveBtn">Start Live</button>
   <button id="stopLiveBtn">Stop Live</button>
 </div>
-  </div>
   
 <!-- Chat Box -->
 <div id="chatBox">
@@ -162,11 +152,10 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
     <input id="chatInput" placeholder="Message...">
     <button onclick="sendChat()">Send</button>
   </div>
-</div>
+  
 <!-- Theme Toggle -->
 <button id="themeToggle" onclick="toggleTheme()">🌓</button>
   </div>
-</div>
   
 <script>
 // Firebase
