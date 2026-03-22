@@ -118,7 +118,6 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
 
   <input id="commentInput" placeholder="Yaada kee barreessi">
 <button onclick="addComment()">Send</button>
-<div id="comments"></div>
 <!-- Story Section -->
 <div id="storySection" style="display:flex;overflow-x:auto;padding:10px;background:#111b2b;border-radius:10px;margin-bottom:10px;">
   <div style="text-align:center;margin-right:10px;">
@@ -159,7 +158,7 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
     <button onclick="closeChat()">❌</button>
     </div>
   <div id="chatMessages"></div>
-  <div id="chatInputSection"></div>
+  <div id="chatInputSection">
     <input id="chatInput" placeholder="Message...">
     <button onclick="sendChat()">Send</button>
   </div>
@@ -189,7 +188,6 @@ auth.onAuthStateChanged(user=>{
   currentUser=user;
   loadPosts();
   loadStories();
-  logout();
 });
 
 // Navigation
@@ -258,8 +256,8 @@ function uploadStoryFromMenu(){
     <span id="like-${doc.id}">0</span>
   <button onclick="replyComment('${doc.id}')">↩️ Reply</button>
 <div id="reply-${doc.id}"></div>
-  <button onclick="deleteComment('${doc.id}')">🗑 Delete</button>
-  <button onclick="editComment('${doc.id}', '${c.text}')">✏️ Edit</button>
+  <button onclick="deleteComment('${doc.id}', '${c.user}')">🗑 Delete</button>
+<button onclick="editComment('${doc.id}', '${c.text}', '${c.user}')">✏️ Edit</button>
 
     `;
 
@@ -345,17 +343,7 @@ function uploadStoryFromMenu(){
       });
 
     });
-                       }
-  function deleteComment(commentId){
-
-  if(confirm("Comment delete gochuu barbaaddaa?")){
-
-    db.collection("comments")
-      .doc(commentId)
-      .delete();
-
-  }
-  }function editComment(commentId, oldText){
+                       }function editComment(commentId, oldText){
 
   const newText = prompt("Edit comment kee:", oldText);
 
