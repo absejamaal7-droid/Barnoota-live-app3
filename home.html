@@ -69,7 +69,7 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <p onclick="alert('Reel coming soon')">Reel</p>
   <p onclick="openStoryUpload()">Story</p>
   <p onclick="alert('Note coming soon')">Note</p>
-  <p onclick="showLiveSetion()">Live</p>
+  <p onclick="showLiveSection()">Live</p>
   </div>
 </div>
   
@@ -126,7 +126,7 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
       <input type="file" id="storyFile" accept="image/*,video/*" style="display:none" onchange="uploadStory()">
     </label>
     <small>Add Story</small>
-  <div id="stories">
+  <div id="stories"></div>
   </div>
 </div>
 
@@ -229,7 +229,7 @@ function uploadStoryFromMenu(){
 
   db.collection("comments").add({
     text: text,
-    user: auth.currentUser.email,
+    user: auth.currentUser.user,
     date: new Date()
   });
 
@@ -275,7 +275,7 @@ function uploadStoryFromMenu(){
     .collection("likes")
     .doc(auth.currentUser.uid)
     .set({
-      user: auth.currentUser.email
+      user: auth.currentUser.user
     });
   }function loadLikes(commentId){
 
@@ -301,7 +301,7 @@ function uploadStoryFromMenu(){
     .collection("replies")
     .add({
       text: text,
-      user: auth.currentUser.email,
+      user: auth.currentUser.user,
       date: new Date()
     });
                 }function reply(btn){
@@ -343,21 +343,9 @@ function uploadStoryFromMenu(){
       });
 
     });
-                       }function editComment(commentId, oldText){
+                       }function deleteComment(commentId, ownerEmail){
 
-  const newText = prompt("Edit comment kee:", oldText);
-
-  if(!newText) return;
-
-  db.collection("comments")
-    .doc(commentId)
-    .update({
-      text: newText
-    });
-
-          }function deleteComment(commentId, ownerEmail){
-
-  if(auth.currentUser.email !== ownerEmail){
+  if(auth.currentUser.user !== ownerEmail){
     alert("Kan kee qofa delete gochuu dandeessa!");
     return;
   }
@@ -367,7 +355,7 @@ function uploadStoryFromMenu(){
     .delete();
   }function editComment(commentId, oldText, ownerEmail){
 
-  if(auth.currentUser.email !== ownerEmail){
+  if(auth.currentUser.user !== ownerEmail){
     alert("Kan kee qofa edit gochuu dandeessa!");
     return;
   }
@@ -402,13 +390,13 @@ function addPost(){
   const file=document.getElementById("videoFile").files[0];
   if(!text&&!file) return alert("Text ykn video galchi!");
   if(!file){
-    db.collection("posts").add({text,user:currentUser.email,date:new Date()});
+    db.collection("posts").add({text,user:currentUser.user,date:new Date()});
     document.getElementById("postText").value="";
     return;
   }
   const ref=storage.ref().child("videos/"+Date.now()+file.name);
   ref.put(file).then(()=>ref.getDownloadURL().then(url=>{
-    db.collection("posts").add({text,user:currentUser.email,videoURL:url,date:new Date()});
+    db.collection("posts").add({text,user:currentUser.user,videoURL:url,date:new Date()});
     document.getElementById("postText").value="";
     document.getElementById("videoFile").value="";
   }));
@@ -438,7 +426,7 @@ function closeChat(){document.getElementById("chatBox").style.display="none";}
 function sendChat(){
   const text=document.getElementById("chatInput").value;
   if(!text) return;
-  db.collection("liveChat").add({user:currentUser.email,text,date:new Date()});
+  db.collection("liveChat").add({user:currentUser.user,text,date:new Date()});
   document.getElementById("chatInput").value="";
 }
 db.collection("liveChat").orderBy("date").onSnapshot(snapshot=>{
