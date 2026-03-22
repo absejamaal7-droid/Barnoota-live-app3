@@ -111,6 +111,10 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   </div>
 </div>
 
+  <input id="commentInput" placeholder="Yaada kee barreessi">
+<button onclick="addComment()">Send</button>
+
+<div id="comments"></div>
 <!-- Story Section -->
 <div id="storySection" style="display:flex;overflow-x:auto;padding:10px;background:#111b2b;border-radius:10px;margin-bottom:10px;">
   <div style="text-align:center;margin-right:10px;">
@@ -156,6 +160,14 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   </div>
 </div>
 
+<h3>Post koo</h3>
+
+<button onclick="addComment()">💬 Comment</button>
+
+<div id="comments"></div>
+
+<script src="app.js"></script>
+  </body>
 <!-- Theme Toggle -->
 <button id="themeToggle" onclick="toggleTheme()">🌓</button>
   </div>
@@ -214,6 +226,113 @@ function uploadStoryFromMenu(){
     closeStoryUpload();
   }));
 }
+function addComment(){
+  alert("Comment button tuqame!");
+}
+  function addComment(){
+
+  const input = document.getElementById("commentInput");
+  const text = input.value;
+
+  if(text === "") return;
+
+  db.collection("comments").add({
+    text: text,
+    user: auth.currentUser.email,
+    date: new Date()
+  });
+
+  input.value = "";
+  }
+  db.collection("comments").orderBy("date","desc")
+.onSnapshot(snapshot => {
+
+  const box = document.getElementById("comments");
+  box.innerHTML = "";
+
+  snapshot.forEach(doc => {
+
+    const c = doc.data();
+
+    const div = document.createElement("div");
+    div.style.border = "1px solid gray";
+    div.style.margin = "5px";
+    div.style.padding = "5px";
+
+    div.innerHTML = `
+      <p><b>${c.user}</b>: ${c.text}</p>
+      <button onclick="likeComment('${doc.id}')">❤️ Like</button>
+      <span id="like-${doc.id}">0</span>
+      <button onclick="replyComment('${doc.id}')">↩️ Reply</button>
+      <div id="reply-${doc.id}"></div>
+    `;
+
+    box.appendChild(div);
+
+    loadLikes(doc.id);
+    loadReplies(doc.id);
+  });
+
+});
+  function likeComment(commentId){
+
+  db.collection("comments")
+    .doc(commentId)
+    .collection("likes")
+    .doc(auth.currentUser.uid)
+    .set({
+      user: auth.currentUser.email
+    });
+  }function loadLikes(commentId){
+
+  db.collection("comments")
+    .doc(commentId)
+    .collection("likes")
+    .onSnapshot(snapshot => {
+
+      const el = document.getElementById("like-" + commentId);
+      if(el){
+        el.innerText = snapshot.size;
+      }
+
+    });
+    }
+  function replyComment(commentId){
+
+  const text = prompt("Reply kee barreessi:");
+  if(!text) return;
+
+  db.collection("comments")
+    .doc(commentId)
+    .collection("replies")
+    .add({
+      text: text,
+      user: auth.currentUser.email,
+      date: new Date()
+    });
+                }function loadReplies(commentId){
+
+  db.collection("comments")
+    .doc(commentId)
+    .collection("replies")
+    .orderBy("date")
+    .onSnapshot(snapshot => {
+
+      const box = document.getElementById("reply-" + commentId);
+      box.innerHTML = "";
+
+      snapshot.forEach(doc => {
+        const r = doc.data();
+
+        const p = document.createElement("p");
+        p.style.marginLeft = "20px";
+        p.innerText = r.user + ": " + r.text;
+
+        box.appendChild(p);
+      });
+
+    });
+                       }
 function loadStories(){
   db.collection("stories").orderBy("date","desc").onSnapshot(snapshot=>{
     const container=document.getElementById("stories");
