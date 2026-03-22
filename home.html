@@ -95,7 +95,7 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
 </div>
   
 <!-- logout -->
-  <div id="logout=">
+  <div id="logout">
     <button onclick="logout()">logout</button>
   </div>
 </div>
@@ -109,7 +109,6 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <div id="posts">
   </div>
 </div>
-<body>
 
 <h3>Post koo</h3>
 
@@ -119,9 +118,7 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
 
   <input id="commentInput" placeholder="Yaada kee barreessi">
 <button onclick="addComment()">Send</button>
-<button onclick="deleteComment('${doc.id}', '${c.user}')">🗑 Delete</button>
-  <button onclick="editComment('${doc.id}', '${c.text}', '${c.user}')">✏️ Edit</button>
-<div id="comments💬"></div>
+<div id="comments"></div>
 <!-- Story Section -->
 <div id="storySection" style="display:flex;overflow-x:auto;padding:10px;background:#111b2b;border-radius:10px;margin-bottom:10px;">
   <div style="text-align:center;margin-right:10px;">
@@ -160,8 +157,9 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <div id="chatBoxHeader">
     <span id="chatUser">Live Chat</span>
     <button onclick="closeChat()">❌</button>
+    </div>
   <div id="chatMessages"></div>
-  <div id="chatInputSection">
+  <div id="chatInputSection"></div>
     <input id="chatInput" placeholder="Message...">
     <button onclick="sendChat()">Send</button>
   </div>
@@ -224,9 +222,6 @@ function uploadStoryFromMenu(){
     closeStoryUpload();
   }));
 }
-function addComment(){
-  alert("Comment button tuqame!");
-}
   function addComment(){
 
   const input = document.getElementById("commentInput");
@@ -259,24 +254,13 @@ function addComment(){
 
     div.innerHTML = `
       <p><b>${c.user}</b>: ${c.text}</p>
-      <button onclick="likeComment('${doc.id}')">❤️ Like</button>
-      <span id="like-${doc.id}">0</span>
-      <button onclick="replyComment('${doc.id}')">↩️ Reply</button>
-      <div id="reply-${doc.id}"></div>
-      div.innerHTML = `
-  <p><b>${c.user}</b>: ${c.text}</p>
-
   <button onclick="likeComment('${doc.id}')">❤️ Like</button>
-  <span id="like-${doc.id}">0</span>
-
+    <span id="like-${doc.id}">0</span>
   <button onclick="replyComment('${doc.id}')">↩️ Reply</button>
-
+<div id="reply-${doc.id}"></div>
   <button onclick="deleteComment('${doc.id}')">🗑 Delete</button>
-
   <button onclick="editComment('${doc.id}', '${c.text}')">✏️ Edit</button>
 
-  <div id="reply-${doc.id}"></div>
-`;
     `;
 
     box.appendChild(div);
@@ -456,7 +440,10 @@ function loadPosts(){
 }
 
   function logout(){
-    goindex(){window.location.href="index.html";}
+  auth.signOut().then(()=>{
+    window.location.href="index.html";
+  });
+  }
 // Chat
 function openChat(user){document.getElementById("chatBox").style.display="flex";}
 function closeChat(){document.getElementById("chatBox").style.display="none";}
