@@ -9,7 +9,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
-<script src="app.js"></script>
 <style>
 body{margin:0;font-family:Arial;background:#0f172a;color:white;transition:all 0.3s;}
 body.light{background:#f5f5f5;color:black;}
@@ -147,18 +146,17 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
   <div id="chatBoxHeader">
     <span id="chatUser">Live Chat</span>
     <button onclick="closeChat()">❌</button>
-    </div>
   </div>
-  <div id="chatMessages">
+
+  <div id="chatMessages"></div>
+
   <div id="chatInputSection">
     <input id="chatInput" placeholder="Message...">
     <button onclick="sendChat()">Send</button>
   </div>
-   </div>
+</div>
 <!-- Theme Toggle -->
-  <div id="themeToggle">
-<button id="themeToggle" onclick="toggleTheme()">🌓</button>
-  </div>
+  <button id="themeToggle" onclick="toggleTheme()">🌓</button>
 
 <script>
 // Firebase
@@ -221,7 +219,7 @@ function uploadStoryFromMenu(){
 
   db.collection("comments").add({
     text: text,
-    user: auth.currentUser.Email,
+    user: auth.currentUser.email,
     date: new Date()
   });
 
@@ -267,7 +265,7 @@ function uploadStoryFromMenu(){
     .collection("likes")
     .doc(auth.currentUser.uid)
     .set({
-      user: auth.currentUser.Email
+      user: auth.currentUser.email
     });
   }function loadLikes(commentId){
 
@@ -293,7 +291,7 @@ function uploadStoryFromMenu(){
     .collection("replies")
     .add({
       text: text,
-      user: auth.currentUser.Email,
+      user: auth.currentUser.email,
       date: new Date()
     });
                 }function reply(btn){
@@ -337,7 +335,7 @@ function uploadStoryFromMenu(){
     });
                        }function deleteComment(commentId, ownerEmail){
 
-  if(auth.currentUser.Email !== ownerEmail){
+  if(auth.currentUser.email !== ownerEmail){
     alert("Kan kee qofa delete gochuu dandeessa!");
     return;
   }
@@ -347,7 +345,7 @@ function uploadStoryFromMenu(){
     .delete();
   }function editComment(commentId, oldText, ownerEmail){
 
-  if(auth.currentUser.Email !== ownerEmail){
+  if(auth.currentUser.email !== ownerEmail){
     alert("Kan kee qofa edit gochuu dandeessa!");
     return;
   }
@@ -378,21 +376,37 @@ function loadStories(){
 
 // Posts
 function addPost(){
-  const text=document.getElementById("postText").value;
-  const file=document.getElementById("videoFile").files[0];
-  if(!text&&!file) return alert("Text ykn video galchi!");
+  const text = document.getElementById("postText").value;
+  const file = document.getElementById("videoFile").files[0];
+
+  if(!text && !file) return alert("Text ykn video galchi!");
+
   if(!file){
-    db.collection("posts").add({text,user:currentUser.user,date:new Date()});
-    document.getElementById("postText").value="";
+    db.collection("posts").add({
+      text: text,
+      user: currentUser.email,
+      date: new Date()
+    });
+    document.getElementById("postText").value = "";
+document.getElementById("videoFile").value = "";
     return;
   }
-  const ref=storage.ref().child("videos/"+Date.now()+file.name);
-  ref.put(file).then(()=>ref.getDownloadURL().then(url=>{
-    db.collection("posts").add({text,user:currentUser.Email,videoURL:url,date:new Date()});
-    document.getElementById("postText").value="";
-    document.getElementById("videoFile").value="";
-  }));
-}
+
+  const ref = storage.ref().child("videos/" + Date.now() + file.name);
+  ref.put(file).then(()=>{
+    ref.getDownloadURL().then(url=>{
+      db.collection("posts").add({
+        text: text,
+        user: currentUser.email,
+        videoURL: url,
+        date: new Date()
+      });    
+      document.getElementById("postText").value = "";
+document.getElementById("videoFile").value = "";
+      });
+    });
+  });
+  }
 function loadPosts(){
   db.collection("posts").orderBy("date","desc").onSnapshot(snap=>{
     const container=document.getElementById("posts");
@@ -418,7 +432,7 @@ function closeChat(){document.getElementById("chatBox").style.display="none";}
 function sendChat(){
   const text=document.getElementById("chatInput").value;
   if(!text) return;
-  db.collection("liveChat").add({user:currentUser.Email,text,date:new Date()});
+  db.collection("liveChat").add({user:currentUser.email,text,date:new Date()});
   document.getElementById("chatInput").value="";
 }
 db.collection("liveChat").orderBy("date").onSnapshot(snapshot=>{
@@ -431,10 +445,10 @@ db.collection("liveChat").orderBy("date").onSnapshot(snapshot=>{
     box.appendChild(p);
     box.scrollTop = box.scrollHeight;
   });
-}function showLiveSection(){
+}); //
+function showLiveSection(){
   document.getElementById("liveSection").scrollIntoView({behavior:"smooth"});
-}
-
+                                     }
 // Friend
 function openAddFriends(){const box=document.getElementById("addFriendsBox");box.style.display=(box.style.display==="none")?"block":"none";}
 function sendFriendRequest(){
