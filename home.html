@@ -145,7 +145,7 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
  </div>
   
 <!-- Live Section -->
-<div id="liveSection" style="margin-top:20px;">
+<div id="liveSection" style="margin-top:10px;">
   <h3>Live Broadcasting</h3>
   <video id="liveVideo" width="100%" height="300" controls autoplay muted></video>
   <br>
@@ -461,7 +461,9 @@ db.collection("liveChat").orderBy("date").onSnapshot(snapshot=>{
     box.appendChild(p);
     box.scrollTop = box.scrollHeight;
   });
-}); //
+}); 
+  //
+  
 function showLiveSection(){
   document.getElementById("liveSection")
     .scrollIntoView({behavior:"smooth"});
