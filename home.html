@@ -225,18 +225,20 @@ function uploadStoryFromMenu(){
   function goLiveClass(){
   window.location.href = "liveclass.html";
   }
-  function addComment(){
-
-  const input = document.getElementById("commentInput");
+  function addComment(postId){
+  const input = document.getElementById("comment-" + postId);
   const text = input.value;
 
-  if(text === "") return;
+  if(!text) return;
 
-  db.collection("comments").add({
-    text: text,
-    user: auth.currentUser.email,
-    date: new Date()
-  });
+  db.collection("posts")
+    .doc(postId)
+    .collection("comments")
+    .add({
+      text: text,
+      user: currentUser.email,
+      date: new Date()
+    });
 
   input.value = "";
   }
@@ -273,6 +275,7 @@ function uploadStoryFromMenu(){
   });
 
 });
+  
   function likeComment(commentId){
 
   db.collection("comments")
@@ -388,6 +391,27 @@ function loadStories(){
     });
   });
 }
+  function loadComments(postId){
+  db.collection("posts")
+    .doc(postId)
+    .collection("comments")
+    .orderBy("date")
+    .onSnapshot(snapshot=>{
+
+      const box = document.getElementById("comments-" + postId);
+      box.innerHTML = "";
+
+      snapshot.forEach(doc=>{
+        const c = doc.data();
+
+        const p = document.createElement("p");
+        p.innerText = c.user + ": " + c.text;
+
+        box.appendChild(p);
+      });
+
+    });
+  }
 
 // Posts
 function addPost(){
@@ -430,15 +454,30 @@ function loadPosts(){
   db.collection("posts").orderBy("date","desc").onSnapshot(snap=>{
     const container=document.getElementById("posts");
     container.innerHTML="";
+
     snap.forEach(doc=>{
       const d=doc.data();
+
       const div=document.createElement("div");
       div.className="post";
-      div.innerHTML=`<h4>${d.user}</h4><p>${d.text||""}</p>${d.videoURL?`<video class="feedVideo" src="${d.videoURL}" controls autoplay muted></video>`:""}`;
+
+      div.innerHTML=`
+        <h4>${d.user}</h4>
+        <p>${d.text||""}</p>
+        ${d.videoURL?`<video class="feedVideo" src="${d.videoURL}" controls></video>`:""}
+
+        <input id="comment-${doc.id}" placeholder="Comment barreessi..." style="width:100%;margin-top:5px;">
+        <button onclick="addCommentToPost('${doc.id}')">💬 Comment</button>
+
+        <div id="comments-${doc.id}" style="margin-top:5px;"></div>
+      `;
+
       container.appendChild(div);
+
+      loadComments(doc.id);
     });
   });
-}
+                                                           }
 
   function logout(){
   auth.signOut().then(()=>{
