@@ -73,11 +73,23 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 10px;background:
 <button class="learning-btn" onclick="toggleLearning()">📚</button>
 <div id="learningMenu" class="side-menu">
   <p onclick="alert('Meet coming soon')">Meet</p>
-  <p onclick="alert('Join coming soon')">Join</p>
+  <p onclick="goLiveClass()">Join</p>
   <p onclick="alert('Share coming soon')">Share</p>
   <p onclick="alert('Schedule coming soon')">Schedule</p>
   <p onclick="alert('Team Chat coming soon')">Team Chat</p>
+  <p onclick="alert('Docs coming soon')">Docs</p>
+  <p onclick="alert('Calendar coming soon')">calendar</p>
+  <p onclick="alert('Tasks coming soon')">tasks</p>
+  <p onclick="alert('Mail coming soon')">mail</p>
+  <p onclick="alert('Whiteboards coming soon')">whiteboards</p>
+  <p onclick="alert('Clips coming soon')">clips</p>
+  <p onclick="alert('Schedule coming soon')">Schedule</p>
+  <p onclick="alert('Contacts coming soon')">Contacts</p>
+  <p onclick="alert('Events coming soon')">Events</p>
+  <p onclick="alert('Apps coming soon')">Apps</p>
+  
   </div>
+  
   
 <!-- Add Friends Box -->
 <div id="addFriendsBox" style="display:none;background:#1e293b;padding:10px;border-radius:12px;margin:10px;">
@@ -210,6 +222,9 @@ function uploadStoryFromMenu(){
     closeStoryUpload();
   }));
 }
+  function goLiveClass(){
+  window.location.href = "liveclass.html";
+  }
   function addComment(){
 
   const input = document.getElementById("commentInput");
