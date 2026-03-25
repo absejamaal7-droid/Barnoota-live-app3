@@ -396,18 +396,21 @@ function addPost(){
 
   if(!text && !file) return alert("Text ykn video galchi!");
 
+  // TEXT QOFA
   if(!file){
     db.collection("posts").add({
       text: text,
       user: currentUser.email,
       videoURL: "",
       date: new Date()
-    }),then(()=>{
-    document.getElementById("postText").value = "";
-document.getElementById("videoFile").value = "";
+    }).then(()=>{
+      document.getElementById("postText").value = "";
+      document.getElementById("videoFile").value = "";
+    });
     return;
   }
 
+  // VIDEO + TEXT
   const ref = storage.ref().child("videos/" + Date.now() + file.name);
   ref.put(file).then(()=>{
     ref.getDownloadURL().then(url=>{
@@ -416,13 +419,13 @@ document.getElementById("videoFile").value = "";
         user: currentUser.email,
         videoURL: url,
         date: new Date()
-      })then(()=>{    
-      document.getElementById("postText").value = "";
-document.getElementById("videoFile").value = "";
+      }).then(()=>{
+        document.getElementById("postText").value = "";
+        document.getElementById("videoFile").value = "";
       });
     });
   });
-  }
+}
 function loadPosts(){
   db.collection("posts").orderBy("date","desc").onSnapshot(snap=>{
     const container=document.getElementById("posts");
