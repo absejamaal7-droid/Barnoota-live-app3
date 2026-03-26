@@ -105,7 +105,8 @@ api.addEventListener("participantLeft", updateParticipants);
 api.addEventListener("displayNameChange", updateParticipants);
 
   api.addEventListener("videoConferenceJoined", ()=>{
-    api.executeCommand("displayName", auth.currentUser.email);
+    const name = auth.currentUser.email.split("@")[0];
+api.executeCommand("displayName", name);
     updateParticipants();
   });
 }
@@ -137,15 +138,23 @@ function toggleParticipants(){
 
 function updateParticipants(){
   if(!api) return;
-  api.getParticipantsInfo().then(list=>{
-    participantsList.innerHTML="";
-    list.forEach(p=>{
-      const div=document.createElement("div");
-      div.textContent = p.displayName || p.formattedID;
-      participantsList.appendChild(div);
-    });
+
+  const list = api.getParticipantsInfo(); // .then hin barbaachisu
+
+  participantsList.innerHTML = "";
+
+  list.forEach(p=>{
+    const div = document.createElement("div");
+
+    div.style.padding = "6px";
+    div.style.borderBottom = "1px solid #444";
+
+    div.textContent = p.displayName || p.formattedID || "User";
+
+    participantsList.appendChild(div);
   });
-}function goBack(){
+        }
+      function goBack(){
   window.location.href = "home.html";
 }
 </script>
