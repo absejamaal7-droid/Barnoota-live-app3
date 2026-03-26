@@ -102,7 +102,9 @@ startWithVideoMuted: true
   });
 
   api.addEventListener("videoConferenceJoined", ()=>{
-    updateParticipants();
+  api.executeCommand("displayName", auth.currentUser.email);
+  updateParticipants();
+});
   });
       }
 
