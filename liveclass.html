@@ -77,47 +77,34 @@ auth.onAuthStateChanged(user=>{
 });
 let api=null;
 function startJitsi(roomName){
-  const domain="meet.jit.si";
-  api=new JitsiMeetExternalAPI(domain,{
-    roomName:roomName,
-    width:"100%",
-    height:"100%",
-    parentNode:document.querySelector("#meet"),
-    configOverwrite:{prejoinPageEnabled:false},
-    interfaceConfigOverwrite:{
-      DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
-      SHOW_JITSI_WATERMARK:false,
-      TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","hangup"]
+  const domain = "meet.jit.si";
+
+  api = new JitsiMeetExternalAPI(domain, {
+    roomName: roomName,
+    width: "100%",
+    height: "100%",
+    parentNode: document.querySelector("#meet"),
+
+    configOverwrite: {
+      prejoinPageEnabled: false,
+      disableInviteFunctions: true,
+      hiddenPremeetingButtons: ['invite']
+      startWithAudioMuted: true,
+startWithVideoMuted: true
+    },
+
+    interfaceConfigOverwrite: {
+      DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+      SHOW_JITSI_WATERMARK: false,
+      SHOW_WATERMARK_FOR_GUESTS: false,
+      TOOLBAR_BUTTONS: ["microphone","camera","chat","desktop","hangup"]
     }
   });
 
-  api.addEventListener("videoConferenceJoined",()=>{
+  api.addEventListener("videoConferenceJoined", ()=>{
     updateParticipants();
   });
-const domain = "meet.jit.si";
-
-const options = {
-  roomName: "BarnootaLiveRoom",
-  width: "100%",
-  height: 500,
-  parentNode: document.querySelector('#meet'),
-
-  configOverwrite: {
-    disableInviteFunctions: true,   // invite fi number cufa
-    enableWelcomePage: false
-    DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
-configOverwrite: {
-  disableInviteFunctions: true,
-  hiddenPremeetingButtons: ['invite'],
-  }
-  interfaceConfigOverwrite: {
-    SHOW_JITSI_WATERMARK: false,
-    SHOW_WATERMARK_FOR_GUESTS: false
-    
-  }
-};
-
-const api = new JitsiMeetExternalAPI(domain, options);
+      }
 
 startJitsi("BarnootaLiveRoom");
 history.pushState(null, null, location.href);
@@ -128,7 +115,12 @@ function openChat(){if(api) api.executeCommand("toggleChat");}
 function shareScreen(){if(api) api.executeCommand("toggleShareScreen");}
 function startRecording(){if(api) api.executeCommand("startRecording",{mode:"file"});}
 function stopRecording(){if(api) api.executeCommand("stopRecording",{mode:"file"});}
-function leaveMeeting(){if(api) api.executeCommand("hangup");}
+function leaveMeeting(){
+  if(api){
+    api.executeCommand("hangup");
+  }
+  window.location.href = "home.html";
+  }
 
 // Participants
 const participantsPanel=document.getElementById("participantsPanel");
@@ -145,7 +137,7 @@ function updateParticipants(){
     participantsList.innerHTML="";
     list.forEach(p=>{
       const div=document.createElement("div");
-      div.textContent=p.displayName||p.formattedID;
+      div.textContent = p.displayName || p.formattedID;
       participantsList.appendChild(div);
     });
   });
