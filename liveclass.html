@@ -76,7 +76,24 @@ auth.onAuthStateChanged(user=>{
   firstLoad = false;
 });
 let api=null;
+function startJitsi(roomName){
+  const domain="meet.jit.si";
+  api=new JitsiMeetExternalAPI(domain,{
+    roomName:roomName,
+    width:"100%",
+    height:"100%",
+    parentNode:document.querySelector("#meet"),
+    configOverwrite:{prejoinPageEnabled:false},
+    interfaceConfigOverwrite:{
+      DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
+      SHOW_JITSI_WATERMARK:false,
+      TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","hangup"]
+    }
+  });
 
+  api.addEventListener("videoConferenceJoined",()=>{
+    updateParticipants();
+  });
 const domain = "meet.jit.si";
 
 const options = {
@@ -89,9 +106,10 @@ const options = {
     disableInviteFunctions: true,   // invite fi number cufa
     enableWelcomePage: false
     DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
-      TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","hangup"]
-  },
-
+configOverwrite: {
+  disableInviteFunctions: true,
+  hiddenPremeetingButtons: ['invite'],
+  }
   interfaceConfigOverwrite: {
     SHOW_JITSI_WATERMARK: false,
     SHOW_WATERMARK_FOR_GUESTS: false
