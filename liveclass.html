@@ -22,7 +22,7 @@
 <body>
 
 <div id="topbar">
-  <button class="room-btn">Room</button>
+  <button class="room-btn" onclick="startJitsi('BarnootaLiveRoom')">Room</button>
   <div id="username">Loading...</div>
   <button class="room-btn" onclick="goBack()">⬅ Back</button>
 </div>
@@ -36,7 +36,7 @@
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn" onclick="openChat()">💬</button>
-    <button class="control-btn" onclick="shareScreen()">⬆️</button>
+  <button class="control-btn" onclick="shareScreen()">⬆️</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
 </div>
 
@@ -46,117 +46,109 @@
 </div>
 
 <script>
-// 🔥 Firebase haaraya kee
-const firebaseConfig = {
-  apiKey: "AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
-  authDomain: "abseapp-b3706.firebaseapp.com",
-  projectId: "abseapp-b3706",
-  storageBucket: "abseapp-b3706.firebasestorage.app",
-  messagingSenderId: "986026055368",
-  appId: "1:986026055368:web:8ad2557f64c24d3c28b7fd",
-  measurementId: "G-M57552RVD2"
-};
+  // 🔥 Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
+    authDomain: "abseapp-b3706.firebaseapp.com",
+    projectId: "abseapp-b3706",
+    storageBucket: "abseapp-b3706.firebasestorage.app",
+    messagingSenderId: "986026055368",
+    appId: "1:986026055368:web:8ad2557f64c24d3c28b7fd",
+    measurementId: "G-M57552RVD2"
+  };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
 
-auth.onAuthStateChanged(user=>{
-  if(user){
-    document.getElementById("username").innerText=user.email;
-  }else{
-    window.location.href="index.html";
-  }
-});
-let firstLoad = true;
-
-auth.onAuthStateChanged(user=>{
-  if(!user && !firstLoad){
-    window.location.href="index.html";
-  }
-  firstLoad = false;
-});
-let api=null;
-function startJitsi(roomName){
-  const domain = "meet.jit.si";
-
-  api = new JitsiMeetExternalAPI(domain, {
-    roomName: roomName,
-    width: "100%",
-    height: "100%",
-    parentNode: document.querySelector("#meet"),
-
-    configOverwrite: {
-      prejoinPageEnabled: false,
-      disableInviteFunctions: true,
-      hiddenPremeetingButtons: ['invite'],
-      startWithAudioMuted: false,
-      startWithVideoMuted: false
-    },
-
-    interfaceConfigOverwrite: {
-      DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-      SHOW_JITSI_WATERMARK: true,
-      SHOW_WATERMARK_FOR_GUESTS: false,
-      TOOLBAR_BUTTONS: ["microphone","camera","chat","desktop","hangup"]
+  // Single auth listener
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.getElementById("username").innerText = user.email;
+    } else {
+      window.location.href = "index.html";
     }
   });
-api.addEventListener("participantJoined", updateParticipants);
-api.addEventListener("participantLeft", updateParticipants);
-api.addEventListener("displayNameChange", updateParticipants);
 
-  api.addEventListener("videoConferenceJoined", ()=>{
-    const name = auth.currentUser.email.split("@")[0];
-api.executeCommand("displayName", name);
-    updateParticipants();
-  });
-}
+  let api = null;
 
-startJitsi("BarnootaLiveRoom");
-history.pushState(null, null, location.href);
-// Controls
-function toggleMute(){if(api) api.executeCommand("toggleAudio");}
-function toggleVideo(){if(api) api.executeCommand("toggleVideo");}
-function openChat(){if(api) api.executeCommand("toggleChat");}
-function shareScreen(){if(api) api.executeCommand("toggleShareScreen");}
-function startRecording(){if(api) api.executeCommand("startRecording",{mode:"file"});}
-function stopRecording(){if(api) api.executeCommand("stopRecording",{mode:"file"});}
-function leaveMeeting(){
-  if(api){
-    api.executeCommand("hangup");
+  function startJitsi(roomName){
+    const domain = "meet.jit.si";
+
+    api = new JitsiMeetExternalAPI(domain, {
+      roomName: roomName,
+      width: "100%",
+      height: "100%",
+      parentNode: document.querySelector("#meet"),
+
+      configOverwrite: {
+        prejoinPageEnabled: false,
+        disableInviteFunctions: true,
+        hiddenPremeetingButtons: ['invite'],
+        startWithAudioMuted: false,
+        startWithVideoMuted: false
+      },
+
+      interfaceConfigOverwrite: {
+        DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+        SHOW_JITSI_WATERMARK: false,
+        SHOW_WATERMARK_FOR_GUESTS: false,
+        TOOLBAR_BUTTONS: ["microphone","camera","chat","desktop","hangup"],
+        filmStripOnly: false
+      }
+    });
+
+    api.addEventListener("participantJoined", updateParticipants);
+    api.addEventListener("participantLeft", updateParticipants);
+    api.addEventListener("displayNameChange", updateParticipants);
+
+    api.addEventListener("videoConferenceJoined", ()=>{
+      const name = auth.currentUser.email.split("@")[0];
+      api.executeCommand("displayName", name);
+      updateParticipants();
+    });
   }
-  window.location.href = "home.html";
+
+  history.pushState(null, null, location.href);
+
+  // Controls
+  function toggleMute(){ if(api) api.executeCommand("toggleAudio"); }
+  function toggleVideo(){ if(api) api.executeCommand("toggleVideo"); }
+  function openChat(){ if(api) api.executeCommand("toggleChat"); }
+  function shareScreen(){ if(api) api.executeCommand("toggleShareScreen"); }
+  function startRecording(){ if(api) api.executeCommand("startRecording",{mode:"file"}); }
+  function stopRecording(){ if(api) api.executeCommand("stopRecording",{mode:"file"}); }
+  function leaveMeeting(){
+    if(api) api.executeCommand("hangup");
+    window.location.href = "home.html";
   }
 
-// Participants
-const participantsPanel=document.getElementById("participantsPanel");
-const participantsList=document.getElementById("participantsList");
+  // Participants
+  const participantsPanel = document.getElementById("participantsPanel");
+  const participantsList = document.getElementById("participantsList");
 
-function toggleParticipants(){
-  participantsPanel.style.display=
-  participantsPanel.style.display==="none"?"block":"none";
-}
+  function toggleParticipants(){
+    participantsPanel.style.display =
+      participantsPanel.style.display==="none"?"block":"none";
+  }
 
-function updateParticipants(){
-  if(!api) return;
+  function updateParticipants(){
+    if(!api) return;
 
-  const list = api.getParticipantsInfo(); // .then hin barbaachisu
+    const list = api.getParticipantsInfo();
 
-  participantsList.innerHTML = "";
+    participantsList.innerHTML = "";
+    list.forEach(p=>{
+      const div = document.createElement("div");
+      div.style.padding = "6px";
+      div.style.borderBottom = "1px solid #444";
+      div.textContent = p.displayName || p.formattedID || "User";
+      participantsList.appendChild(div);
+    });
+  }
 
-  list.forEach(p=>{
-    const div = document.createElement("div");
-
-    div.style.padding = "6px";
-    div.style.borderBottom = "1px solid #444";
-
-    div.textContent = p.displayName || p.formattedID || "User";
-
-    participantsList.appendChild(div);
-  });
-        }
-      function goBack(){
-  window.location.href = "home.html";
-}
+  function goBack(){
+    window.location.href = "home.html";
+  }
 </script>
 
 </body>
