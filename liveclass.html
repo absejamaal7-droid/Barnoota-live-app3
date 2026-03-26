@@ -32,7 +32,7 @@
 <div id="bottombar">
   <button class="control-btn" onclick="toggleMute()">🎤</button>
   <button class="control-btn" onclick="toggleVideo()">🎥</button>
-  button class="control-btn" onclick="toggleParticipants()">👥 Participants</button>
+  <button class="control-btn" onclick="toggleParticipants()">👥 Participants</button>
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn" onclick="openChat()">💬</button>
@@ -88,9 +88,9 @@ function startJitsi(roomName){
     configOverwrite: {
       prejoinPageEnabled: false,
       disableInviteFunctions: true,
-      hiddenPremeetingButtons: ['invite']
-      startWithAudioMuted: true,
-startWithVideoMuted: true
+      hiddenPremeetingButtons: ['invite'],
+      startWithAudioMuted: false,
+      startWithVideoMuted: false
     },
 
     interfaceConfigOverwrite: {
@@ -100,13 +100,15 @@ startWithVideoMuted: true
       TOOLBAR_BUTTONS: ["microphone","camera","chat","desktop","hangup"]
     }
   });
+api.addEventListener("participantJoined", updateParticipants);
+api.addEventListener("participantLeft", updateParticipants);
+api.addEventListener("displayNameChange", updateParticipants);
 
   api.addEventListener("videoConferenceJoined", ()=>{
-  api.executeCommand("displayName", auth.currentUser.email);
-  updateParticipants();
-});
+    api.executeCommand("displayName", auth.currentUser.email);
+    updateParticipants();
   });
-      }
+}
 
 startJitsi("BarnootaLiveRoom");
 history.pushState(null, null, location.href);
