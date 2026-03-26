@@ -3,152 +3,134 @@
 <head>
   <title>Live Classroom - Barnoota Live</title>
 
+  <!-- Jitsi -->
   <script src="https://meet.jit.si/external_api.js"></script>
+
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
   <style>
-    body {margin:0; background:#121212; color:white; font-family:Arial;}
-    #topbar{position:fixed; top:0; left:0; right:0; height:50px; background:#1f1f1f; display:flex; justify-content:space-between; align-items:center; padding:0 10px; z-index:10;}
-    .room-btn{background:#2563eb; border:none; color:white; padding:6px 10px; border-radius:6px; cursor:pointer;}
-    #meet{margin-top:50px; height:calc(100vh - 110px); width:100%;}
-    #bottombar{position:fixed; bottom:0; left:0; right:0; height:60px; background:#1f1f1f; display:flex; justify-content:center; align-items:center; gap:8px; z-index:10; flex-wrap:wrap;}
-    .control-btn{background:#333; border:none; color:white; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:12px;}
-    .record{background:#f59e0b;} .stop{background:#10b981;} .leave{background:#ef4444;}
-    #participantsPanel{display:none; position:fixed; right:0; top:50px; width:250px; height:calc(100vh - 50px); background:#222; overflow:auto; z-index:30; padding:10px;}
+    body{margin:0;background:#121212;color:white;font-family:Arial;}
+    #topbar{position:fixed;top:0;left:0;right:0;height:50px;background:#1f1f1f;display:flex;justify-content:space-between;align-items:center;padding:0 10px;z-index:10;}
+    .room-btn{background:#2563eb;border:none;color:white;padding:6px 10px;border-radius:6px;cursor:pointer;}
+    #meet{margin-top:50px;height:calc(100vh - 110px);width:100%;}
+    #bottombar{position:fixed;bottom:0;left:0;right:0;height:60px;background:#1f1f1f;display:flex;justify-content:center;align-items:center;gap:8px;z-index:10;flex-wrap:wrap;}
+    .control-btn{background:#333;border:none;color:white;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;}
+    .record{background:#f59e0b;}
+    .stop{background:#10b981;}
+    .leave{background:#ef4444;}
+
+    /* ROOM MODAL */
+    #roomModal{position:fixed;top:50px;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:none;flex-direction:column;padding:10px;z-index:20;}
+    #roomSearch{padding:6px;margin-bottom:8px;border-radius:6px;border:none;font-size:14px;}
+    #roomList{flex:1;overflow-y:auto;background:#1f1f1f;border-radius:6px;padding:5px;}
+    .room-item{padding:8px;margin-bottom:4px;background:#333;border-radius:4px;cursor:pointer;}
+    .room-item:hover{background:#444;}
+    .modal-buttons{display:flex;justify-content:space-between;margin-top:8px;}
+    .modal-btn{flex:1;padding:6px;margin:2px;border:none;border-radius:6px;cursor:pointer;font-size:14px;}
+    .breakroom{background:#2563eb;color:white;}
+    .leaveModal{background:#ef4444;color:white;}
   </style>
 </head>
-
 <body>
 
 <div id="topbar">
-  <button class="room-btn" onclick="startJitsi('BarnootaLiveRoom')">Room</button>
+  <button class="room-btn" id="roomName">Room</button>
   <div id="username">Loading...</div>
-  <button class="room-btn" onclick="goBack()">⬅ Back</button>
 </div>
 
 <div id="meet"></div>
 
+<div id="roomModal">
+  <input type="text" id="roomSearch" placeholder="Search room...">
+  <div id="roomList"></div>
+  <div class="modal-buttons">
+    <button class="modal-btn breakroom" onclick="breakRoom()">Breakroom</button>
+    <button class="modal-btn leaveModal" onclick="leaveFromModal()">Leave</button>
+  </div>
+</div>
+
 <div id="bottombar">
   <button class="control-btn" onclick="toggleMute()">🎤</button>
-  <button class="control-btn" onclick="toggleVideo()">🎥</button>
-  <button class="control-btn" onclick="toggleParticipants()">👥 Participants</button>
+  <button class="control-btn" onclick="toggleVideo()">📷</button>
+  <button class="control-btn" onclick="openChat()">💬</button>
+  <button class="control-btn" onclick="shareScreen()">🖥</button>
+  <button class="control-btn" onclick="openSettings()">⚙️</button>
+  <button class="control-btn" onclick="sendEmoji()">😊</button>
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
-  <button class="control-btn" onclick="openChat()">💬</button>
-  <button class="control-btn" onclick="shareScreen()">⬆️</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
 </div>
 
-<div id="participantsPanel">
-  <h3>Participants</h3>
-  <div id="participantsList"></div>
-</div>
-
 <script>
-  // 🔥 Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyDAsIzBiQL2fxN4SWiSLAcoc3DpyLiP-j4",
-    authDomain: "abseapp-b3706.firebaseapp.com",
-    projectId: "abseapp-b3706",
-    storageBucket: "abseapp-b3706.firebasestorage.app",
-    messagingSenderId: "986026055368",
-    appId: "1:986026055368:web:8ad2557f64c24d3c28b7fd",
-    measurementId: "G-M57552RVD2"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyATogol0OIMwINVjEanhzJo2-mufYOcU_4",
+  authDomain: "absejamaal-772e3.firebaseapp.com",
+  projectId: "absejamaal-772e3",
+  storageBucket: "absejamaal-772e3.appspot.com",
+  messagingSenderId: "522756860286",
+  appId: "1:522756860286:web:d78a03faf3861347e26b2f"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-
-  // Single auth listener
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      document.getElementById("username").innerText = user.email;
-    } else {
-      window.location.href = "index.html";
-    }
-  });
-
-  let api = null;
-
-  function startJitsi(roomName){
-    const domain = "meet.jit.si";
-
-    api = new JitsiMeetExternalAPI(domain, {
-      roomName: roomName,
-      width: "100%",
-      height: "100%",
-      parentNode: document.querySelector("#meet"),
-
-      configOverwrite: {
-        prejoinPageEnabled: false,
-        disableInviteFunctions: true,
-        hiddenPremeetingButtons: ['invite'],
-        startWithAudioMuted: false,
-        startWithVideoMuted: false
-      },
-
-      interfaceConfigOverwrite: {
-        DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-        SHOW_JITSI_WATERMARK: false,
-        SHOW_WATERMARK_FOR_GUESTS: false,
-        TOOLBAR_BUTTONS: ["microphone","camera","chat","desktop","hangup"],
-        filmStripOnly: false
-      }
-    });
-
-    api.addEventListener("participantJoined", updateParticipants);
-    api.addEventListener("participantLeft", updateParticipants);
-    api.addEventListener("displayNameChange", updateParticipants);
-
-    api.addEventListener("videoConferenceJoined", ()=>{
-      const name = auth.currentUser.email.split("@")[0];
-      api.executeCommand("displayName", name);
-      updateParticipants();
-    });
+auth.onAuthStateChanged(user=>{
+  if(user){
+    document.getElementById("username").innerText = user.email;
+  }else{
+    window.location.href="index.html";
   }
+});
 
-  history.pushState(null, null, location.href);
+const urlParams = new URLSearchParams(window.location.search);
+const roomName = urlParams.get("room") || "Barnoota-Live";
+document.getElementById("roomName").innerText = roomName;
 
-  // Controls
-  function toggleMute(){ if(api) api.executeCommand("toggleAudio"); }
-  function toggleVideo(){ if(api) api.executeCommand("toggleVideo"); }
-  function openChat(){ if(api) api.executeCommand("toggleChat"); }
-  function shareScreen(){ if(api) api.executeCommand("toggleShareScreen"); }
-  function startRecording(){ if(api) api.executeCommand("startRecording",{mode:"file"}); }
-  function stopRecording(){ if(api) api.executeCommand("stopRecording",{mode:"file"}); }
-  function leaveMeeting(){
-    if(api) api.executeCommand("hangup");
-    window.location.href = "home.html";
-  }
+const api = new JitsiMeetExternalAPI("meet.jit.si",{
+  roomName: roomName,
+  width:"100%",
+  height:"100%",
+  parentNode: document.querySelector("#meet"),
+  configOverwrite:{prejoinPageEnabled:false,disableDeepLinking:true,startWithAudioMuted:false,startWithVideoMuted:false},
+  interfaceConfigOverwrite:{DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,HIDE_INVITE_MORE_HEADER:true,MOBILE_APP_PROMO:false,SHOW_JITSI_WATERMARK:false,SHOW_BRAND_WATERMARK:false,TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]}
+});
 
-  // Participants
-  const participantsPanel = document.getElementById("participantsPanel");
-  const participantsList = document.getElementById("participantsList");
+api.addEventListener("videoConferenceJoined", ()=>{
+  const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
+  if(pass){ api.executeCommand("password", pass); }
+});
 
-  function toggleParticipants(){
-    participantsPanel.style.display =
-      participantsPanel.style.display==="none"?"block":"none";
-  }
+// CONTROLS
+function toggleMute(){ api.executeCommand("toggleAudio"); }
+function toggleVideo(){ api.executeCommand("toggleVideo"); }
+function openChat(){ api.executeCommand("toggleChat"); }
+function shareScreen(){ api.executeCommand("toggleShareScreen"); }
+function openSettings(){ api.executeCommand("toggleSettings"); }
+function sendEmoji(){ api.executeCommand("sendTones"); }
+function startRecording(){ api.executeCommand("startRecording",{mode:"file"}); }
+function stopRecording(){ api.executeCommand("stopRecording",{mode:"file"}); }
+function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="home.html"; }
 
-  function updateParticipants(){
-    if(!api) return;
+// ROOM MODAL
+const roomModal = document.getElementById("roomModal");
+const roomBtn = document.getElementById("roomName");
+const roomList = document.getElementById("roomList");
+const roomSearch = document.getElementById("roomSearch");
 
-    const list = api.getParticipantsInfo();
+const totalRooms = 1000;
+let rooms = [];
+for(let i=1;i<=totalRooms;i++){ rooms.push("Room "+i); }
 
-    participantsList.innerHTML = "";
-    list.forEach(p=>{
-      const div = document.createElement("div");
-      div.style.padding = "6px";
-      div.style.borderBottom = "1px solid #444";
-      div.textContent = p.displayName || p.formattedID || "User";
-      participantsList.appendChild(div);
-    });
-  }
+function showRooms(){ roomModal.style.display="flex"; displayRooms(""); }
+function displayRooms(filter){ roomList.innerHTML=""; rooms.filter(r=>r.toLowerCase().includes(filter.toLowerCase())).forEach(r=>{const div=document.createElement("div");div.className="room-item";div.innerText=r;div.onclick=()=> joinRoom(r);roomList.appendChild(div);}); }
 
-  function goBack(){
-    window.location.href = "home.html";
-  }
+roomBtn.addEventListener("click", showRooms);
+roomSearch.addEventListener("input",()=>displayRooms(roomSearch.value));
+
+function joinRoom(r){ roomModal.style.display="none"; api.executeCommand("hangup"); window.location.href="liveclass.html?room="+encodeURIComponent(r); }
+function breakRoom(){ roomModal.style.display="none"; window.location.href="liveclass.html"; }
+function leaveFromModal(){ roomModal.style.display="none"; api.executeCommand("hangup"); window.location.href="home.html"; }
 </script>
 
 </body>
