@@ -119,6 +119,85 @@ api.addEventListener("videoConferenceJoined", ()=>{
     api.executeCommand("password", pass);
   };
 });
+  let role = "user"; // default
+
+api.addEventListener("videoConferenceJoined", ()=>{
+
+  const email = auth.currentUser.email;
+
+  // HOST murteessi
+  if(email === "your@email.com"){
+    role = "host";
+  }
+
+  // COHOST fakkeenya
+  if(email === "cohost@email.com"){
+    role = "cohost";
+  }
+
+  const name = email.split("@")[0];
+  api.executeCommand("displayName", name);
+
+  updateParticipants();
+});
+}
+  function updateParticipants(){
+  if(!api) return;
+
+  const list = api.getParticipantsInfo();
+  participantsList.innerHTML = "";
+
+  list.forEach(p=>{
+    const div = document.createElement("div");
+
+    div.style.padding = "6px";
+    div.style.borderBottom = "1px solid gray";
+
+    const name = p.displayName || "User";
+
+    div.innerHTML = `<b>${name}</b>`;
+    if(role === "host" || role === "cohost"){
+
+      const muteBtn = document.createElement("button");
+      muteBtn.innerText = "Mute 🎤";
+      muteBtn.onclick = ()=> muteUser(p.participantId);
+
+      const videoBtn = document.createElement("button");
+      videoBtn.innerText = "Stop 📷";
+      videoBtn.onclick = ()=> stopVideo(p.participantId);
+
+      const editBtn = document.createElement("button");
+      editBtn.innerText = "Edit ✏️";
+      editBtn.onclick = ()=> editName(p.participantId);
+
+      div.appendChild(muteBtn);
+      div.appendChild(videoBtn);
+      div.appendChild(editBtn);
+    }
+
+    participantsList.appendChild(div);
+  });
+       }
+  function muteUser(id){
+  if(role !== "host" && role !== "cohost") return;
+
+  api.executeCommand("muteParticipant", id);
+}
+
+function stopVideo(id){
+  if(role !== "host" && role !== "cohost") return;
+
+  api.executeCommand("muteVideo", id);
+}
+
+function editName(id){
+  if(role !== "host" && role !== "cohost") return;
+
+  const newName = prompt("Maqaa haaraya galchi:");
+  if(!newName) return;
+
+  // direct hin danda'amu → message workaround
+  api.executeCommand("sendEndpointTextMessage", id, newName);
 }
 // CONTROLS
 function toggleMute(){ api.executeCommand("toggleAudio"); }
