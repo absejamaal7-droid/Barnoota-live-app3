@@ -50,7 +50,12 @@
     <button class="modal-btn leaveModal" onclick="leaveFromModal()">Leave</button>
   </div>
 </div>
-
+<select id="roomSelect" onchange="changeRoom()">
+  <option value="Math Class">Math Class</option>
+  <option value="English Class">English Class</option>
+  <option value="Science Room">Science Room</option>
+  <option value="Discussion Room">Discussion Room</option>
+</select>
 <div id="bottombar">
   <button class="control-btn" onclick="toggleMute()">🎤</button>
   <button class="control-btn" onclick="toggleVideo()">📷</button>
@@ -87,31 +92,45 @@ const urlParams = new URLSearchParams(window.location.search);
 const roomName = urlParams.get("room") || "Barnoota-Live";
 document.getElementById("roomName").innerText = roomName;
 
-const api = new JitsiMeetExternalAPI("meet.jit.si",{
-  roomName: roomName,
-  width:"100%",
-  height:"100%",
-  parentNode: document.querySelector("#meet"),
-  configOverwrite:{prejoinPageEnabled:false,disableDeepLinking:true,startWithAudioMuted:false,startWithVideoMuted:false},
-  interfaceConfigOverwrite:{DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,HIDE_INVITE_MORE_HEADER:true,MOBILE_APP_PROMO:false,SHOW_JITSI_WATERMARK:false,SHOW_BRAND_WATERMARK:false,TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]}
-});
-
+function startJitsi(roomName){
+  api = new JitsiMeetExternalAPI("meet.jit.si",{
+    roomName: roomName,
+    width:"100%",
+    height:"100%",
+    parentNode: document.querySelector("#meet"),
+    configOverwrite:{
+      prejoinPageEnabled:false,
+      disableDeepLinking:true,
+      startWithAudioMuted:false,
+      startWithVideoMuted:false
+    },
+    interfaceConfigOverwrite:{
+      DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
+      SHOW_JITSI_WATERMARK:false,
+      TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]
+    }
+  });
 api.addEventListener("videoConferenceJoined", ()=>{
-  const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
-  if(pass){ api.executeCommand("password", pass); }
-});
+  api.executeCommand("toggleVideo");
+  api.executeCommand("toggleAudio");
 
+  const pass = prompt("Password (optional)");
+  if(pass){
+    api.executeCommand("password", pass);
+  });
+};
 // CONTROLS
 function toggleMute(){ api.executeCommand("toggleAudio"); }
 function toggleVideo(){ api.executeCommand("toggleVideo"); }
 function openChat(){ api.executeCommand("toggleChat"); }
 function shareScreen(){ api.executeCommand("toggleShareScreen"); }
 function openSettings(){ api.executeCommand("toggleSettings"); }
-function sendEmoji(){ api.executeCommand("sendTones"); }
+function sendEmoji(){
+  api.executeCommand("toggleReactionsMenu");
+    }
 function startRecording(){ api.executeCommand("startRecording",{mode:"file"}); }
 function stopRecording(){ api.executeCommand("stopRecording",{mode:"file"}); }
 function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="home.html"; }
-
 // ROOM MODAL
 const roomModal = document.getElementById("roomModal");
 const roomBtn = document.getElementById("roomName");
@@ -121,7 +140,15 @@ const roomSearch = document.getElementById("roomSearch");
 const totalRooms = 1000;
 let rooms = [];
 for(let i=1;i<=totalRooms;i++){ rooms.push("Room "+i); }
+function changeRoom(){
+  const roomName = document.getElementById("roomSelect").value;
 
+  if(api){
+    api.dispose();
+  }
+
+  startJitsi(roomName);
+    }
 function showRooms(){ roomModal.style.display="flex"; displayRooms(""); }
 function displayRooms(filter){ roomList.innerHTML=""; rooms.filter(r=>r.toLowerCase().includes(filter.toLowerCase())).forEach(r=>{const div=document.createElement("div");div.className="room-item";div.innerText=r;div.onclick=()=> joinRoom(r);roomList.appendChild(div);}); }
 
