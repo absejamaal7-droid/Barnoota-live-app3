@@ -66,6 +66,8 @@
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
+  <button class="control-btn" onclick="muteAll()">🔇 Mute All</button>
+  <button id="muteBtn" class="control-btn" onclick="muteAll()">🔇 Mute All</button>
 </div>
 
 <script>
@@ -93,54 +95,76 @@ const roomName = urlParams.get("room") || "Barnoota-Live";
 document.getElementById("roomName").innerText = roomName;
 
 function startJitsi(roomName){
-  api = new JitsiMeetExternalAPI("meet.jit.si",{
+  const domain = "meet.jit.si";
+
+  api = new JitsiMeetExternalAPI(domain, {
     roomName: roomName,
-    width:"100%",
-    height:"100%",
+    width: "100%",
+    height: "100%",
     parentNode: document.querySelector("#meet"),
-    configOverwrite:{
-      prejoinPageEnabled:false,
-      disableDeepLinking:true,
-      startWithAudioMuted:false,
-      startWithVideoMuted:false
+
+    configOverwrite: {
+      prejoinPageEnabled: false,
+      disableInviteFunctions: true,
+      hiddenPremeetingButtons: ['invite'],
+      startWithAudioMuted: false,
+      startWithVideoMuted: false
     },
-    interfaceConfigOverwrite:{
-      DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
-      SHOW_JITSI_WATERMARK:false,
-      TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]
+
+    interfaceConfigOverwrite: {
+      DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+      SHOW_JITSI_WATERMARK: false,
+      SHOW_WATERMARK_FOR_GUESTS: false,
+      TOOLBAR_BUTTONS: ["microphone","camera","chat","desktop","hangup"],
+      filmStripOnly: false
     }
   });
-api.addEventListener("videoConferenceJoined", ()=>{
-  api.executeCommand("toggleVideo");
-  api.executeCommand("toggleAudio");
 
-  const pass = prompt("Password (optional)");
-  if(pass){
-    api.executeCommand("password", pass);
-  };
-});
-  let role = "user"; // default
+  // 🔥 yeroo namni seenu
+  api.addEventListener("videoConferenceJoined", ()=>{
+    const name = auth.currentUser.email.split("@")[0];
+    api.executeCommand("displayName", name);
 
-api.addEventListener("videoConferenceJoined", ()=>{
+    // 🎥 Camera ON
+    api.executeCommand("toggleVideo");
 
-  const email = auth.currentUser.email;
+    // 🎤 Mic ON
+    api.executeCommand("toggleAudio");
 
-  // HOST murteessi
-  if(email === "your@email.com"){
-    role = "host";
-  }
+    updateParticipants();
+  });
 
-  // COHOST fakkeenya
-  if(email === "cohost@email.com"){
-    role = "cohost";
-  }
-
-  const name = email.split("@")[0];
-  api.executeCommand("displayName", name);
-
-  updateParticipants();
-});
+  // 👥 Participants update yeroo hunda
+  api.addEventListener("participantJoined", updateParticipants);
+  api.addEventListener("participantLeft", updateParticipants);
+  api.addEventListener("displayNameChange", updateParticipants);
 }
+  function muteAll(){
+  if(!api) return;
+
+  if(auth.currentUser.email !== teacherEmail){
+    alert("Ati teacher miti!");
+    return;
+    const teacherEmail = "youremail@gmail.com"; // email kee galchi
+  }
+
+  api.executeCommand("muteEveryone");
+    auth.onAuthStateChanged(user=>{
+  if(user){
+    document.getElementById("username").innerText=user.email;
+    if(user.email !== teacherEmail){
+      document.getElementById("muteBtn").style.display = "none";
+    }
+
+  }else
+  api.getParticipantsInfo().forEach(p=>{
+    api.executeCommand("muteParticipant", p.participantId);
+  });
+  }
+  {
+    window.location.href="index.html";
+  };
+ }
   function updateParticipants(){
   if(!api) return;
 
