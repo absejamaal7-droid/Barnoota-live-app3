@@ -31,6 +31,7 @@
     .modal-btn{flex:1;padding:6px;margin:2px;border:none;border-radius:6px;cursor:pointer;font-size:14px;}
     .breakroom{background:#2563eb;color:white;}
     .leaveModal{background:#ef4444;color:white;}
+    #participantsPanel{display:none;}
   </style>
 </head>
 <body>
@@ -66,10 +67,12 @@
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
-  <button class="control-btn" onclick="muteAll()">🔇 Mute All</button>
   <button id="muteBtn" class="control-btn" onclick="muteAll()">🔇 Mute All</button>
 </div>
-
+<div id="participantsPanel">
+  <h3>Participants</h3>
+  <div id="participantsList"></div>
+</div>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyATogol0OIMwINVjEanhzJo2-mufYOcU_4",
@@ -148,30 +151,24 @@ function startJitsi(roomName){
   api.addEventListener("participantLeft", updateParticipants);
   api.addEventListener("displayNameChange", updateParticipants);
 }
-  function muteAll(){
+  const teacherEmail = "absejamaal7@gmail.com";
+
+function muteAll(){
   if(!api) return;
 
   if(auth.currentUser.email !== teacherEmail){
     alert("Ati teacher miti!");
     return;
-    const teacherEmail = "absejamaal7@gmail.com"; // email kee galchi
   }
 
   api.executeCommand("muteEveryone");
-  else
-  api.getParticipantsInfo().forEach(p=>{
-    api.executeCommand("muteParticipant", p.participantId);
-  });
-  {
-    window.location.href="index.html";
-  };
- };
+}
   function updateParticipants(){
   if(!api) return;
 
   const list = api.getParticipantsInfo();
   participantsList.innerHTML = "";
-
+    const participantsList = document.getElementById("participantsList");
   list.forEach(p=>{
     const div = document.createElement("div");
 
@@ -181,7 +178,7 @@ function startJitsi(roomName){
     const name = p.displayName || "User";
 
     div.innerHTML = `<b>${name}</b>`;
-    if(role === "host" || role === "cohost"){
+    if(auth.currentUser.email === teacherEmail){
 
       const muteBtn = document.createElement("button");
       muteBtn.innerText = "Mute 🎤";
