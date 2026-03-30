@@ -86,7 +86,7 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
   auth.onAuthStateChanged(user=>{
   if(user){
-    const teacherEmail = "youremail@gmail.com";
+    const teacherEmail = "absejamaal7@gmail.com";
 
     if(user.email !== teacherEmail){
       document.getElementById("muteBtn").style.display = "none";
@@ -151,7 +151,6 @@ function startJitsi(roomName){
   api.addEventListener("participantLeft", updateParticipants);
   api.addEventListener("displayNameChange", updateParticipants);
 }
-  const teacherEmail = "absejamaal7@gmail.com";
 
 function muteAll(){
   if(!api) return;
@@ -163,12 +162,14 @@ function muteAll(){
 
   api.executeCommand("muteEveryone");
 }
-  function updateParticipants(){
+function updateParticipants(){
   if(!api) return;
 
-  const list = api.getParticipantsInfo();
+  const participantsList = document.getElementById("participantsList");
   participantsList.innerHTML = "";
-    const participantsList = document.getElementById("participantsList");
+
+  const list = api.getParticipantsInfo();
+
   list.forEach(p=>{
     const div = document.createElement("div");
 
@@ -176,8 +177,8 @@ function muteAll(){
     div.style.borderBottom = "1px solid gray";
 
     const name = p.displayName || "User";
-
     div.innerHTML = `<b>${name}</b>`;
+
     if(auth.currentUser.email === teacherEmail){
 
       const muteBtn = document.createElement("button");
@@ -199,11 +200,7 @@ function muteAll(){
 
     participantsList.appendChild(div);
   });
-       }document.getElementById("muteBtn").onclick = function(){
-  if(api){
-    api.executeCommand("muteEveryone");
-  }
-};
+}
   function muteUser(id){
   if(role !== "host" && role !== "cohost") return;
 
@@ -221,8 +218,6 @@ function editName(id){
 
   const newName = prompt("Maqaa haaraya galchi:");
   if(!newName) return;
-
-  // direct hin danda'amu → message workaround
   api.executeCommand("sendEndpointTextMessage", id, newName);
 }
 // CONTROLS
@@ -255,6 +250,7 @@ function changeRoom(){
 
   startJitsi(roomName);
     }
+  startJitsi(roomName);
 function showRooms(){ roomModal.style.display="flex"; displayRooms(""); }
 function displayRooms(filter){ roomList.innerHTML=""; rooms.filter(r=>r.toLowerCase().includes(filter.toLowerCase())).forEach(r=>{const div=document.createElement("div");div.className="room-item";div.innerText=r;div.onclick=()=> joinRoom(r);roomList.appendChild(div);}); }
 
