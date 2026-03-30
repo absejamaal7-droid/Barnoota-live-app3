@@ -58,8 +58,8 @@
   <option value="Discussion Room">Discussion Room</option>
 </select>
 <div id="bottombar">
-  <button class="control-btn" onclick="toggleMute()">🎤</button>
-  <button class="control-btn" onclick="toggleVideo()">📷</button>
+  <button class="control-btn" id="micBtn" onclick="toggleMute()">🎤 OFF</button>
+  <button class="control-btn" id="videoBtn" onclick="toggleVideo()">📷 OFF</button>
   <button class="control-btn" onclick="openChat()">💬</button>
   <button class="control-btn" onclick="shareScreen()">🖥</button>
   <button class="control-btn" onclick="openSettings()">⚙️</button>
@@ -136,12 +136,6 @@ function startJitsi(roomName){
   api.addEventListener("videoConferenceJoined", ()=>{
     const name = auth.currentUser.email.split("@")[0];
     api.executeCommand("displayName", name);
-
-    // 🎥 Camera ON
-    api.executeCommand("toggleVideo");
-
-    // 🎤 Mic ON
-    api.executeCommand("toggleAudio");
 
     updateParticipants();
   });
@@ -221,8 +215,30 @@ function editName(id){
   api.executeCommand("sendEndpointTextMessage", id, newName);
 }
 // CONTROLS
-function toggleMute(){ api.executeCommand("toggleAudio"); }
-function toggleVideo(){ api.executeCommand("toggleVideo"); }
+let micOn = false;
+
+function toggleMute(){
+  if(!api) return;
+
+  api.executeCommand("toggleAudio");
+
+  micOn = !micOn;
+
+  const btn = document.getElementById("micBtn");
+  btn.innerText = micOn ? "🎤 ON" : "🎤 OFF";
+  }
+let videoOn = false;
+
+function toggleVideo(){
+  if(!api) return;
+
+  api.executeCommand("toggleVideo");
+
+  videoOn = !videoOn;
+
+  const btn = document.getElementById("videoBtn");
+  btn.innerText = videoOn ? "📷 ON" : "📷 OFF";
+  }
 function openChat(){ api.executeCommand("toggleChat"); }
 function shareScreen(){ api.executeCommand("toggleShareScreen"); }
 function openSettings(){ api.executeCommand("toggleSettings"); }
