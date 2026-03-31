@@ -32,6 +32,33 @@
     .breakroom{background:#2563eb;color:white;}
     .leaveModal{background:#ef4444;color:white;}
     #participantsPanel{display:none;}
+    #bottombar{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:70px;
+  background:#1c1c1c;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:20px;
+  z-index:10;
+}
+
+#bottombar button{
+  background:#2b2b2b;
+  border:none;
+  color:white;
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+#leaveBtn{
+  background:#e11d48;
+               }
   </style>
 </head>
 <body>
@@ -61,9 +88,9 @@
   <button class="control-btn" id="micBtn" onclick="toggleMute()">🎤 OFF</button>
   <button class="control-btn" id="videoBtn" onclick="toggleVideo()">📷 OFF</button>
   <button class="control-btn" onclick="openChat()">💬</button>
-  <button class="control-btn" onclick="shareScreen()">🖥</button>
+  <button class="control-btn" onclick="shareScreen()">🖥Share</button>
   <button class="control-btn" onclick="openSettings()">⚙️</button>
-  <button class="control-btn" onclick="sendEmoji()">😊</button>
+  <button class="control-btn" onclick="sendEmoji()">😊 chat</button>
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
@@ -266,7 +293,6 @@ function changeRoom(){
 
   startJitsi(roomName);
     }
-  startJitsi(roomName);
 function showRooms(){ roomModal.style.display="flex"; displayRooms(""); }
 function displayRooms(filter){ roomList.innerHTML=""; rooms.filter(r=>r.toLowerCase().includes(filter.toLowerCase())).forEach(r=>{const div=document.createElement("div");div.className="room-item";div.innerText=r;div.onclick=()=> joinRoom(r);roomList.appendChild(div);}); }
 
@@ -276,6 +302,7 @@ roomSearch.addEventListener("input",()=>displayRooms(roomSearch.value));
 function joinRoom(r){ roomModal.style.display="none"; api.executeCommand("hangup"); window.location.href="liveclass.html?room="+encodeURIComponent(r); }
 function breakRoom(){ roomModal.style.display="none"; window.location.href="liveclass.html"; }
 function leaveFromModal(){ roomModal.style.display="none"; api.executeCommand("hangup"); window.location.href="home.html"; }
+  startJitsi(roomName);
 </script>
 
 </body>
