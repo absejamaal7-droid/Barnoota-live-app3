@@ -35,6 +35,57 @@
   color:red;
   text-decoration: line-through;
     }
+    #participantsPanel{
+  display:none;
+  position:fixed;
+  right:0;
+  top:50px;
+  width:280px;
+  height:85%;
+  background:#111;
+  color:white;
+  z-index:50;
+  border-left:2px solid #333;
+}
+
+#participantsHeader{
+  padding:10px;
+  background:#1f1f1f;
+  text-align:center;
+  font-weight:bold;
+}
+
+.participant{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px;
+  border-bottom:1px solid #333;
+}
+
+.name{
+  flex:1;
+}
+
+.icons{
+  display:flex;
+  gap:6px;
+}
+
+.off{
+  color:red;
+  text-decoration: line-through;
+}
+
+.host{
+  color:#22c55e;
+  font-size:12px;
+  margin-left:5px;
+}
+
+.speaking{
+  background:#1e293b;
+}
   </style>
 </head>
 <body>
@@ -58,6 +109,12 @@
   <h3 style="text-align:center;">Participants</h3>
   <div id="participantsList"></div>
 </div>
+  <div id="participantsPanel">
+  <div id="participantsHeader">
+    👥 Participants (<span id="participantsCount">0</span>)
+  </div>
+  <div id="participantsList"></div>
+  </div>
 <div id="bottombar">
   <button class="control-btn" onclick="toggleMute()">🎤</button>
   <button class="control-btn" onclick="toggleVideo()">📷</button>
@@ -105,14 +162,24 @@ const api = new JitsiMeetExternalAPI("meet.jit.si",{
   configOverwrite:{prejoinPageEnabled:false,disableDeepLinking:true,startWithAudioMuted:false,startWithVideoMuted:false},
   interfaceConfigOverwrite:{DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,HIDE_INVITE_MORE_HEADER:true,MOBILE_APP_PROMO:false,SHOW_JITSI_WATERMARK:false,SHOW_BRAND_WATERMARK:false,TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]}
 });
+api.addEventListener("dominantSpeakerChanged", (id)=>{
+  const items = document.querySelectorAll(".participant");
 
+  items.forEach(item=> item.classList.remove("speaking"));
+
+  const list = api.getParticipantsInfo();
+
+  list.forEach((p, index)=>{
+    if(p.participantId === id){
+      items[index].classList.add("speaking");
+    }
+  });
+});
 api.addEventListener("videoConferenceJoined", ()=>{
   const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
   if(pass){ api.executeCommand("password", pass); }
 });
-api.addEventListener("audioMuteStatusChanged", updateParticipants);
-api.addEventListener("videoMuteStatusChanged", updateParticipants);
-  api.addEventListener("participantJoined", updateParticipants);
+api.addEventListener("participantJoined", updateParticipants);
 api.addEventListener("participantLeft", updateParticipants);
 api.addEventListener("displayNameChange", updateParticipants);
 api.addEventListener("audioMuteStatusChanged", updateParticipants);
@@ -141,34 +208,43 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
   if(!api) return;
 
   const participantsList = document.getElementById("participantsList");
+  const count = document.getElementById("participantsCount");
+
   participantsList.innerHTML = "";
 
   const list = api.getParticipantsInfo();
 
-  // 🔢 Lakkoofsa irratti agarsiisi
-  document.getElementById("participantsCount").innerText = list.length;
+  count.innerText = list.length;
 
   list.forEach(p=>{
     const div = document.createElement("div");
+    div.className = "participant";
 
     const name = p.displayName || "User";
 
-    // 🎤 status
-    const mic = p.muted ? "🔇" : "🎤";
+    // 🎤 mic
+    const micClass = p.muted ? "off" : "";
 
-    // 📷 status
-    const video = p.videoMuted ? "📷❌" : "📷";
+    // 📷 video
+    const videoClass = p.videoMuted ? "off" : "";
+
+    // 👑 host
+    const isHost = p.role === "moderator";
 
     div.innerHTML = `
-      <div style="display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid gray;">
-        <span>${name}</span>
-        <span>${mic} ${video}</span>
+      <div class="name">
+        ${name}
+        ${isHost ? '<span class="host">👑 Host</span>' : ''}
+      </div>
+      <div class="icons">
+        <span class="${micClass}">🎤</span>
+        <span class="${videoClass}">📷</span>
       </div>
     `;
 
     participantsList.appendChild(div);
   });
-          }
+      }
   let micOn = false;
 let videoOn = false;
 
