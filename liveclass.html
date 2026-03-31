@@ -54,7 +54,10 @@
     <button class="modal-btn leaveModal" onclick="leaveFromModal()">Leave</button>
   </div>
 </div>
-
+<div id="participantsPanel" style="display:none; position:fixed; right:0; top:50px; width:250px; height:80%; background:#1f1f1f; overflow:auto; z-index:20;">
+  <h3 style="text-align:center;">Participants</h3>
+  <div id="participantsList"></div>
+</div>
 <div id="bottombar">
   <button class="control-btn" onclick="toggleMute()">🎤</button>
   <button class="control-btn" onclick="toggleVideo()">📷</button>
@@ -109,6 +112,11 @@ api.addEventListener("videoConferenceJoined", ()=>{
 });
 api.addEventListener("audioMuteStatusChanged", updateParticipants);
 api.addEventListener("videoMuteStatusChanged", updateParticipants);
+  api.addEventListener("participantJoined", updateParticipants);
+api.addEventListener("participantLeft", updateParticipants);
+api.addEventListener("displayNameChange", updateParticipants);
+api.addEventListener("audioMuteStatusChanged", updateParticipants);
+api.addEventListener("videoMuteStatusChanged", updateParticipants);
 // CONTROLS
 function toggleMute(){ api.executeCommand("toggleAudio"); }
 function toggleVideo(){ api.executeCommand("toggleVideo"); }
@@ -119,6 +127,16 @@ function sendEmoji(){ api.executeCommand("sendTones"); }
 function startRecording(){ api.executeCommand("startRecording",{mode:"file"}); }
 function stopRecording(){ api.executeCommand("stopRecording",{mode:"file"}); }
 function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="home.html"; }
+  function toggleParticipants(){
+  const panel = document.getElementById("participantsPanel");
+
+  if(panel.style.display === "none"){
+    panel.style.display = "block";
+    updateParticipants(); // yeroo banu refresh godha
+  }else{
+    panel.style.display = "none";
+  }
+  }
   function updateParticipants(){
   if(!api) return;
 
