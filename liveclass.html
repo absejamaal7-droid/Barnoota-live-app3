@@ -31,6 +31,10 @@
     .modal-btn{flex:1;padding:6px;margin:2px;border:none;border-radius:6px;cursor:pointer;font-size:14px;}
     .breakroom{background:#2563eb;color:white;}
     .leaveModal{background:#ef4444;color:white;}
+    .off{
+  color:red;
+  text-decoration: line-through;
+    }
   </style>
 </head>
 <body>
@@ -54,6 +58,9 @@
 <div id="bottombar">
   <button class="control-btn" onclick="toggleMute()">🎤</button>
   <button class="control-btn" onclick="toggleVideo()">📷</button>
+  <button onclick="toggleParticipants()">
+  👥 <span id="participantsCount">0</span>
+  </button>
   <button class="control-btn" onclick="openChat()">💬</button>
   <button class="control-btn" onclick="shareScreen()">🖥</button>
   <button class="control-btn" onclick="openSettings()">⚙️</button>
@@ -100,7 +107,8 @@ api.addEventListener("videoConferenceJoined", ()=>{
   const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
   if(pass){ api.executeCommand("password", pass); }
 });
-
+api.addEventListener("audioMuteStatusChanged", updateParticipants);
+api.addEventListener("videoMuteStatusChanged", updateParticipants);
 // CONTROLS
 function toggleMute(){ api.executeCommand("toggleAudio"); }
 function toggleVideo(){ api.executeCommand("toggleVideo"); }
@@ -143,6 +151,42 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
     participantsList.appendChild(div);
   });
           }
+  let micOn = false;
+let videoOn = false;
+
+function toggleMute(){
+  if(!api) return;
+
+  api.executeCommand("toggleAudio");
+  micOn = !micOn;
+
+  const btn = document.getElementById("micBtn");
+
+  if(micOn){
+    btn.innerHTML = "🎤";
+    btn.classList.remove("off");
+  }else{
+    btn.innerHTML = "🎤";
+    btn.classList.add("off"); // 🔴 sarara
+  }
+}
+
+function toggleVideo(){
+  if(!api) return;
+
+  api.executeCommand("toggleVideo");
+  videoOn = !videoOn;
+
+  const btn = document.getElementById("videoBtn");
+
+  if(videoOn){
+    btn.innerHTML = "📷";
+    btn.classList.remove("off");
+  }else{
+    btn.innerHTML = "📷";
+    btn.classList.add("off"); // 🔴 sarara
+  }
+    }
 
 // ROOM MODAL
 const roomModal = document.getElementById("roomModal");
