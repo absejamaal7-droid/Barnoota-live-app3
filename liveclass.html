@@ -141,21 +141,20 @@ function startJitsi(roomName){
     width: "100%",
     height: "100%",
     parentNode: document.querySelector("#meet"),
+configOverwrite: {
+  prejoinPageEnabled: false,
+  disableDeepLinking: true,
+  startWithAudioMuted: true,
+  startWithVideoMuted: true
+},
 
-    configOverwrite: {
-      prejoinPageEnabled: false,
-      disableInviteFunctions: true,
-      hiddenPremeetingButtons: ['invite'],
-      startWithAudioMuted: false,
-      startWithVideoMuted: false
-    },
-
-    interfaceConfigOverwrite: {
-      DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-      SHOW_JITSI_WATERMARK: false,
-      SHOW_WATERMARK_FOR_GUESTS: false,
-      TOOLBAR_BUTTONS: ["microphone","camera","chat","desktop","hangup"],
-      filmStripOnly: false
+interfaceConfigOverwrite: {
+  SHOW_JITSI_WATERMARK: false,
+  SHOW_BRAND_WATERMARK: false,
+  MOBILE_APP_PROMO: false,
+  TOOLBAR_BUTTONS: [] // toolbar Jitsi dhoksa
+   filmStripOnly: false
+}
     }
   });
 
