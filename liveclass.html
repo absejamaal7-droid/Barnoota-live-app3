@@ -111,6 +111,38 @@ function sendEmoji(){ api.executeCommand("sendTones"); }
 function startRecording(){ api.executeCommand("startRecording",{mode:"file"}); }
 function stopRecording(){ api.executeCommand("stopRecording",{mode:"file"}); }
 function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="home.html"; }
+  function updateParticipants(){
+  if(!api) return;
+
+  const participantsList = document.getElementById("participantsList");
+  participantsList.innerHTML = "";
+
+  const list = api.getParticipantsInfo();
+
+  // 🔢 Lakkoofsa irratti agarsiisi
+  document.getElementById("participantsCount").innerText = list.length;
+
+  list.forEach(p=>{
+    const div = document.createElement("div");
+
+    const name = p.displayName || "User";
+
+    // 🎤 status
+    const mic = p.muted ? "🔇" : "🎤";
+
+    // 📷 status
+    const video = p.videoMuted ? "📷❌" : "📷";
+
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid gray;">
+        <span>${name}</span>
+        <span>${mic} ${video}</span>
+      </div>
+    `;
+
+    participantsList.appendChild(div);
+  });
+          }
 
 // ROOM MODAL
 const roomModal = document.getElementById("roomModal");
