@@ -160,8 +160,18 @@ const api = new JitsiMeetExternalAPI("meet.jit.si",{
   width:"100%",
   height:"100%",
   parentNode: document.querySelector("#meet"),
-  configOverwrite:{prejoinPageEnabled:false,disableDeepLinking:true,startWithAudioMuted:false,startWithVideoMuted:false},
-  interfaceConfigOverwrite:{DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,HIDE_INVITE_MORE_HEADER:true,MOBILE_APP_PROMO:false,SHOW_JITSI_WATERMARK:false,SHOW_BRAND_WATERMARK:false,TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]}
+  configOverwrite:
+  {prejoinPageEnabled:false,
+   disableDeepLinking:true,
+   startWithAudioMuted:false,
+   startWithVideoMuted:false},
+  interfaceConfigOverwrite:
+  {DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
+   HIDE_INVITE_MORE_HEADER:true,
+   MOBILE_APP_PROMO:false,
+   SHOW_JITSI_WATERMARK:false,
+   SHOW_BRAND_WATERMARK:false,
+   TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]}
 });
 api.addEventListener("dominantSpeakerChanged", (id)=>{
   const items = document.querySelectorAll(".participant");
@@ -180,13 +190,35 @@ api.addEventListener("videoConferenceJoined", ()=>{
   const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
   if(pass){ api.executeCommand("password", pass); }
 });
+  {
+  const name = auth.currentUser.email.split("@")[0];
+  api.executeCommand("displayName", name);
+
+  // 🎤 Mic ON gochuu
+  api.executeCommand("toggleAudio");
+
+  // 🎥 Video ON
+  api.executeCommand("toggleVideo");
+
+  updateParticipants();
+});
 api.addEventListener("participantJoined", updateParticipants);
 api.addEventListener("participantLeft", updateParticipants);
 api.addEventListener("displayNameChange", updateParticipants);
 api.addEventListener("audioMuteStatusChanged", updateParticipants);
 api.addEventListener("videoMuteStatusChanged", updateParticipants);
 // CONTROLS
-function toggleMute(){ api.executeCommand("toggleAudio"); }
+function toggleMute(){
+  if(!api) return;
+
+  api.isAudioMuted().then(muted=>{
+    if(muted){
+      api.executeCommand("toggleAudio"); // ON
+    }else{
+      api.executeCommand("toggleAudio"); // OFF
+    }
+  });
+}
 function toggleVideo(){ api.executeCommand("toggleVideo"); }
 function openChat(){ api.executeCommand("toggleChat"); }
 function shareScreen(){ api.executeCommand("toggleShareScreen"); }
