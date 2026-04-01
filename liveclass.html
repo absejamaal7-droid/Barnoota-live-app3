@@ -86,6 +86,9 @@
 .speaking{
   background:#1e293b;
 }
+    #meet iframe{
+  filter: brightness(1.1) contrast(1.1);
+    }
   </style>
 </head>
 <body>
@@ -122,7 +125,22 @@
   <button onclick="toggleParticipants()">
   👥 <span id="participantsCount">0</span>
   </button>
-  <button class="control-btn" onclick="openChat()">💬</button>
+  <div id="chatBox" style="display:none; position:fixed; right:0; top:50px; width:300px; height:80%; background:#111; padding:10px; overflow:auto;">
+  <h3>Chat</h3>
+
+  <select id="chatType">
+    <option value="everyone">Everyone</option>
+    <option value="private">Private</option>
+    <option value="host">Host</option>
+    <option value="cohost">Cohost</option>
+  </select>
+
+  <div id="chatMessages" style="height:60%; overflow:auto; margin:10px 0;"></div>
+
+  <input id="chatInput" placeholder="Message..." style="width:70%;">
+  <button onclick="sendMessage()">Send</button>
+    <button class="control-btn" onclick="toggleFilter()">✨ Filter</button>
+    <button class="control-btn" onclick="toggleChatBox()">💬</button>
   <button class="control-btn" onclick="shareScreen()">🖥</button>
   <button class="control-btn" onclick="openSettings()">⚙️</button>
   <button class="control-btn" onclick="sendEmoji()">😊</button>
@@ -130,7 +148,7 @@
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
 </div>
-
+</div>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyATogol0OIMwINVjEanhzJo2-mufYOcU_4",
@@ -172,6 +190,25 @@ const api = new JitsiMeetExternalAPI("meet.jit.si",{
    SHOW_JITSI_WATERMARK:false,
    SHOW_BRAND_WATERMARK:false,
    TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup"]}
+});
+  db.collection("liveclassChat")
+.orderBy("date")
+.onSnapshot(snapshot=>{
+
+  const box = document.getElementById("chatMessages");
+  box.innerHTML = "";
+
+  snapshot.forEach(doc=>{
+    const m = doc.data();
+
+    const div = document.createElement("div");
+
+    div.innerHTML = `<b>${m.user}</b> (${m.type}): ${m.text}`;
+
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  });
+
 });
 api.addEventListener("dominantSpeakerChanged", (id)=>{
   const items = document.querySelectorAll(".participant");
@@ -236,6 +273,25 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
   }else{
     panel.style.display = "none";
   }
+  }
+  function toggleChatBox(){
+  const box = document.getElementById("chatBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+  }
+  function sendMessage(){
+  const text = document.getElementById("chatInput").value;
+  const type = document.getElementById("chatType").value;
+
+  if(!text) return;
+
+  db.collection("liveclassChat").add({
+    user: auth.currentUser.email,
+    text: text,
+    type: type,
+    date: new Date()
+  });
+
+  document.getElementById("chatInput").value = "";
   }
   function updateParticipants(){
   if(!api) return;
@@ -314,7 +370,21 @@ function toggleVideo(){
     btn.classList.add("off"); // 🔴 sarara
   }
     }
+let filterOn = false;
 
+function toggleFilter(){
+  const iframe = document.querySelector("#meet iframe");
+
+  if(!iframe) return;
+
+  if(filterOn){
+    iframe.style.filter = "none";
+    filterOn = false;
+  }else{
+    iframe.style.filter = "brightness(1.2) contrast(1.2) saturate(1.3)";
+    filterOn = true;
+  }
+    }
 // ROOM MODAL
 const roomModal = document.getElementById("roomModal");
 const roomBtn = document.getElementById("roomName");
