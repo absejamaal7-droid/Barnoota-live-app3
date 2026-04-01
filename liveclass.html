@@ -189,8 +189,8 @@ api.addEventListener("dominantSpeakerChanged", (id)=>{
 api.addEventListener("videoConferenceJoined", ()=>{
   const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
   if(pass){ api.executeCommand("password", pass); }
-});
-  {
+
+  
   const name = auth.currentUser.email.split("@")[0];
   api.executeCommand("displayName", name);
 
