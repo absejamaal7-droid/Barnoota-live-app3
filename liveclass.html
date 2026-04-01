@@ -125,6 +125,15 @@
   <button onclick="toggleParticipants()">
   👥 <span id="participantsCount">0</span>
   </button>
+  <button onclick="sendMessage()">Send</button>
+    <button class="control-btn" onclick="toggleFilter()">✨ Filter</button>
+    <button class="control-btn" onclick="toggleChatBox()">💬</button>
+  <button class="control-btn" onclick="shareScreen()">🖥</button>
+  <button class="control-btn" onclick="openSettings()">⚙️</button>
+  <button class="control-btn" onclick="sendEmoji()">😊</button>
+  <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
+  <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
+  <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
   <div id="chatBox" style="display:none; position:fixed; right:0; top:50px; width:300px; height:80%; background:#111; padding:10px; overflow:auto;">
   <h3>Chat</h3>
 
@@ -138,15 +147,6 @@
   <div id="chatMessages" style="height:60%; overflow:auto; margin:10px 0;"></div>
 
   <input id="chatInput" placeholder="Message..." style="width:70%;">
-  <button onclick="sendMessage()">Send</button>
-    <button class="control-btn" onclick="toggleFilter()">✨ Filter</button>
-    <button class="control-btn" onclick="toggleChatBox()">💬</button>
-  <button class="control-btn" onclick="shareScreen()">🖥</button>
-  <button class="control-btn" onclick="openSettings()">⚙️</button>
-  <button class="control-btn" onclick="sendEmoji()">😊</button>
-  <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
-  <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
-  <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
 </div>
 </div>
 <script>
