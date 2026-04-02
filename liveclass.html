@@ -143,12 +143,12 @@
   </div>
   <div id="participantsList"></div>
   </div>
-  <button class="control-btn" onclick="toggleMute()">🎤</button>
+  <div id="bottombar">
+    <button class="control-btn" onclick="toggleMute()">🎤</button>
   <button class="control-btn" onclick="toggleVideo()">📷</button>
   <button onclick="toggleParticipants()">
   👥 <span id="participantsCount">0</span>
   </button>
-  <div id="bottombar">
   <button onclick="sendMessage()">Send</button>
     <button class="control-btn" onclick="toggleFilter()">✨ Filter</button>
     <button class="control-btn" onclick="toggleChatBox()">💬</button>
@@ -158,7 +158,7 @@
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
-  </div>
+</div>
   <div id="chatBox" style="display:none; position:fixed; right:0; top:50px; width:300px; height:80%; background:#111; padding:10px; overflow:auto;">
   <h3>Chat</h3>
 
@@ -316,7 +316,8 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
     date: new Date()
   });
 
-  document.getElementById("chatInput").value = "";
+  document.getElementById("chatInput").value = "send";
+    const send = document.getElementById("send").value;
   }
   function updateParticipants(){
   if(!api) return;
