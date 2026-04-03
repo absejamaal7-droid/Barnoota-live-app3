@@ -276,7 +276,8 @@ api.addEventListener("videoMuteStatusChanged", updateParticipants);
 function openChat(){
   const box = document.getElementById("chatBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
-
+}
+  {
   if(api){
     api.executeCommand("toggleChat");
   }else{
@@ -298,10 +299,6 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
   }else{
     panel.style.display = "none";
   }
-  }
-  function toggleChatBox(){
-  const box = document.getElementById("chatBox");
-  box.style.display = box.style.display === "none" ? "block" : "none";
   }
   function sendMessage(){
   const input = document.getElementById("chatInput");
