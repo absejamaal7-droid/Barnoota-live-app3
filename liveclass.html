@@ -141,22 +141,7 @@
 </div>
   <div id="participantsHeader">
   </div>
-  <div id="chatBox" style="position:fixed; right:0; top:50px; width:300px; height:calc(100vh - 50px); background:#111; display:flex; flex-direction:column;">
-  <h3>Chat</h3>
 
-  <select id="chatType">
-    <option value="everyone">Everyone</option>
-    <option value="private">Private</option>
-    <option value="host">Host</option>
-    <option value="cohost">Cohost</option>
-  </select>
-  <div id="messages" style="flex:1; overflow:auto; padding:10px;"></div>
-
-  <div style="display:flex;">
-    <input id="msgInput" placeholder="Message..." style="flex:1;">
-    <button onclick="sendMsg()">Send</button>
-  </div>
-  </div>
   <div id="bottombar">
   <button id="micBtn" class="control-btn" onclick="toggleMute()">🎤</button>
 <button id="videoBtn" class="control-btn" onclick="toggleVideo()">📷</button>
