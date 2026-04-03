@@ -111,8 +111,10 @@
   filter: brightness(1.1) contrast(1.1);
     }
     #meet{
-  margin-bottom:60px;
-    }
+  margin-top:50px;
+  height:calc(100vh - 110px);
+  width:100%;
+      }
   </style>
 </head>
 <body>
@@ -428,6 +430,7 @@ roomSearch.addEventListener("input",()=>displayRooms(roomSearch.value));
 function joinRoom(r){ roomModal.style.display="none"; api.executeCommand("hangup"); window.location.href="liveclass.html?room="+encodeURIComponent(r); }
 function breakRoom(){ roomModal.style.display="none"; window.location.href="liveclass.html"; }
 function leaveFromModal(){ roomModal.style.display="none"; api.executeCommand("hangup"); window.location.href="home.html"; }
+  startJitsi("BarnootaLiveRoom");
 </script>
 
 </body>
