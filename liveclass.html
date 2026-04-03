@@ -285,7 +285,10 @@ function toggleMute(){
   });
 }
 function toggleVideo(){ api.executeCommand("toggleVideo"); }
-function openChat(){ api.executeCommand("toggleChat"); }
+function openChat(){
+  const box = document.getElementById("chatBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
 function shareScreen(){ api.executeCommand("toggleShareScreen"); }
 function openSettings(){ api.executeCommand("toggleSettings"); }
 function sendEmoji(){ api.executeCommand("sendTones"); }
