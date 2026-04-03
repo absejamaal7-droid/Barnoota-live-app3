@@ -179,7 +179,7 @@
   👥 <span id="participantsCount">0</span>
   </button>
     <button id="toggleFilter" class="control-btn" onclick="toggleFilter()">✨ Filter</button>
-    <button class="control-btn" onclick="toggleLiveChat()">💬</button>
+    <button class="control-btn" onclick="OpenChat()">💬</button>
   <button class="control-btn" onclick="shareScreen()">🖥</button>
   <button class="control-btn" onclick="openSettings()">⚙️</button>
   <button class="control-btn" onclick="sendEmoji()">😊</button>
@@ -272,10 +272,15 @@ api.addEventListener("audioMuteStatusChanged", updateParticipants);
 api.addEventListener("videoMuteStatusChanged", updateParticipants);
 // CONTROLS
   
+
 function openChat(){
   const panel = document.getElementById("chatPanel");
-  panel.style.display =
-    panel.style.display === "none" ? "flex" : "none";
+
+  if(panel.style.display === "flex"){
+    panel.style.display = "none";
+  }else{
+    panel.style.display = "flex";
+  }
 }
 function sendMessage(){
   const input = document.getElementById("chatInput");
