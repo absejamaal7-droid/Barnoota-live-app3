@@ -124,13 +124,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-
-window.onpopstate = function () {
-  window.close();
-};
 window.onpopstate = function () {
   if(confirm("App keessaa bahuu barbaaddaa?")){
-  } else 
+  } else window.close();
 };
 function login(){
 
