@@ -117,10 +117,6 @@
 </head>
 <body>
 
-  <div style="position:fixed; bottom:70px; width:100%; display:flex; padding:5px; background:#111;">
-  <input id="chatInput" placeholder="Message..." style="flex:1; padding:8px; border-radius:6px; border:none;">
-  <button onclick="sendMessage()">Send</button>
-  </div>
 <div id="topbar">
   <button class="room-btn" id="roomName">Room</button>
   <div id="username">Loading...</div>
@@ -172,11 +168,10 @@
     <option value="cohost">Cohost</option>
   </select>
 
-  <div id="chatMessages" style="height:60%; overflow:auto; margin:10px 0;"></div>
-
-  <input id="chatInput" placeholder="Message..." style="width:70%;">
-    <button onclick="sendMessage()">Send</button>
-</div>
+  <div style="position:fixed; bottom:70px; width:100%; display:flex; padding:5px; background:#111;">
+  <input id="chatInput" placeholder="Message..." style="flex:1; padding:8px; border-radius:6px; border:none;">
+  <button onclick="sendMessage()">Send</button>
+  </div>
 
 <script>
 const firebaseConfig = {
