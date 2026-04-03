@@ -117,6 +117,10 @@
 </head>
 <body>
 
+  <div style="position:fixed; bottom:70px; width:100%; display:flex; padding:5px; background:#111;">
+  <input id="chatInput" placeholder="Message..." style="flex:1; padding:8px; border-radius:6px; border:none;">
+  <button onclick="sendMessage()">Send</button>
+  </div>
 <div id="topbar">
   <button class="room-btn" id="roomName">Room</button>
   <div id="username">Loading...</div>
@@ -304,20 +308,16 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
   box.style.display = box.style.display === "none" ? "block" : "none";
   }
   function sendMessage(){
-  const text = document.getElementById("chatInput").value;
-  const type = document.getElementById("chatType").value;
+  const input = document.getElementById("chatInput");
+  const message = input.value;
 
-  if(!text) return;
+  if(!message) return;
 
-  db.collection("liveclassChat").add({
-    user: auth.currentUser.email,
-    text: text,
-    type: type,
-    date: new Date()
-  });
+  if(api){
+    api.executeCommand("sendChatMessage", message);
+  }
 
-  document.getElementById("chatInput").value = "send";
-    const send = document.getElementById("send").value;
+  input.value = "";
   }
   function updateParticipants(){
   if(!api) return;
