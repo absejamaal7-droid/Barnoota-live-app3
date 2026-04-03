@@ -275,11 +275,16 @@ api.addEventListener("videoMuteStatusChanged", updateParticipants);
 // CONTROLS
 function toggleLiveChat(){
   const box = document.getElementById("chatBox");
-  box.style.display = box.style.display === "none" ? "block" : "none";
+
+  if(box.style.display === "block"){
+    box.style.display = "none";
+  }else{
+    box.style.display = "block";
+  }
+
+  // Jitsi chatis banaa
   if(api){
     api.executeCommand("toggleChat");
-  }else{
-    alert("Meeting hin jalqabamne!");
   }
 }
 function shareScreen(){ api.executeCommand("toggleShareScreen"); }
@@ -304,9 +309,21 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
 
   if(!message) return;
 
+  const user = auth.currentUser.email.split("@")[0];
+  const type = document.getElementById("chatType").value;
+
+  // Jitsi chat
   if(api){
     api.executeCommand("sendChatMessage", message);
   }
+
+  // Firebase chat
+  db.collection("liveclassChat").add({
+    text: message,
+    user: user,
+    type: type,
+    date: new Date()
+  });
 
   input.value = "";
   }
