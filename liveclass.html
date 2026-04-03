@@ -9,7 +9,7 @@
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-<script src="firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
   <style>
     body{margin:0;background:#121212;color:white;font-family:Arial;}
     #topbar{position:fixed;top:0;left:0;right:0;height:50px;background:#1f1f1f;display:flex;justify-content:space-between;align-items:center;padding:0 10px;z-index:10;}
@@ -139,15 +139,12 @@
   <h3 style="text-align:center;">Participants</h3>
   <div id="participantsList"></div>
 </div>
-  <div id="participantsPanel">
   <div id="participantsHeader">
-    👥 Participants (<span id="participantsCount">0</span>)
-  </div>
+ </div>
   <div id="participantsList"></div>
-  </div>
   <div id="bottombar">
-    <button class="control-btn" onclick="toggleMute()">🎤</button>
-  <button class="control-btn" onclick="toggleVideo()">📷</button>
+  <button id="micBtn" class="control-btn" onclick="toggleMute()">🎤</button>
+<button id="videoBtn" class="control-btn" onclick="toggleVideo()">📷</button>
   <button onclick="toggleParticipants()">
   👥 <span id="participantsCount">0</span>
   </button>
@@ -159,7 +156,7 @@
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
-</div>
+ </div>
   <div id="chatBox" style="display:none; position:fixed; right:0; top:50px; width:300px; height:80%; background:#111; padding:10px; overflow:auto; color:white;">
 
   <h3>Chat</h3>
@@ -250,8 +247,12 @@ api.addEventListener("dominantSpeakerChanged", (id)=>{
   });
 });
 api.addEventListener("videoConferenceJoined", ()=>{
-  const pass = prompt("Meeting password galchi (host qofatu kaa'a)");
-  if(pass){ api.executeCommand("password", pass); }
+  if(api.isModerator()){
+  const pass = prompt("Password kaa'i");
+  if(pass){
+    api.executeCommand("password", pass);
+  }
+  }
 
   
   const name = auth.currentUser.email.split("@")[0];
@@ -271,18 +272,6 @@ api.addEventListener("displayNameChange", updateParticipants);
 api.addEventListener("audioMuteStatusChanged", updateParticipants);
 api.addEventListener("videoMuteStatusChanged", updateParticipants);
 // CONTROLS
-function toggleMute(){
-  if(!api) return;
-
-  api.isAudioMuted().then(muted=>{
-    if(muted){
-      api.executeCommand("toggleAudio"); // ON
-    }else{
-      api.executeCommand("toggleAudio"); // OFF
-    }
-  });
-}
-function toggleVideo(){ api.executeCommand("toggleVideo"); }
 function openChat(){
   const box = document.getElementById("chatBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
@@ -430,7 +419,7 @@ roomSearch.addEventListener("input",()=>displayRooms(roomSearch.value));
 function joinRoom(r){ roomModal.style.display="none"; api.executeCommand("hangup"); window.location.href="liveclass.html?room="+encodeURIComponent(r); }
 function breakRoom(){ roomModal.style.display="none"; window.location.href="liveclass.html"; }
 function leaveFromModal(){ roomModal.style.display="none"; api.executeCommand("hangup"); window.location.href="home.html"; }
-  startJitsi("BarnootaLiveRoom");
+
 </script>
 
 </body>
