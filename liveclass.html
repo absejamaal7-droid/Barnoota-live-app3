@@ -206,6 +206,7 @@ const api = new JitsiMeetExternalAPI("meet.jit.si",{
    disableDeepLinking:true,
    startWithAudioMuted:false,
    startWithVideoMuted:false},
+  enableChat: true
   interfaceConfigOverwrite:
   {DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
    HIDE_INVITE_MORE_HEADER:true,
@@ -275,6 +276,12 @@ api.addEventListener("videoMuteStatusChanged", updateParticipants);
 function openChat(){
   const box = document.getElementById("chatBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
+
+  if(api){
+    api.executeCommand("toggleChat");
+  }else{
+    alert("Meeting hin jalqabamne!");
+  }
 }
 function shareScreen(){ api.executeCommand("toggleShareScreen"); }
 function openSettings(){ api.executeCommand("toggleSettings"); }
