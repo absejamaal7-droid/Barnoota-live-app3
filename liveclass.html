@@ -273,7 +273,7 @@ api.addEventListener("displayNameChange", updateParticipants);
 api.addEventListener("audioMuteStatusChanged", updateParticipants);
 api.addEventListener("videoMuteStatusChanged", updateParticipants);
 // CONTROLS
-function openChat(){
+function toggleLiveChat(){
   const box = document.getElementById("chatBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
   if(api){
