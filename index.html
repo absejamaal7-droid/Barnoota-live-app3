@@ -124,7 +124,19 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+  history.pushState(null, null, location.href);
 
+window.onpopstate = function () {
+  window.close();
+  window.location.href = "about:blank";
+};
+window.onpopstate = function () {
+  if(confirm("App keessaa bahuu barbaaddaa?")){
+    window.location.href = "about:blank";
+  } else {
+    history.pushState(null, null, location.href);
+  }
+};
 function login(){
 
   const email = document.getElementById("email").value;
