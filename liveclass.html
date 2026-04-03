@@ -140,12 +140,11 @@
   <div id="participantsList"></div>
 </div>
   <div id="participantsHeader">
- </div>
-  <div id="participantsList"></div>
+  </div>
   <div id="bottombar">
   <button id="micBtn" class="control-btn" onclick="toggleMute()">🎤</button>
 <button id="videoBtn" class="control-btn" onclick="toggleVideo()">📷</button>
-  <button onclick="toggleParticipants()">
+  <button class="control-btn" onclick="toggleParticipants()">
   👥 <span id="participantsCount">0</span>
   </button>
     <button class="control-btn" onclick="toggleFilter()">✨ Filter</button>
@@ -205,8 +204,9 @@ const api = new JitsiMeetExternalAPI("meet.jit.si",{
   {prejoinPageEnabled:false,
    disableDeepLinking:true,
    startWithAudioMuted:false,
-   startWithVideoMuted:false},
-  enableChat: true
+   startWithVideoMuted:false
+  enableChat: true},
+  
   interfaceConfigOverwrite:
   {DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
    HIDE_INVITE_MORE_HEADER:true,
@@ -276,8 +276,6 @@ api.addEventListener("videoMuteStatusChanged", updateParticipants);
 function openChat(){
   const box = document.getElementById("chatBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
-}
-  {
   if(api){
     api.executeCommand("toggleChat");
   }else{
@@ -331,7 +329,7 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
     const name = p.displayName || "User";
 
     // 🎤 mic
-    const micClass = p.muted ? "off" : "";
+    const micClass = p.audiomuted ? "off" : "";
 
     // 📷 video
     const videoClass = p.videoMuted ? "off" : "";
