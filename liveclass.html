@@ -123,7 +123,37 @@
   <button class="room-btn" id="roomName">Room</button>
   <div id="username">Loading...</div>
 </div>
+<div id="chatPanel" style="
+  position:fixed;
+  right:0;
+  top:50px;
+  width:300px;
+  height:calc(100vh - 110px);
+  background:#111;
+  display:none;
+  flex-direction:column;
+  z-index:50;
+  border-left:2px solid #333;
+">
 
+  <div style="padding:10px;background:#222;font-weight:bold;">
+    Live Chat
+  </div>
+
+  <div id="chatMessages" style="
+    flex:1;
+    overflow:auto;
+    padding:10px;
+    font-size:14px;
+  "></div>
+
+  <div style="display:flex;padding:5px;border-top:1px solid #333;">
+    <input id="chatInput" placeholder="Message..."
+      style="flex:1;padding:6px;border:none;border-radius:4px;">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+</div>
 
   <div id="meet" style="width:100%; height:100vh;"></div>
 
@@ -157,20 +187,6 @@
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
  </div>
-  <div id="chatBox" style="display:none; position:fixed; right:0; top:50px; width:300px; height:80%; background:#111; padding:10px; overflow:auto; color:white;">
-
-  <h3>Chat</h3>
-
-  <select id="chatType">
-    <option value="everyone">Everyone</option>
-    <option value="private">Private</option>
-    <option value="host">Host</option>
-    <option value="cohost">Cohost</option>
-  </select>
-  <div id="chatMessages" style="height:60%; overflow:auto; margin-top:10px; border:1px solid gray; padding:5px;"></div>
-  <input id="chatInput" placeholder="Message barreessi..." style="width:70%; padding:5px; margin-top:10px;">
-  <button onclick="sendMessage()" style="width:25%; padding:5px;">Send</button>
-  </div>
 
 <script>
 const firebaseConfig = {
@@ -216,25 +232,6 @@ const api = new JitsiMeetExternalAPI("meet.jit.si",{
    SHOW_BRAND_WATERMARK:false,
    TOOLBAR_BUTTONS:["microphone","camera","chat","desktop","settings","raisehand","hangup",]}
 });
-  db.collection("liveclassChat")
-.orderBy("date")
-.onSnapshot(snapshot=>{
-
-  const box = document.getElementById("chatMessages");
-  box.innerHTML = "";
-
-  snapshot.forEach(doc=>{
-    const m = doc.data();
-
-    const div = document.createElement("div");
-
-    div.innerHTML = `<b>${m.user}</b> (${m.type}): ${m.text}`;
-
-    box.appendChild(div);
-    box.scrollTop = box.scrollHeight;
-  });
-
-});
 api.addEventListener("dominantSpeakerChanged", (id)=>{
   const items = document.querySelectorAll(".participant");
 
@@ -274,20 +271,51 @@ api.addEventListener("displayNameChange", updateParticipants);
 api.addEventListener("audioMuteStatusChanged", updateParticipants);
 api.addEventListener("videoMuteStatusChanged", updateParticipants);
 // CONTROLS
-function toggleLiveChat(){
-  const box = document.getElementById("chatBox");
-
-  if(box.style.display === "block"){
-    box.style.display = "none";
-  }else{
-    box.style.display = "block";
-  }
-
-  // Jitsi chatis banaa
-  if(api){
-    api.executeCommand("toggleChat");
-  }
+  
+function openChat(){
+  const panel = document.getElementById("chatPanel");
+  panel.style.display =
+    panel.style.display === "none" ? "flex" : "none";
 }
+function sendMessage(){
+  const input = document.getElementById("chatInput");
+  const text = input.value;
+
+  if(!text) return;
+
+  const name = auth.currentUser.email.split("@")[0];
+
+  db.collection("liveClassChat").add({
+    user: name,
+    text: text,
+    date: new Date()
+  });
+
+  input.value = "";
+}
+db.collection("liveClassChat")
+.orderBy("date")
+.onSnapshot(snapshot=>{
+
+  const box = document.getElementById("chatMessages");
+  box.innerHTML = "";
+
+  snapshot.forEach(doc=>{
+    const m = doc.data();
+
+    const div = document.createElement("div");
+
+    div.style.marginBottom = "8px";
+
+    div.innerHTML = `
+      <b>${m.user}:</b> ${m.text}
+    `;
+
+    box.appendChild(div);
+  });
+
+  box.scrollTop = box.scrollHeight;
+});
 function shareScreen(){ api.executeCommand("toggleShareScreen"); }
 function openSettings(){ api.executeCommand("toggleSettings"); }
 function sendEmoji(){ api.executeCommand("sendTones"); }
@@ -303,30 +331,6 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
   }else{
     panel.style.display = "none";
   }
-  }
-  function sendMessage(){
-  const input = document.getElementById("chatInput");
-  const message = input.value;
-
-  if(!message) return;
-
-  const user = auth.currentUser.email.split("@")[0];
-  const type = document.getElementById("chatType").value;
-
-  // Jitsi chat
-  if(api){
-    api.executeCommand("sendChatMessage", message);
-  }
-
-  // Firebase chat
-  db.collection("liveclassChat").add({
-    text: message,
-    user: user,
-    type: type,
-    date: new Date()
-  });
-
-  input.value = "";
   }
   function updateParticipants(){
   if(!api) return;
