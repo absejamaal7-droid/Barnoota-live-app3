@@ -9,7 +9,7 @@
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-
+<script src="firebase-firestore-compat.js"></script>
   <style>
     body{margin:0;background:#121212;color:white;font-family:Arial;}
     #topbar{position:fixed;top:0;left:0;right:0;height:50px;background:#1f1f1f;display:flex;justify-content:space-between;align-items:center;padding:0 10px;z-index:10;}
@@ -150,7 +150,7 @@
   👥 <span id="participantsCount">0</span>
   </button>
     <button class="control-btn" onclick="toggleFilter()">✨ Filter</button>
-    <button class="control-btn" onclick="toggleChatBox()">💬</button>
+    <button class="control-btn" onclick="toggleLiveChat()">💬</button>
   <button class="control-btn" onclick="shareScreen()">🖥</button>
   <button class="control-btn" onclick="openSettings()">⚙️</button>
   <button class="control-btn" onclick="sendEmoji()">😊</button>
@@ -158,7 +158,8 @@
   <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
 </div>
-  <div id="chatBox" style="display:none; position:fixed; right:0; top:50px; width:300px; height:80%; background:#111; padding:10px; overflow:auto;">
+  <div id="chatBox" style="display:none; position:fixed; right:0; top:50px; width:300px; height:80%; background:#111; padding:10px; overflow:auto; color:white;">
+
   <h3>Chat</h3>
 
   <select id="chatType">
@@ -167,6 +168,17 @@
     <option value="host">Host</option>
     <option value="cohost">Cohost</option>
   </select>
+
+  <!-- Messages -->
+  <div id="chatMessages" style="height:60%; overflow:auto; margin-top:10px; border:1px solid gray; padding:5px;"></div>
+
+  <!-- Input -->
+  <input id="chatInput" placeholder="Message barreessi..." style="width:70%; padding:5px; margin-top:10px;">
+  
+  <!-- Send Button -->
+  <button onclick="sendMessage()" style="width:25%; padding:5px;">Send</button>
+
+  </div>
   </div>
   <div style="position:fixed; bottom:70px; width:100%; display:flex; padding:5px; background:#111;">
   <input id="chatInput" placeholder="Message..." style="flex:1; padding:8px; border-radius:6px; border:none;">
@@ -192,7 +204,7 @@ auth.onAuthStateChanged(user=>{
     window.location.href="index.html";
   }
 });
-
+const db = firebase.firestore();
 const urlParams = new URLSearchParams(window.location.search);
 const roomName = urlParams.get("room") || "Barnoota-Live";
 document.getElementById("roomName").innerText = roomName;
