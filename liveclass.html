@@ -71,6 +71,10 @@
   display:flex;
   gap:6px;
 }
+    @keyframes blink{
+  0%,100%{opacity:1;}
+  50%{opacity:0.3;}
+    }
 .host{
   color:#22c55e;
   font-size:12px;
@@ -106,6 +110,20 @@
 <div id="topbar">
   <button class="room-btn" id="roomName">Room</button>
   <div id="username">Loading...</div>
+  <div id="recordIndicator" style="
+  position:fixed;
+  top:60px;
+  left:10px;
+  background:red;
+  color:white;
+  padding:5px 10px;
+  border-radius:20px;
+  display:none;
+  font-size:12px;
+  animation:blink 1s infinite;
+">
+🔴 REC
+  </div>
 </div>
 
   <div id="meet" style="width:100%; height:100vh;"></div>
@@ -189,8 +207,7 @@ style="width:100%;margin-top:5px;padding:5px;border-radius:5px;">
   <button class="control-btn" onclick="shareScreen()">🖥 Share</button>
   <button class="control-btn" onclick="openSettings()">⚙️</button>
   <button class="control-btn" onclick="sendEmoji()">😊</button>
-  <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
-  <button class="control-btn stop" onclick="stopRecording()">⏹ Stop</button>
+  <button id="recordBtn" class="control-btn record" onclick="toggleRecording()">⏺ Start</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
  </div>
 
@@ -481,8 +498,37 @@ function shareScreen(){
       }
 function openSettings(){ api.executeCommand("toggleSettings"); }
 function sendEmoji(){ api.executeCommand("sendTones"); }
-function startRecording(){ api.executeCommand("startRecording",{mode:"file"}); }
-function stopRecording(){ api.executeCommand("stopRecording",{mode:"file"}); }
+  let isRecording = false;
+
+function toggleRecording(){
+  const btn = document.getElementById("recordBtn");
+  const indicator = document.getElementById("recordIndicator");
+
+  if(!api) return;
+
+  if(!isRecording){
+    // ▶ START
+    api.executeCommand("startRecording", {mode:"file"});
+    isRecording = true;
+
+    btn.innerText = "⏹ Stop";
+    btn.classList.remove("record");
+    btn.classList.add("stop");
+
+    indicator.style.display = "block";
+
+  }else{
+    // ⏹ STOP
+    api.executeCommand("stopRecording", {mode:"file"});
+    isRecording = false;
+
+    btn.innerText = "⏺ Start";
+    btn.classList.remove("stop");
+    btn.classList.add("record");
+
+    indicator.style.display = "none";
+  }
+}
 function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="home.html"; }
   function toggleParticipants(){
   const panel = document.getElementById("participantsPanel");
