@@ -309,6 +309,16 @@ let role = "student"; // default
 // yeroo seentu
 api.addEventListener("videoConferenceJoined", ()=>{
 
+
+  let name = auth.currentUser.email;
+
+  if(name){
+    name = name.split("@")[0]; // akka bareedu
+  }else{
+    name = "User";
+  }
+
+  api.executeCommand("displayName", name);
   myName = prompt("Maqaa kee galchi:");
   if(!myName) myName = "User";
 
@@ -585,6 +595,7 @@ if(raisedHands[p.participantId]){
     div.onclick = ()=>{
   alert("User: " + (p.displayName || "User"));
 };
+    div.textContent = p.displayName || p.formattedID || "Unknown";
     participantsList.appendChild(div);
   });
       }
