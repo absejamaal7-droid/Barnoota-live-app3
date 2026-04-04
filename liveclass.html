@@ -135,6 +135,32 @@
   </div>
 
 </div>
+  <div id="emojiBox" style="
+display:none;
+position:fixed;
+bottom:70px;
+left:10px;
+right:10px;
+background:#222;
+padding:10px;
+border-radius:10px;
+overflow-x:auto;
+white-space:nowrap;
+z-index:100;
+">
+  <span onclick="sendEmoji('😀')">😀</span>
+  <span onclick="sendEmoji('😂')">😂</span>
+  <span onclick="sendEmoji('😍')">😍</span>
+  <span onclick="sendEmoji('😎')">😎</span>
+  <span onclick="sendEmoji('😢')">😢</span>
+  <span onclick="sendEmoji('😡')">😡</span>
+  <span onclick="sendEmoji('👍')">👍</span>
+  <span onclick="sendEmoji('👏')">👏</span>
+  <span onclick="sendEmoji('🔥')">🔥</span>
+  </div>
+  <input id="emojiInput" placeholder="Emoji barreessi..." 
+style="width:100%;margin-top:5px;padding:5px;border-radius:5px;">
+<button onclick="sendCustomEmoji()">Send</button>
 <div id="roomModal">
   <input type="text" id="roomSearch" placeholder="Search room...">
   <div id="roomList"></div>
@@ -151,6 +177,7 @@
   </div>
 
   <div id="bottombar">
+    <button class="control-btn" onclick="toggleFullScreen()">⛶</button>
   <button id="micBtn" class="control-btn" onclick="toggleMute()">🎤</button>
 <button id="videoBtn" class="control-btn" onclick="toggleVideo()">📷</button>
   <button class="control-btn" onclick="toggleParticipants()">
@@ -281,9 +308,23 @@ api.addEventListener("videoConferenceJoined", ()=>{
   loadUsers();
   loadMessages();
 });
+function toggleEmoji(){
+  const box = document.getElementById("emojiBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
+  function sendEmoji(emoji){
+  if(api){
+    api.executeCommand("sendChatMessage", emoji);
+  }
+}
+  function sendCustomEmoji(){
+  const val = document.getElementById("emojiInput").value;
+  if(api && val){
+    api.executeCommand("sendChatMessage", val);
+    document.getElementById("emojiInput").value = "";
+  }
+  }
 
-
-// USERS LIST (private chat)
 function loadUsers(){
   setInterval(()=>{
     if(!api) return;
@@ -311,8 +352,16 @@ document.getElementById("chatMode").addEventListener("change", function(){
     mode === "private" ? "block" : "none";
 });
 
+function toggleFullScreen(){
+  const elem = document.documentElement;
 
-// SEND MESSAGE
+  if(!document.fullscreenElement){
+    elem.requestFullscreen();
+  }else{
+    document.exitFullscreen();
+  }
+}
+
 function sendMessage(){
 
   const text = document.getElementById("chatInput").value;
