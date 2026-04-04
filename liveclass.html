@@ -156,6 +156,7 @@
   <button class="control-btn" onclick="toggleParticipants()">
   👥 <span id="participantsCount">0</span>
   </button>
+    <button class="control-btn" onclick="toggleRaiseHand()">✋</button>
     <button id="toggleFilter" class="control-btn" onclick="toggleFilter()">✨ Filter</button>
     <button class="control-btn" onclick="OpenChat()">💬</button>
   <button class="control-btn" onclick="shareScreen()">🖥 Share</button>
@@ -185,6 +186,7 @@ auth.onAuthStateChanged(user=>{
     window.location.href="index.html";
   }
 });
+  let myHandRaised = false;
 const db = firebase.firestore();
 const urlParams = new URLSearchParams(window.location.search);
 const roomName = urlParams.get("room") || "Barnoota-Live";
@@ -229,6 +231,7 @@ api.addEventListener("dominantSpeakerChanged", (id)=>{
     }
   });
 });
+  api.addEventListener("raiseHandUpdated", updateParticipants);
 api.addEventListener("videoConferenceJoined", ()=>{
   if(api.isModerator()){
   const pass = prompt("Password kaa'i");
@@ -389,6 +392,37 @@ function muteAll(){
 
   api.executeCommand("muteEveryone");
   }
+  function toggleRaiseHand(){
+  if(!api) return;
+
+  myHandRaised = !myHandRaised;
+
+  if(myHandRaised){
+    api.executeCommand("toggleRaiseHand", true);
+  }else{
+    api.executeCommand("toggleRaiseHand", false);
+  }
+  }
+  function showUserMenu(participant){
+  let action;
+
+  if(participant.raisedHand){
+    action = prompt("1. Lower hand ✋\n2. Edit name\nLakkoofsa galchi:");
+  }else{
+    action = prompt("1. Raise hand ✋\n2. Edit name\nLakkoofsa galchi:");
+  }
+
+  if(action === "1"){
+    toggleRaiseHand();
+  }
+
+  if(action === "2"){
+    const newName = prompt("Maqaa haaraa galchi:");
+    if(newName){
+      api.executeCommand("displayName", newName);
+    }
+  }
+  }
 function shareScreen(){
   if(!api) return;
 
@@ -448,7 +482,15 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
         <span class="${videoClass}">📷</span>
       </div>
     `;
+if(raisedHands[p.participantId]){
+      name = "✋ " + name;
+    }
 
+    div.textContent = name;
+
+    div.onclick = ()=>{
+  alert("User: " + (p.displayName || "User"));
+};
     participantsList.appendChild(div);
   });
       }
