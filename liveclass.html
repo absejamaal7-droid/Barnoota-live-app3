@@ -195,15 +195,21 @@ const api = new JitsiMeetExternalAPI("meet.jit.si",{
   width:"100%",
   height:"100%",
   parentNode: document.querySelector("#meet"),
-  configOverwrite:
-  {prejoinPageEnabled:false,
+  configOverwrite: {
+  prejoinPageEnabled: false,
+  disableInviteFunctions: true,
+  hiddenPremeetingButtons: ['invite'],
+  startWithAudioMuted: false,
+  startWithVideoMuted: false,
+  enableUserRolesBasedOnToken: false,
+  enableNoAudioDetection: false,
+  enableNoisyMicDetection: false,
    disableDeepLinking:true,
-   startWithAudioMuted:false,
-   startWithVideoMuted:false,
    enableChat: true},
   
   interfaceConfigOverwrite:
   {DISABLE_JOIN_LEAVE_NOTIFICATIONS:true,
+   TILE_VIEW_MAX_COLUMNS: 3,
    HIDE_INVITE_MORE_HEADER:true,
    MOBILE_APP_PROMO:false,
    SHOW_JITSI_WATERMARK:false,
@@ -235,12 +241,13 @@ api.addEventListener("videoConferenceJoined", ()=>{
   const name = auth.currentUser.email.split("@")[0];
   api.executeCommand("displayName", name);
 
-  // 🎤 Mic ON gochuu
+  // 🎤 Mic ON gochu 
+  setTimeout(()=>{
   api.executeCommand("toggleAudio");
 
   // 🎥 Video ON
   api.executeCommand("toggleVideo");
-
+}, 1000);
   updateParticipants();
 });
 api.addEventListener("participantJoined", updateParticipants);
