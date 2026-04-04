@@ -158,7 +158,7 @@
   </button>
     <button id="toggleFilter" class="control-btn" onclick="toggleFilter()">✨ Filter</button>
     <button class="control-btn" onclick="OpenChat()">💬</button>
-  <button class="control-btn" onclick="shareScreen()">🖥</button>
+  <button class="control-btn" onclick="shareScreen()">🖥 Share</button>
   <button class="control-btn" onclick="openSettings()">⚙️</button>
   <button class="control-btn" onclick="sendEmoji()">😊</button>
   <button class="control-btn record" onclick="startRecording()">⏺ Start</button>
@@ -382,7 +382,13 @@ function muteAll(){
 
   api.executeCommand("muteEveryone");
   }
-function shareScreen(){ api.executeCommand("toggleShareScreen"); }
+function shareScreen(){
+  if(!api) return;
+
+  api.executeCommand("toggleShareScreen");
+
+  alert("Screen share jalqabde yoo permission si gaafate ALLOW jedhu cuqaasi");
+      }
 function openSettings(){ api.executeCommand("toggleSettings"); }
 function sendEmoji(){ api.executeCommand("sendTones"); }
 function startRecording(){ api.executeCommand("startRecording",{mode:"file"}); }
