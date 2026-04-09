@@ -335,7 +335,7 @@ api.addEventListener("videoConferenceJoined", ()=>{
   loadUsers();
   loadMessages();
 });
-function sendEmoji(){
+function togglesendEmojibox(){
   const box = document.getElementById("emojiBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
 }
@@ -449,9 +449,9 @@ function loadMessages(){
 
 
 // OPEN / CLOSE CHAT
-function openChat(){
+function onclick="openChat(){
   document.getElementById("chatBox").style.display="flex";
-}
+  }
 function closeChat(){
   document.getElementById("chatBox").style.display="none";
                      }// host check
@@ -586,8 +586,12 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
         <span class="${videoClass}">📷</span>
       </div>
     `;
-if(raisedHands[p.participantId]){
-      name = "✋ " + name;
+if(raisedHands = {};[p.participantId]){
+      displayname = "✋ " + displayname;
+  api.addEventListener("raiseHandUpdated", (e)=>{
+  raisedHands[e.id] = e.raisedHand;
+  updateParticipants();
+});
     }
 
     div.textContent = name;
