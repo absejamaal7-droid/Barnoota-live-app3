@@ -335,7 +335,7 @@ api.addEventListener("videoConferenceJoined", ()=>{
   loadUsers();
   loadMessages();
 });
-function sendEmojibox(){
+function sendEmoji(){
   const box = document.getElementById("emojiBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
 }
@@ -580,7 +580,7 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
 
     div.innerHTML = `
       <div class="name">
-        ${name}
+        ${displayname}
         ${isHost ? '<span class="host">👑 Host</span>' : ''}
       </div>
       <div class="icons">
