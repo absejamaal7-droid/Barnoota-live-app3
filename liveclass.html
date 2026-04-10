@@ -127,7 +127,7 @@
 </div>
 
   <div id="meet" style="width:100%; height:100vh;"></div>
-<div id="chatBox" style="position:fixed; right:0; top:50px; width:300px; height:calc(100vh - 50px); background:#1e293b; display:flex; flex-direction:column; z-index:50;">
+<div id="chatBox" style="position:fixed; right:0; top:50px; width:300px; height:calc(100vh - 50px); background:#1e293b; display:none; flex-direction:column; z-index:50;">
 
   <div style="padding:10px; background:#0f172a; display:flex; justify-content:space-between;">
     <b>Chat</b>
@@ -203,7 +203,7 @@ style="width:100%;margin-top:5px;padding:5px;border-radius:5px;">
   </button>
     <button class="control-btn" onclick="toggleRaiseHand()">✋</button>
     <button id="toggleFilter" class="control-btn" onclick="toggleFilter()">✨ Filter</button>
-    <button class="control-btn" onclick="OpenChat()">💬</button>
+    <button class="control-btn" onclick="openChat()">💬</button>
   <button class="control-btn" onclick="shareScreen()">🖥 Share</button>
   <button class="control-btn" onclick="openSettings()">⚙️</button>
   <button class="control-btn" onclick="sendEmoji()">😊</button>
@@ -285,8 +285,8 @@ api.addEventListener("videoConferenceJoined", ()=>{
   }
 
   
-  const name = auth.currentUser.email.split("@")[0];
-  api.executeCommand("displayName", name);
+  const myname = auth.currentUser.email.split("@")[0];
+  api.executeCommand("displaymyName", name);
 
   // 🎤 Mic ON gochu 
   setTimeout(()=>{
@@ -398,6 +398,7 @@ function sendMessage(){
   const toUser = document.getElementById("privateUser").value;
 
   const msg = {
+    room: roomName,
     from: myName,
     text: text,
     mode: mode,
@@ -415,6 +416,7 @@ function sendMessage(){
 function loadMessages(){
 
   firebase.firestore().collection("liveMessages")
+  .where("room","==",roomName)
   .orderBy("date")
   .onSnapshot(snapshot=>{
 
@@ -449,7 +451,7 @@ function loadMessages(){
 
 
 // OPEN / CLOSE CHAT
-function onclick="openChat(){
+function openChat(){
   document.getElementById("chatBox").style.display="flex";
   }
 function closeChat(){
