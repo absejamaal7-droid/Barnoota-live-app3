@@ -286,7 +286,7 @@ api.addEventListener("videoConferenceJoined", ()=>{
 
   
   const myname = auth.currentUser.email.split("@")[0];
-  api.executeCommand("displaymyName", myname);
+  api.executeCommand("displayName", myname);
 
   // 🎤 Mic ON gochu 
   setTimeout(()=>{
@@ -320,7 +320,8 @@ api.addEventListener("videoConferenceJoined", ()=>{
 
   api.executeCommand("displayName", name);
   myName = prompt("Maqaa kee galchi:");
-  if(!myName) myName = "User";
+  if(!myName || myName.trim() === "")
+  {myName = "user";}
 
   api.executeCommand("displayName", myName);
 
@@ -444,8 +445,6 @@ function loadMessages(){
   });
 }
 
-
-// OPEN / CLOSE CHAT
 function openChat(){
   document.getElementById("chatBox").style.display="flex";
   }
@@ -583,7 +582,7 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
         <span class="${videoClass}">📷</span>
       </div>
     `;
-let(raisedHands = {};
+let raisedHands = {};
   api.addEventListener("raiseHandUpdated", (e)=>{
   raisedHands[e.id] = e.raisedHand;
   updateParticipants();
