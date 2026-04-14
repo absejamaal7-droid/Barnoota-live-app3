@@ -206,7 +206,7 @@ style="width:100%;margin-top:5px;padding:5px;border-radius:5px;">
     <button class="control-btn" onclick="openChat()">💬</button>
   <button class="control-btn" onclick="shareScreen()">🖥 Share</button>
   <button class="control-btn" onclick="openSettings()">⚙️</button>
-  <button class="control-btn" onclick="sendEmoji()">😊</button>
+  <button class="control-btn" onclick="toggleEmojibox()">😊</button>
   <button id="recordBtn" class="control-btn record" onclick="toggleRecording()">⏺ Start</button>
   <button class="control-btn leave" onclick="leaveMeeting()">Leave</button>
  </div>
@@ -286,7 +286,7 @@ api.addEventListener("videoConferenceJoined", ()=>{
 
   
   const myname = auth.currentUser.email.split("@")[0];
-  api.executeCommand("displaymyName", name);
+  api.executeCommand("displaymyName", myname);
 
   // 🎤 Mic ON gochu 
   setTimeout(()=>{
@@ -338,11 +338,6 @@ api.addEventListener("videoConferenceJoined", ()=>{
 function sendEmoji(){
   const box = document.getElementById("emojiBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
-}
-  function sendEmoji(emoji){
-  if(api){
-    api.executeCommand("sendChatMessage", emoji);
-  }
 }
   function sendCustomEmoji(){
   const val = document.getElementById("emojiInput").value;
@@ -580,7 +575,7 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
 
     div.innerHTML = `
       <div class="name">
-        ${displayname}
+        ${name}
         ${isHost ? '<span class="host">👑 Host</span>' : ''}
       </div>
       <div class="icons">
@@ -588,13 +583,14 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
         <span class="${videoClass}">📷</span>
       </div>
     `;
-if(raisedHands = {};[p.participantId]){
-      displayname = "✋ " + displayname;
+let(raisedHands = {};
   api.addEventListener("raiseHandUpdated", (e)=>{
   raisedHands[e.id] = e.raisedHand;
   updateParticipants();
 });
-    }
+ if(raisedHands[p.participantId]){
+      name = "✋ " + name; 
+ }
 
     div.textContent = name;
 
