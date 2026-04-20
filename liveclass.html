@@ -40,37 +40,69 @@
   position:fixed;
   right:0;
   top:50px;
-  width:280px;
-  height:85%;
-  background:#111;
-  color:white;
+  width:300px;
+  height:90%;
+  background:#0f172a;
   z-index:50;
-  border-left:2px solid #333;
-}
-
-#participantsHeader{
-  padding:10px;
-  background:#1f1f1f;
-  text-align:center;
-  font-weight:bold;
+  border-left:1px solid #333;
+  overflow:auto;
 }
 
 .participant{
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  padding:8px;
-  border-bottom:1px solid #333;
+  justify-content:space-between;
+  padding:10px;
+  border-bottom:1px solid #1e293b;
+  transition:0.2s;
+}
+
+.participant:hover{
+  background:#1e293b;
+}
+
+.avatar{
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  background:#2563eb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+}
+
+.userInfo{
+  flex:1;
+  margin-left:10px;
 }
 
 .name{
-  flex:1;
+  font-size:14px;
+}
+
+.status{
+  font-size:11px;
+  color:#94a3b8;
 }
 
 .icons{
   display:flex;
-  gap:6px;
+  gap:8px;
 }
+
+.mic-off{
+  color:red;
+}
+
+.video-off{
+  color:red;
+}
+
+.speaking{
+  background:#1e293b;
+  border-left:3px solid #22c55e;
+      }
     @keyframes blink{
   0%,100%{opacity:1;}
   50%{opacity:0.3;}
@@ -189,6 +221,8 @@ style="width:100%;margin-top:5px;padding:5px;border-radius:5px;">
 </div>
 <div id="participantsPanel" style="display:none; position:fixed; right:0; top:50px; width:250px; height:80%; background:#1f1f1f; overflow:auto; z-index:20;">
   <h3 style="text-align:center;">Participants</h3>
+  <input id="searchUser" placeholder="Search..." 
+style="width:95%;margin:5px;padding:6px;border-radius:6px;border:none;">
   <div id="participantsList"></div>
 </div>
   <div id="participantsHeader">
@@ -544,58 +578,106 @@ function leaveMeeting(){ api.executeCommand("hangup"); window.location.href="hom
     panel.style.display = "none";
   }
   }
-  function updateParticipants(){
+  function openUserMenu(name){
+  const action = prompt(
+`User: ${name}
+
+1. Mute (fake)
+2. Remove (fake)
+3. Message
+Lakkoofsa filadhu`
+  );
+
+  if(action === "1"){
+    alert("Muted (UI qofa)");
+  }
+
+  if(action === "2"){
+    alert("Removed (Jitsi free irratti hin danda'amu)");
+  }
+
+  if(action === "3"){
+    document.getElementById("chatBox").style.display="flex";
+  }
+  }
+  let raisedHands = {};
+
+api.addEventListener("raiseHandUpdated", (e)=>{
+  raisedHands[e.id] = e.raisedHand;
+  updateParticipants();
+});
+
+ if(raisedHands[p.participantId]){
+      name = "✋ " + name; 
+ }
+function updateParticipants(){
   if(!api) return;
 
-  const participantsList = document.getElementById("participantsList");
+  const listDiv = document.getElementById("participantsList");
   const count = document.getElementById("participantsCount");
+const search = document.getElementById("searchUser").value.toLowerCase();
+  document.getElementById("searchUser").addEventListener("input", updateParticipants);
+  listDiv.innerHTML = "";
 
-  participantsList.innerHTML = "";
+  const participants = api.getParticipantsInfo();
+  count.innerText = participants.length;
 
-  const list = api.getParticipantsInfo();
-
-  count.innerText = list.length;
-
-  list.forEach(p=>{
+  participants.forEach(p=>{
     const div = document.createElement("div");
     div.className = "participant";
 
     const name = p.displayName || "User";
+    if(!name.toLowerCase().includes(search)) return;
+    const firstLetter = name.charAt(0).toUpperCase();
 
-    // 🎤 mic
-    const micClass = p.audiomuted ? "off" : "";
-
-    // 📷 video
-    const videoClass = p.videoMuted ? "off" : "";
-
-    // 👑 host
+    const micClass = p.audioMuted ? "mic-off" : "";
+    const videoClass = p.videoMuted ? "video-off" : "";
     const isHost = p.role === "moderator";
 
+    const hand = raisedHands[p.participantId] ? "✋ " : "";
+
     div.innerHTML = `
-      <div class="name">
-        ${name}
-        ${isHost ? '<span class="host">👑 Host</span>' : ''}
+      <div style="display:flex;align-items:center;">
+        <div class="avatar">${firstLetter}</div>
+
+        <div class="userInfo">
+          <div class="name">
+            ${hand}${name}
+            ${isHost ? '👑' : ''}
+          </div>
+          <div class="status">
+            ${p.audioMuted ? 'Muted' : 'Speaking'} • ${p.videoMuted ? 'Camera off' : 'Camera on'}
+          </div>
+        </div>
       </div>
+
       <div class="icons">
         <span class="${micClass}">🎤</span>
         <span class="${videoClass}">📷</span>
+        <span class="menu" onclick="openUserMenu('${name}')">⋮</span>
       </div>
     `;
-let raisedHands = {};
-  api.addEventListener("raiseHandUpdated", (e)=>{
-  raisedHands[e.id] = e.raisedHand;
-  updateParticipants();
-});
- if(raisedHands[p.participantId]){
-      name = "✋ " + name; 
- }
 
+    // speaking highlight
     div.onclick = ()=>{
-  alert("User: " + (p.displayName || "User"));
-};
-    participantsList.appendChild(div);
+      alert("User: " + name);
+    };
+api.addEventListener("dominantSpeakerChanged", (id)=>{
+  const items = document.querySelectorAll(".participant");
+
+  items.forEach(item=> item.classList.remove("speaking"));
+
+  const list = api.getParticipantsInfo();
+
+  list.forEach((p, index)=>{
+    if(p.participantId === id){
+      items[index].classList.add("speaking");
+    }
   });
-      }
+});
+    listDiv.appendChild(div);
+  });
+}
   let micOn = false;
 let videoOn = false;
 
