@@ -395,14 +395,13 @@ function sendMessage(){
 
   const msg = {
     room: roomName,
-    from: myName,
+    from: myName || "user",
     text: text,
     mode: mode,
     to: mode === "private" ? toUser : "everyone",
-    date: new Date()
+    date:
+  firebase.firestore.FieldValue.serverTimestamp()
   };
-
-  firebase.firestore().collection("liveMessages").add(msg);
 
   document.getElementById("chatInput").value="";
 }
@@ -413,7 +412,7 @@ function loadMessages(){
 
   firebase.firestore().collection("liveMessages")
   .where("room","==",roomName)
-  .orderBy("date")
+  .orderBy("date","asc")
   .onSnapshot(snapshot=>{
 
     const box = document.getElementById("chatMessages");
@@ -591,12 +590,9 @@ let raisedHands = {};
       name = "✋ " + name; 
  }
 
-    div.textContent = name;
-
     div.onclick = ()=>{
   alert("User: " + (p.displayName || "User"));
 };
-    div.textContent = p.displayName || p.formattedID || "Unknown";
     participantsList.appendChild(div);
   });
       }
